@@ -113,10 +113,6 @@ public class AuthController {
         boolean success = userDAO.saveUser(newUser);
 
         if (success) {
-            /* * NOTE: Ensure your userDAO.saveUser() method populates the auto-generated
-             * ID back into the 'newUser' object using GeneratedKeyHolder (just like FeedbackDAO does),
-             * so newUser.getUserID() is not zero/null here!
-             */
 
             // 2. Dual-Layer Text File Sync based on selection role
             if ("PATIENT".equalsIgnoreCase(role)) {
@@ -133,7 +129,7 @@ public class AuthController {
         }
     }
 
-    // NEW: Handle Profile Deletion across Database and Text Files (CRUD: Delete)
+    // Handle Profile Deletion across Database and Text Files (CRUD: Delete)
     @PostMapping("/profile/delete")
     public String deleteProfile(HttpSession session, RedirectAttributes redirectAttributes) {
         // 1. Session boundary guard check

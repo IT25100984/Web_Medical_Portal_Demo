@@ -69,7 +69,7 @@ public class DashboardController {
 
         if (currentUser != null && "DOCTOR".equalsIgnoreCase(currentUser.getRole())) {
 
-            Doctor currentDoc = (Doctor) currentUser; // Safe cast
+            Doctor currentDoc = (Doctor) currentUser;
 
             if ("PHARMACIST".equalsIgnoreCase(currentDoc.getSpecialization())) {
                 // Fetch the global queue for the pharmacist
@@ -88,7 +88,7 @@ public class DashboardController {
         if (user != null && "DOCTOR".equalsIgnoreCase(user.getRole())) {
             List<AppointmentDTO> myAppts = apptDAO.getAppointmentsByDoctor(user.getUserID());
 
-            // This name "myAppts" matches your JSP loop: ${myAppts}
+            // This name "myAppts" matches JSP loop: ${myAppts}
             model.addAttribute("myAppts", myAppts);
 
             return "doctor_dashboard";
@@ -158,7 +158,7 @@ public class DashboardController {
         }
         // Pass the current user object to the form to pre-fill fields
         model.addAttribute("user", user);
-        return "updateProfilePage"; // This should be the name of your JSP file
+        return "updateProfilePage";
     }
 
 }

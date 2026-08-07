@@ -20,6 +20,8 @@ import java.util.List;
 @Controller
 public class AppointmentController {
 
+    // uses dependency inversion via polymorphism and dependency injection
+    @Autowired
     private final AppointmentDAOInterface apptDAO;
 
     @Autowired
@@ -59,7 +61,7 @@ public class AppointmentController {
         return apptFileService.readFile(patientID, doctorID);
     }
 
-    // Handles Appointment Booking (POST) - UPDATED
+    // Handles Appointment Booking (POST)
     @PostMapping("/bookAppointment")
     public String bookAppointment(@RequestParam("date") String date,
                                   @RequestParam("time") String time,
@@ -73,7 +75,7 @@ public class AppointmentController {
             return "redirect:/login";
         }
 
-        // Logic: Pass the type and charge to the DAO
+        // Pass the type and price to the DAO
         // If it's a Consultation, addCharge will naturally be "none" from the JSP
         boolean success = apptDAO.bookAppointment(doctorId, user.getUserID(), date, time, type, addCharge);
 
@@ -82,7 +84,7 @@ public class AppointmentController {
 
     @GetMapping("/book_appointment")
     public String showBookingPage(Model model) {
-        // Spring manages the UserDAO, so no 'new' keyword is needed
+        // Spring manages the UserDAO by injecting dependencies, so no 'new' keyword is needed
         List<User> doctorList = userDAO.getAllDoctors();
 
         // This makes 'doctorList' available to your <c:forEach> in the JSP
