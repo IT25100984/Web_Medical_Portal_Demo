@@ -72,7 +72,7 @@ public class PrescriptionController {
         // Send the filtered list to the JSP
         model.addAttribute("myOrders", myOrders);
 
-        return "prescriptions";
+        return "pharmacy/prescriptions";
     }
 
     @PostMapping("/submitPrescription")

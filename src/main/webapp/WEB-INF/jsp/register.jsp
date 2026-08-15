@@ -6,7 +6,7 @@
 </head>
 <body class="bg-light">
 
-<%@ include file="header.jsp" %>
+<%@ include file="shared/header.jsp" %>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -45,7 +45,7 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <small>Already have an account? <a href="login.jsp">Login here</a></small>
+                    <small>Already have an account? <a href="<c:url value='/login' />">Login here</a></small>
                 </div>
             </div>
         </div>

@@ -79,10 +79,10 @@ public class AppointmentController {
         // If it's a Consultation, addCharge will naturally be "none" from the JSP
         boolean success = apptDAO.bookAppointment(doctorId, user.getUserID(), date, time, type, addCharge);
 
-        return success ? "redirect:/patientDashboard?msg=success" : "redirect:/book_appointment?error=failed";
+        return success ? "redirect:/patientDashboard?msg=success" : "redirect:patient/book_appointment?error=failed";
     }
 
-    @GetMapping("/book_appointment")
+    @GetMapping("patient/book_appointment")
     public String showBookingPage(Model model) {
         // Spring manages the UserDAO by injecting dependencies, so no 'new' keyword is needed
         List<User> doctorList = userDAO.getAllDoctors();
@@ -90,7 +90,7 @@ public class AppointmentController {
         // This makes 'doctorList' available to your <c:forEach> in the JSP
         model.addAttribute("doctorList", doctorList);
 
-        return "book_appointment";
+        return "patient/book_appointment";
     }
 
     // 2. Handles "Accept" and "Cancel" (GET)

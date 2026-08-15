@@ -58,7 +58,7 @@ public class DashboardController {
             // Pass data to JSP (Replaces request.setAttribute)
             model.addAttribute("appointments", myAppointments);
 
-            return "patient_dashboard";
+            return "patient/patient_dashboard";
         }
         return "redirect:/login";
     }
@@ -75,7 +75,7 @@ public class DashboardController {
                 // Fetch the global queue for the pharmacist
                 List<Pharmacy> allOrders = medFileService.getAllOrders();
                 model.addAttribute("allOrders", allOrders);
-                return "pharmacist_dashboard";
+                return "pharmacy/pharmacist_dashboard";
             }
         }
         return "redirect:/login";
@@ -91,7 +91,7 @@ public class DashboardController {
             // This name "myAppts" matches JSP loop: ${myAppts}
             model.addAttribute("myAppts", myAppts);
 
-            return "doctor_dashboard";
+            return "clinical/doctor_dashboard";
         }
         return "redirect:/login";
     }
@@ -111,7 +111,7 @@ public class DashboardController {
             model.addAttribute("adminApps", allAppointments);
             model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
 
-            return "admin_dashboard";
+            return "admin/admin_dashboard";
         }
         return "redirect:/login";
     }

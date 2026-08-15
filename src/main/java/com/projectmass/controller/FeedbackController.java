@@ -47,7 +47,7 @@ public class FeedbackController {
             model.addAttribute("doctors", userDAO.getAllDoctors());
             model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(user.getUserID()));
 
-            return "feedback_form";
+            return "shared/feedback_form";
 
         } else if ("DOCTOR".equalsIgnoreCase(role)) {
             List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(user.getUserID());
@@ -58,7 +58,7 @@ public class FeedbackController {
 
         } else if ("ADMIN".equalsIgnoreCase(role)) {
             model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
-            return "admin_feedback_modal";
+            return "admin/admin_feedback_modal";
         }
 
         return "redirect:/login";
@@ -92,7 +92,7 @@ public class FeedbackController {
             model.addAttribute("error", "Failed to submit review. Form parameters mismatched.");
             model.addAttribute("doctors", userDAO.getAllDoctors());
             model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(user.getUserID()));
-            return "feedback_form"; // Loops back safely without throwing a 400 page
+            return "shared/feedback_form"; // Loops back safely without throwing a 400 page
         }
 
         Integer newFeedbackId = feedbackDAO.submitFeedback(user.getUserID(), doctorId, appointmentId, rating, comment);
@@ -116,7 +116,7 @@ public class FeedbackController {
             model.addAttribute("error", "Database processing rejected the feedback write operation.");
             model.addAttribute("doctors", userDAO.getAllDoctors());
             model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(user.getUserID()));
-            return "feedback_form";
+            return "shared/feedback_form";
         }
     }
 
