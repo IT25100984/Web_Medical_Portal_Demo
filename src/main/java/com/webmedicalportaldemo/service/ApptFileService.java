@@ -9,7 +9,7 @@ public class ApptFileService extends FileService<String> {
     protected String getFileName() { return "billHistory.txt"; }
 
     @Override
-    protected String getHeader() { return "PROJECT MASS APPOINTMENT BILLING HISTORY"; }
+    protected String getHeader() { return "WEB MEDICAL PORTAL APPOINTMENT BILLING HISTORY"; }
 
     @Override
     protected String mapToString(String data) {
