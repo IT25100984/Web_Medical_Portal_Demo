@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | ProjectMASSx</title>
+    <title>Login | Web Medical Portal - WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
@@ -83,7 +83,7 @@
                         Hospital Portal Login
                     </h4>
                     <p class="small mb-0">
-                        Sign in to access your ProjectMASSx account
+                        Sign in to access your Web Medical Portal account
                     </p>
                 </div>
                 <div class="card-body p-4">

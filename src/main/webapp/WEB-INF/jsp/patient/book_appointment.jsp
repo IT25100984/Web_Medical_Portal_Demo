@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Book Appointment | ProjectMASSx</title>
+    <title>Book Appointment | WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
     <style>
@@ -121,7 +121,7 @@
                     </span>
                 <span id="pricePreview" class="price-preview fw-bold text-primary">LKR 1,500.00</span>
             </div>
-            <p class="small text-muted mb-3">The displayed amount is an estimate. ProjectMASSx recalculates and stores the final fee securely on the server when the appointment is booked.</p>
+            <p class="small text-muted mb-3">The displayed amount is an estimate. WMP recalculates and stores the final fee securely on the server when the appointment is booked.</p>
             <div class="d-grid gap-2">
                 <button type="submit" id="bookingButton" class="btn btn-success fw-bold">Confirm Booking</button>
                 <c:url var="patientDashboardUrl" value="/patientDashboard" />

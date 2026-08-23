@@ -36,7 +36,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4" aria-label="Main navigation">
     <div class="container">
         <%-- Application name and home link --%>
-        ${homeUrl}ProjectMASSx</a>
+        ${homeUrl}Web Medical Portal - WMP</a>
         <%-- Mobile navigation toggle --%>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation"
                 aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">

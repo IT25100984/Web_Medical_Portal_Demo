@@ -1,4 +1,4 @@
-package com.projectmass.model;
+package com.webmedicalportaldemo.model;
 
 public abstract class Appointment {
     private int appointmentID;
@@ -16,6 +16,8 @@ public abstract class Appointment {
         this.time = time;
         this.status = "PENDING";
     }
+
+    public Appointment() {}
 
     // Abstract method: Every subclass MUST implement this (Polymorphism)
     public abstract double calculateFee();

@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Home | ProjectMASSx</title>
+    <title>Home | Web Medical Portal - WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         .hero-section {min-height: 520px;display: flex; align-items: center;background:
@@ -44,7 +44,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-7">
                     <span class="badge bg-primary mb-3">Smart Hospital Management</span>
-                    <h1 class="display-4 fw-bold mb-3">Welcome to ProjectMASSx</h1>
+                    <h1 class="display-4 fw-bold mb-3">Welcome to Your Web Medical Portal - WMP</h1>
                     <p class="lead text-secondary mb-3">
                         Your gateway to better health and connected
                         hospital services.
@@ -119,7 +119,7 @@
     <section class="py-5 bg-white">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="fw-bold">ProjectMASSx Services</h2>
+                <h2 class="fw-bold">W M P SERVICES</h2>
                 <p class="text-muted">
                     Healthcare tools designed for patients and
                     hospital professionals.
@@ -213,7 +213,7 @@
 </main>
 <footer class="bg-dark text-white py-4">
     <div class="container text-center">
-        <p class="mb-1">ProjectMASSx Hospital Management System</p>
+        <p class="mb-1">Web Medical Portal - WMP Hospital Management System</p>
         <small class="text-white-50">
             Healthcare information displayed by this system does not
             replace professional medical advice.
