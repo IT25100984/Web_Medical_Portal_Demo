@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8"  %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<jsp:useBean id="user" scope="session" class="com.projectmass.model.User" />
+<jsp:useBean id="user" scope="session" class="com.webmedicalportaldemo.model.User" />
 
 <%-- Logic: Pharmacist is a DOCTOR role with a PHARMACIST specialization --%>
 <c:if test="${empty sessionScope.user ||

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<jsp:useBean id="patient" scope="session" class="com.projectmass.model.User" />
+<jsp:useBean id="patient" scope="session" class="com.webmedicalportaldemo.model.User" />
 
 <c:if test="${empty sessionScope.user || sessionScope.user.role != 'PATIENT'}">
     <c:redirect url="/login" />
@@ -44,15 +44,23 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">Welcome, ${patient.firstName} ${patient.lastName}</h2>
-                    <div class="text-muted">
+                    <div class="text-muted d-flex align-items-center flex-wrap">
                         <strong>Blood Group:</strong>
-                        <span class="badge bg-danger">${patient.bloodGroup}</span>
+                        <span class="badge bg-danger ms-1">${patient.bloodGroup}</span>
+
                         <%-- New trigger for the View Modal --%>
                         <button type="button" class="btn btn-sm ms-2"
                                 data-bs-toggle="modal" data-bs-target="#viewMedicalModal"
                                 style="background-color: rgba(255, 255, 255, 0.6); color: #1e3a8a; border: 1px solid rgba(30, 58, 138, 0.2); border-radius: 20px; padding: 4px 14px; font-weight: 600; font-size: 0.85rem;">
                             <i class="bi bi-eye-fill me-1" style="color: #1e3a8a;"></i> View Medical History
                         </button>
+
+                        <%-- FIXED & ADDED: Patient EHR Navigation Link styled to match the pill button --%>
+                        <c:url var="patientEhrUrl" value="/clinical/ehr" />
+                        <a href="${patientEhrUrl}" class="btn btn-sm ms-2"
+                           style="background-color: rgba(30, 58, 138, 0.1); color: #1e3a8a; border: 1px solid rgba(30, 58, 138, 0.2); border-radius: 20px; padding: 4px 14px; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+                            <i class="bi bi-file-earmark-medical me-1"></i> View My Health Records
+                        </a>
                     </div>
                 </div>
                 <div class="d-flex flex-column gap-2" style="width: 200px;">
@@ -187,7 +195,7 @@
                                                                         LKR ${5000 + extra}.00
                                                                     </c:when>
 
-                                                                    <c:when test="${appt.appointmentType == 'PHARMACY'}">
+                                                                    <c:when test="${appt.appointmentType == 'PHARMACIST'}">
                                                                         LKR ${appt.totalFee}.00
                                                                     </c:when>
 

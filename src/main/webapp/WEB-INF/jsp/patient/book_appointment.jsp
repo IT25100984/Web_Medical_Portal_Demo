@@ -1,343 +1,337 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
-
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment | ProjectMASS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Book Appointment | ProjectMASSx</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    <style>
+        .booking-card {
+            max-width: 560px;
+        }
+        .price-preview {
+            font-size: 1.25rem;
+        }
+        .history-container {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body class="bg-light">
-
 <%@ include file="../shared/header.jsp" %>
-
-<div class="container mt-5">
-    <div class="card shadow border-0 mx-auto" style="max-width: 500px;">
+<main class="container py-5">
+    <div class="card booking-card shadow border-0 mx-auto">
         <div class="card-header bg-primary text-white py-3">
-            <h4 class="mb-0 fw-bold"><i class="bi bi-calendar-check me-2"></i>Schedule Appointment</h4>
+            <h1 class="h4 mb-0 fw-bold">
+                <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Schedule Appointment
+            </h1>
         </div>
         <div class="card-body p-4">
-
-            <c:if test="${not empty param.errorMsg}">
-                <div class="alert alert-danger shadow-sm border-0">
-                    <i class="bi bi-exclamation-octagon-fill me-1"></i> ${param.errorMsg}
+            <c:if test="${param.error eq 'invalidInput'}">
+                <div class="alert alert-danger shadow-sm border-0" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-1" aria-hidden="true"></i>Please complete all required booking fields.
                 </div>
             </c:if>
-
-            <form action="${pageContext.request.contextPath}/bookAppointment" method="post">
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Appointment Type</label>
-                    <select class="form-select border-primary-subtle" id="typeSelect" name="appointmentType"
-                            onchange="toggleSurgeryOptions(); updatePricePreview();" required>
-                        <option value="CONSULTATION" selected>General Consultation</option>
-                        <option value="SURGERY">Surgery / Operation</option>
+            <c:if test="${param.error eq 'invalidDateTime'}">
+                <div class="alert alert-danger shadow-sm border-0" role="alert">
+                    <i class="bi bi-calendar-x-fill me-1" aria-hidden="true"></i>Please select a valid future appointment date and time.
+                </div>
+            </c:if>
+            <c:if test="${param.error eq 'slotUnavailable'}">
+                <div class="alert alert-warning shadow-sm border-0" role="alert">
+                    <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>The selected appointment slot is no longer available.
+                </div>
+            </c:if>
+            <c:url var="bookAppointmentUrl" value="/bookAppointment" />
+            ${bookAppointmentUrl}
+            <c:if test="${not empty _csrf}">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+            </c:if>
+            <div class="mb-3">
+                <label for="typeSelect" class="form-label fw-semibold">Appointment Type</label>
+                <select class="form-select border-primary-subtle" id="typeSelect" name="appointmentType" required>
+                    <option value="CONSULTATION" selected>General Consultation</option>
+                    <option value="SURGERY">Surgery / Operation</option>
+                </select>
+            </div>
+            <div class="mb-3 p-3 bg-warning-subtle rounded border border-warning d-none" id="surgeryOptions">
+                <label for="extraCharge" class="form-label fw-semibold text-warning-emphasis">Additional Surgical Requirement</label>
+                <select class="form-select" id="extraCharge" name="additionalCharge" disabled>
+                    <option value="NONE" selected>Standard Surgery</option>
+                    <option value="ANESTHESIA">Anesthesia Service (+LKR 2,500.00)</option>
+                    <option value="FACILITY">Facility / Hospital Charge (+LKR 1,500.00)</option>
+                    <option value="EQUIPMENT">Specialized Equipment (+LKR 3,000.00)</option>
+                    <option value="OTHER">Other Requirement (+LKR 500.00)</option>
+                </select>
+                <div class="form-text">Base surgery fee: LKR 5,000.00</div>
+            </div>
+            <div class="mb-3">
+                <label for="specializationSelect" class="form-label fw-semibold">Select Specialization</label>
+                <select id="specializationSelect" class="form-select">
+                    <option value="" selected>All Specializations</option>
+                    <option value="General Practitioner">General Practitioner</option>
+                    <option value="Dermatology">Dermatology</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Pediatric">Pediatric</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Orthopedic">Orthopedic</option>
+                </select>
+                <div class="form-text">Pharmacists are staff members and are not listed as medical specialists.</div>
+            </div>
+            <div class="mb-3">
+                <label for="doctorSelect" class="form-label fw-semibold">Select Doctor</label>
+                <div class="input-group">
+                    <select name="doctorId" id="doctorSelect" class="form-select" required>
+                        <option value="" selected disabled>Choose a doctor...</option>
+                        <c:forEach var="doc" items="${doctorList}">
+                            <option value="${doc.userID}">
+                                Dr. <c:out value="${doc.firstName}" /> <c:out value="${doc.lastName}" />
+                            </option>
+                        </c:forEach>
                     </select>
+                    <button class="btn btn-outline-primary" type="button" id="viewHistoryBtn" disabled>
+                        <i class="bi bi-clock-history" aria-hidden="true"></i> History
+                    </button>
                 </div>
-
-                <div class="mb-3 p-3 bg-warning-subtle rounded border border-warning" id="surgeryOptions" style="display:none;">
-                    <label for="extraCharge" class="form-label fw-semibold text-warning-emphasis">Select Surgical Service</label>
-                    <select class="form-select" id="extraCharge" name="additionalCharge" onchange="updatePricePreview()">
-                        <option value="none" selected>Standard Surgery</option>
-                        <option value="anesthesia">Anesthesia Service (+LKR 2500)</option>
-                        <option value="facility">Facility/Hospital Charges (+LKR 1500)</option>
-                        <option value="equipment">Specialized Equipment (+LKR 3000)</option>
-                    </select>
-                    <div class="form-text">Base Surgery Fee: LKR 5000.00</div>
+            </div>
+            <div id="historyDisplay" class="history-container mt-2 mb-3 shadow-sm p-3 bg-white border rounded d-none">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h6 mb-0">Appointment Billing History</h2>
+                    <button type="button" class="btn-close" id="closeHistoryButton" aria-label="Close history"></button>
                 </div>
-
-                <div class="mb-3">
-                    <label for="specializationSelect" class="form-label fw-semibold">Select Specialization</label>
-                    <select id="specializationSelect" class="form-select" onchange="updateDoctorList()">
-                        <option value="" selected disabled>Select Specialization</option>
-                        <%-- Change value to "All Specializations" to match your JS check --%>
-                        <option value="All Specializations">All Specializations</option>
-                        <option value="General Practitioner">General Practitioner</option>
-                        <option value="Pharmacist">Pharmacist</option>
-                        <option value="Dermatology">Dermatology</option>
-                        <option value="Cardiology">Cardiology</option>
-                        <option value="Pediatric">Pediatric</option>
-                        <option value="Neurology">Neurology</option>
-                        <option value="Orthopedic">Orthopedic</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="doctorSelect" class="form-label fw-semibold">Select Doctor</label>
-                    <div class="input-group">
-                        <select name="doctorId" id="doctorSelect" class="form-select" onchange="onDoctorChange()" required>
-                            <option value="" selected disabled>Choose a doctor...</option>
-                            <c:forEach var="doc" items="${doctorList}">
-                                <option value="${doc.userID}">Dr. ${doc.firstName} ${doc.lastName}</option>
-                            </c:forEach>
-                        </select>
-                        <button class="btn btn-outline-primary" type="button" id="viewHistoryBtn"
-                                onclick="fetchAppointmentHistory()" disabled>
-                            <i class="bi bi-clock-history"></i> History
-                        </button>
-                    </div>
-                </div>
-
-                <div id="historyDisplay" class="mt-2 mb-3 shadow-sm p-3 bg-white border rounded" style="display:none;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Billing History</h6>
-                        <button type="button" class="btn-close" style="font-size: 0.7rem;" onclick="document.getElementById('historyDisplay').style.display='none'"></button>
-                    </div>
-                    <ul id="historyList" class="list-group list-group-flush small"></ul>
-                </div>
-
-                <div class="mb-3">
-                    <label for="datePicker" class="form-label fw-semibold">Select Date</label>
-                    <input type="date" name="date" id="datePicker" class="form-control" onchange="fetchSlots()" required>
-                </div>
-
-                <div class="mb-4">
-                    <label for="timeSlotSelect" class="form-label fw-semibold">Available Time Slots</label>
-                    <select name="time" id="timeSlotSelect" class="form-select" required>
-                        <option value="" selected disabled>Choose a date & doctor first...</option>
-                    </select>
-                </div>
-
-                <div class="alert alert-info py-2 shadow-sm d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-bold text-uppercase small"><i class="bi bi-cash-stack me-1"></i> Estimated Total:</span>
-                    <span id="pricePreview" class="fs-5 fw-bold text-primary">LKR 2000.00</span>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-success fw-bold">Confirm Booking</button>
-                    <a href="${pageContext.request.contextPath}/patientDashboard" class="btn btn-outline-secondary">Cancel</a>
-                </div>
+                <ul id="historyList" class="list-group list-group-flush small"></ul>
+            </div>
+            <div class="mb-3">
+                <label for="datePicker" class="form-label fw-semibold">Select Date</label>
+                <input type="date" name="date" id="datePicker" class="form-control" required>
+            </div>
+            <div class="mb-4">
+                <label for="timeSlotSelect" class="form-label fw-semibold">Available Time Slots</label>
+                <select name="time" id="timeSlotSelect" class="form-select" required disabled>
+                    <option value="" selected disabled>Choose a date and doctor first...</option>
+                </select>
+            </div>
+            <div class="alert alert-info py-2 shadow-sm d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-uppercase small">
+                        <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>Estimated Total
+                    </span>
+                <span id="pricePreview" class="price-preview fw-bold text-primary">LKR 1,500.00</span>
+            </div>
+            <p class="small text-muted mb-3">The displayed amount is an estimate. ProjectMASSx recalculates and stores the final fee securely on the server when the appointment is booked.</p>
+            <div class="d-grid gap-2">
+                <button type="submit" id="bookingButton" class="btn btn-success fw-bold">Confirm Booking</button>
+                <c:url var="patientDashboardUrl" value="/patientDashboard" />
+                ${patientDashboardUrl}Cancel</a>
+            </div>
             </form>
         </div>
     </div>
-</div>
-
+</main>
 <script>
-
-    function updatePricePreview() {
-        const type = document.getElementById('typeSelect').value;
-        const extra = document.getElementById('extraCharge').value;
-        const preview = document.getElementById('pricePreview');
-
-        if (type === 'SURGERY') {
-            let base = 5000;
-            let extraCost = 0;
-
-            // Match the logic in your Surgery.java calculateFee()
-            if (extra === 'anesthesia') extraCost = 2500;
-            else if (extra === 'facility') extraCost = 1500;
-            else if (extra === 'equipment') extraCost = 3000;
-            else extraCost = 500; // Default misc
-
-            preview.innerText = "LKR " + (base + extraCost).toFixed(2);
-        } else {
-            preview.innerText = "LKR 2000.00";
-        }
-    }
-    // Logic to toggle Surgery Dropdown
-    function toggleSurgeryOptions() {
-        const type = document.getElementById('typeSelect').value;
-        const surgeryDiv = document.getElementById('surgeryOptions');
-        surgeryDiv.style.display = (type === 'SURGERY') ? 'block' : 'none';
-    }
-
-    // Helper to handle doctor change (Update slots + enable history button)
-    function onDoctorChange() {
-        const docSelect = document.getElementById('doctorSelect');
-        const historyBtn = document.getElementById('viewHistoryBtn');
-
-        historyBtn.disabled = (docSelect.value === "");
-        fetchSlots();
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const today = new Date().toISOString().split('T')[0];
-        const dateInput = document.getElementById('datePicker');
-        if (dateInput) {
-            dateInput.setAttribute('min', today);
-            dateInput.value = today;
-        }
-    });
-
-    function filterDoctors() {
-        const selectedSpec = document.getElementById("specializationSelect").value;
-        const docSelect = document.getElementById("doctorSelect");
-        const options = docSelect.querySelectorAll("option");
-
-        docSelect.selectedIndex = 0;
-        document.getElementById("timeSlotSelect").innerHTML = '<option value="" selected disabled>Choose a date & doctor first...</option>';
-
-        options.forEach(opt => {
-            if (opt.value === "") return;
-            const doctorSpec = opt.getAttribute("data-spec");
-            if (selectedSpec === "All" || doctorSpec === selectedSpec) {
-                opt.hidden = false;
-                opt.disabled = false;
-            } else {
-                opt.hidden = true;
-                opt.disabled = true;
+    document.addEventListener("DOMContentLoaded", function () {
+        const typeSelect = document.getElementById("typeSelect");
+        const surgeryOptions = document.getElementById("surgeryOptions");
+        const extraCharge = document.getElementById("extraCharge");
+        const specializationSelect = document.getElementById("specializationSelect");
+        const doctorSelect = document.getElementById("doctorSelect");
+        const datePicker = document.getElementById("datePicker");
+        const timeSlotSelect = document.getElementById("timeSlotSelect");
+        const viewHistoryBtn = document.getElementById("viewHistoryBtn");
+        const historyDisplay = document.getElementById("historyDisplay");
+        const historyList = document.getElementById("historyList");
+        const closeHistoryButton = document.getElementById("closeHistoryButton");
+        const pricePreview = document.getElementById("pricePreview");
+        const bookingForm = document.getElementById("bookingForm");
+        const bookingButton = document.getElementById("bookingButton");
+        const basePrices = {
+            CONSULTATION: 1500,
+            SURGERY: 5000
+        };
+        const additionalPrices = {
+            NONE: 0,
+            ANESTHESIA: 2500,
+            FACILITY: 1500,
+            EQUIPMENT: 3000,
+            OTHER: 500
+        };
+        function updatePricePreview() {
+            const appointmentType = typeSelect.value;
+            const isSurgery = appointmentType === "SURGERY";
+            surgeryOptions.classList.toggle("d-none", !isSurgery);
+            extraCharge.disabled = !isSurgery;
+            if (!isSurgery) {
+                extraCharge.value = "NONE";
             }
-        });
-    }
-
-    function toggleHistoryButton() {
-        const docSelect = document.getElementById('doctorSelect');
-        const historyBtn = document.getElementById('viewHistoryBtn');
-        historyBtn.disabled = (docSelect.value === "");
-    }
-
-    function fetchAppointmentHistory() {
-        const doctorID = document.getElementById('doctorSelect').value;
-        const historyDisplay = document.getElementById('historyDisplay');
-        const historyList = document.getElementById('historyList');
-
-        historyDisplay.style.display = 'block';
-        historyList.innerHTML = '<li class="list-group-item text-muted">Scanning billHistory.txt...</li>';
-
-        fetch('${pageContext.request.contextPath}/history?doctorID=' + doctorID)            .then(response => response.json())
-            .then(data => {
-                historyList.innerHTML = "";
-                if (data.length === 0) {
-                    historyList.innerHTML = '<li class="list-group-item text-center">No previous history found.</li>';
-                } else {
-                    data.forEach(line => {
-                        const parts = line.split('|');
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item px-0';
-
-                        // Convert the raw timestamp (parts[5]) into a readable date using JS
-                        const rawDate = parts[5];
-                        const formattedDate = new Date(rawDate).toLocaleDateString();
-
-                        li.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge bg-secondary me-1">` + parts[3] + `</span>
-                                    <small class="text-muted">` + formattedDate + `</small>
-                                </div>
-                                <span class="fw-bold text-success">LKR ` + parseFloat(parts[4]).toFixed(2) + `</span>
-                            </div>
-                        `;
-                        historyList.appendChild(li);
+            const basePrice = basePrices[appointmentType] || 0;
+            const extraPrice = isSurgery ? additionalPrices[extraCharge.value] || 0 : 0;
+            pricePreview.textContent = "LKR " + (basePrice + extraPrice).toLocaleString("en-LK", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        function resetDoctorSelection() {
+            doctorSelect.innerHTML = '<option value="" selected disabled>Choose a doctor...</option>';
+            timeSlotSelect.innerHTML = '<option value="" selected disabled>Choose a date and doctor first...</option>';
+            timeSlotSelect.disabled = true;
+            viewHistoryBtn.disabled = true;
+            historyDisplay.classList.add("d-none");
+        }
+        function updateDoctorList() {
+            const specialization = specializationSelect.value;
+            resetDoctorSelection();
+            const url = "${pageContext.request.contextPath}/getDoctorsBySpec?specialization=" + encodeURIComponent(specialization);
+            fetch(url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("Doctor request failed with status " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (doctors) {
+                    if (!doctors || doctors.length === 0) {
+                        doctorSelect.innerHTML = '<option value="" selected disabled>No doctors available</option>';
+                        return;
+                    }
+                    doctors.forEach(function (doctor) {
+                        const option = document.createElement("option");
+                        option.value = doctor.userID;
+                        option.textContent = "Dr. " + (doctor.firstName || "") + " " + (doctor.lastName || "");
+                        doctorSelect.appendChild(option);
                     });
-                }
-            })
-            .catch(err => {
-                historyList.innerHTML = '<li class="list-group-item text-danger">Error loading history.</li>';
-            });
-    }
-
-    function updateDoctorList() {
-        const specSelect = document.getElementById("specializationSelect");
-        const docSelect = document.getElementById("doctorSelect");
-        const timeSelect = document.getElementById("timeSlotSelect");
-        const historyBtn = document.getElementById('viewHistoryBtn'); // Added this
-
-        // Reset everything to a clean state
-        timeSelect.innerHTML = '<option value="" selected disabled>Choose a date & doctor first...</option>';
-        if (historyBtn) historyBtn.disabled = true; // Disable history until a new doctor is picked
-
-        if (!specSelect || !docSelect) return;
-        let spec = specSelect.value;
-
-        if (spec === "Select Specialization" || spec === "All Specializations") {
-            spec = "";
-        }
-
-        const url = "${pageContext.request.contextPath}/getDoctorsBySpec?specialization=" + encodeURIComponent(spec);
-
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Server Error: " + response.status);
-                }
-                return response.json();
-            })
-            .then(doctors => {
-                docSelect.innerHTML = '<option value="" selected disabled>Choose a doctor...</option>';
-
-                if (doctors.length === 0) {
-                    docSelect.innerHTML = '<option disabled>No doctors available</option>';
-                    return;
-                }
-
-                doctors.forEach(doc => {
-                    const option = document.createElement("option");
-                    option.value = doc.userID;
-                    option.textContent = "Dr. " + (doc.firstName || "") + " " + (doc.lastName || "");
-                    docSelect.appendChild(option);
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    doctorSelect.innerHTML = '<option value="" selected disabled>Error loading doctors</option>';
                 });
-
-                fetchSlots();
-            })
-            .catch(err => {
-                console.error("AJAX Error:", err);
-                docSelect.innerHTML = '<option disabled>Error loading doctors</option>';
-            });
-    }
-
-    function fetchSlots() {
-        const docSelect = document.getElementById("doctorSelect");
-        const dateInput = document.getElementById("datePicker");
-        const timeSelect = document.getElementById("timeSlotSelect");
-
-        // Get current values
-        const doctorId = docSelect ? docSelect.value : "";
-        const rawDate = dateInput ? dateInput.value : "";
-
-        // Prepare the URL
-        const sanitizedDate = rawDate.replace(/\//g, "-");
-
-        const params = new URLSearchParams();
-        params.append("doctorId", doctorId);
-        params.append("date", sanitizedDate);
-
-        // DEBUGGING: Confirm these show in your F12 console
-        console.log("Doctor ID detected:", doctorId);
-        console.log("Original Date from UI:", rawDate);
-
-        // SAFETY GUARD: Prevent the call if data is missing
-        if (!doctorId || !rawDate) {
-            console.warn("Fetch blocked: Doctor or Date is missing.");
-            return;
         }
-
-        const queryString = params.toString();
-        const finalUrl = "${pageContext.request.contextPath}/getAvailableSlots?" + queryString;
-
-        // DEBUGGING: This MUST show the full string now
-        console.log("Query String generated:", queryString);
-        console.log("Final URL being called:", finalUrl);
-
-        timeSelect.innerHTML = '<option value="" selected disabled>Loading hours...</option>';
-
-        fetch(finalUrl)
-            .then(response => {
-                if (!response.ok) throw new Error("Server Error: " + response.status);
-                return response.json();
-            })
-            .then(slots => {
-                timeSelect.innerHTML = '';
-                if (!slots || slots.length === 0) {
-                    timeSelect.innerHTML = '<option value="" disabled>No available hours found.</option>';
-                } else {
-                    timeSelect.innerHTML = '<option value="" selected disabled>Choose a time...</option>';
-                    slots.forEach(slot => {
+        function fetchSlots() {
+            const doctorID = doctorSelect.value;
+            const selectedDate = datePicker.value;
+            if (!doctorID || !selectedDate) {
+                timeSlotSelect.disabled = true;
+                timeSlotSelect.innerHTML = '<option value="" selected disabled>Choose a date and doctor first...</option>';
+                return;
+            }
+            timeSlotSelect.disabled = true;
+            timeSlotSelect.innerHTML = '<option value="" selected disabled>Loading available hours...</option>';
+            const parameters = new URLSearchParams();
+            parameters.append("doctorId", doctorID);
+            parameters.append("date", selectedDate);
+            fetch("${pageContext.request.contextPath}/getAvailableSlots?" + parameters.toString())
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("Slot request failed with status " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (slots) {
+                    timeSlotSelect.innerHTML = "";
+                    if (!slots || slots.length === 0) {
+                        timeSlotSelect.innerHTML = '<option value="" selected disabled>No available hours found</option>';
+                        timeSlotSelect.disabled = true;
+                        return;
+                    }
+                    timeSlotSelect.innerHTML = '<option value="" selected disabled>Choose a time...</option>';
+                    slots.forEach(function (slot) {
                         const option = document.createElement("option");
                         option.value = slot;
-                        option.text = slot;
-                        timeSelect.appendChild(option);
+                        option.textContent = slot;
+                        timeSlotSelect.appendChild(option);
                     });
-                }
-            })
-            .catch(err => {
-                console.error("AJAX Error:", err);
-                timeSelect.innerHTML = '<option value="" disabled>Error loading slots.</option>';
-            });
-    }
+                    timeSlotSelect.disabled = false;
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    timeSlotSelect.innerHTML = '<option value="" selected disabled>Error loading slots</option>';
+                    timeSlotSelect.disabled = true;
+                });
+        }
+        function fetchAppointmentHistory() {
+            const doctorID = doctorSelect.value;
+            if (!doctorID) {
+                return;
+            }
+            historyDisplay.classList.remove("d-none");
+            historyList.innerHTML = '<li class="list-group-item text-muted">Loading appointment history...</li>';
+            fetch("${pageContext.request.contextPath}/history?doctorID=" + encodeURIComponent(doctorID))
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("History request failed with status " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (historyEntries) {
+                    historyList.innerHTML = "";
+                    if (!historyEntries || historyEntries.length === 0) {
+                        historyList.innerHTML = '<li class="list-group-item text-center">No previous history found.</li>';
+                        return;
+                    }
+                    historyEntries.forEach(function (line) {
+                        const parts = line.split("|");
+                        if (parts.length < 6) {
+                            return;
+                        }
+                        const listItem = document.createElement("li");
+                        listItem.className = "list-group-item px-0";
+                        const appointmentType = document.createElement("span");
+                        appointmentType.className = "badge bg-secondary me-1";
+                        appointmentType.textContent = parts[3];
+                        const appointmentDate = document.createElement("small");
+                        appointmentDate.className = "text-muted";
+                        const parsedDate = new Date(parts[5]);
+                        appointmentDate.textContent = Number.isNaN(parsedDate.getTime()) ? parts[5] : parsedDate.toLocaleDateString();
+                        const amount = document.createElement("span");
+                        amount.className = "fw-bold text-success";
+                        const parsedAmount = Number.parseFloat(parts[4]);
+                        amount.textContent = "LKR " + (Number.isNaN(parsedAmount) ? "0.00" : parsedAmount.toFixed(2));
+                        const details = document.createElement("div");
+                        details.appendChild(appointmentType);
+                        details.appendChild(appointmentDate);
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "d-flex justify-content-between align-items-center";
+                        wrapper.appendChild(details);
+                        wrapper.appendChild(amount);
+                        listItem.appendChild(wrapper);
+                        historyList.appendChild(listItem);
+                    });
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    historyList.innerHTML = '<li class="list-group-item text-danger">Error loading appointment history.</li>';
+                });
+        }
+        const today = new Date().toISOString().split("T")[0];
+        datePicker.min = today;
+        datePicker.value = today;
+        typeSelect.addEventListener("change", updatePricePreview);
+        extraCharge.addEventListener("change", updatePricePreview);
+        specializationSelect.addEventListener("change", updateDoctorList);
+        doctorSelect.addEventListener("change", function () {
+            viewHistoryBtn.disabled = doctorSelect.value === "";
+            historyDisplay.classList.add("d-none");
+            fetchSlots();
+        });
+        datePicker.addEventListener("change", fetchSlots);
+        viewHistoryBtn.addEventListener("click", fetchAppointmentHistory);
+        closeHistoryButton.addEventListener("click", function () {
+            historyDisplay.classList.add("d-none");
+        });
+        bookingForm.addEventListener("submit", function (event) {
+            if (!bookingForm.checkValidity()) {
+                event.preventDefault();
+                bookingForm.classList.add("was-validated");
+                return;
+            }
+            bookingButton.disabled = true;
+            bookingButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Booking...';
+        });
+        updatePricePreview();
+    });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
