@@ -10,7 +10,7 @@ public class User implements UserInteraction {
     private String lastName;
     private String email;
 
-    private String password_hash;
+    private String password;
     private String role;
 
     private boolean active;
@@ -28,14 +28,14 @@ public class User implements UserInteraction {
                 String firstName,
                 String lastName,
                 String email,
-                String password_hash,
+                String password,
                 String role) {
 
         this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password_hash = password_hash;
+        this.password = password;
         this.role = role;
 
         this.active = true;
@@ -46,13 +46,13 @@ public class User implements UserInteraction {
     public User(String firstName,
                 String lastName,
                 String email,
-                String password_hash,
+                String password,
                 String role) {
 
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password_hash = password_hash;
+        this.password = password;
         this.role = role;
 
         this.active = true;
@@ -63,14 +63,14 @@ public class User implements UserInteraction {
                            String firstName,
                            String lastName,
                            String email,
-                           String password_hash,
+                           String password,
                            String role) {
 
         this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password_hash = password_hash;
+        this.password = password;
         this.role = role;
     }
 
@@ -121,11 +121,11 @@ public class User implements UserInteraction {
     }
 
     public String getPassword() {
-        return password_hash;
+        return password;
     }
 
-    public void setPassword(String password_hash) {
-        this.password_hash = password_hash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRole() {

@@ -7,12 +7,12 @@ public class SystemAdmin extends Employee {
         setRole(SYSTEM_ADMIN_ROLE);
         setActive(true);
     }
-    public SystemAdmin(String firstName, String lastName, String email, String passwordHash, String employeeID, String department) {
-        super(firstName, lastName, email, passwordHash, SYSTEM_ADMIN_ROLE, employeeID, department);
+    public SystemAdmin(String firstName, String lastName, String email, String password, String employeeID, String department) {
+        super(firstName, lastName, email, password, SYSTEM_ADMIN_ROLE, employeeID, department);
         setActive(true);
     }
-    public SystemAdmin(int userID, String firstName, String lastName, String email, String passwordHash, String employeeID, String department) {
-        super(userID, firstName, lastName, email, passwordHash, SYSTEM_ADMIN_ROLE, employeeID, department);
+    public SystemAdmin(int userID, String firstName, String lastName, String email, String password, String employeeID, String department) {
+        super(userID, firstName, lastName, email, password, SYSTEM_ADMIN_ROLE, employeeID, department);
     }
     public SystemAdmin(int userID, String firstName, String lastName, String employeeID) {
         super();
@@ -23,12 +23,12 @@ public class SystemAdmin extends Employee {
         setRole(SYSTEM_ADMIN_ROLE);
         setActive(true);
     }
-    public void updateSystemAdmin(int userID, String firstName, String lastName, String email, String passwordHash, String department) {
+    public void updateSystemAdmin(int userID, String firstName, String lastName, String email, String password, String department) {
         setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
-        setPassword(passwordHash);
+        setPassword(password);
         setDepartment(department);
         setRole(SYSTEM_ADMIN_ROLE);
     }

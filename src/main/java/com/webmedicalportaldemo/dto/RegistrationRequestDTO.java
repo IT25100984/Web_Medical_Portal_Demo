@@ -27,7 +27,7 @@ public class RegistrationRequestDTO {
 
     @NotBlank(message = "Password is required.")
     @Size(min = 6, message = "Password must contain at least 6 characters.")
-    private String password_hash;
+    private String password;
 
     private String registrationType;
     private String bloodGroup;
@@ -56,12 +56,12 @@ public class RegistrationRequestDTO {
         this.email = email;
     }
 
-    public String getPassword_hash() {
-        return password_hash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPassword_hash(String password_hash) {
-        this.password_hash = password_hash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRegistrationType() {

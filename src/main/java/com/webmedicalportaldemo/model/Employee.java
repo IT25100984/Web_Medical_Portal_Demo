@@ -11,10 +11,10 @@ public class Employee extends User {
     }
 
     // Constructor for new employee registration
-    public Employee(String firstName, String lastName, String email, String password_hash,
+    public Employee(String firstName, String lastName, String email, String password,
                     String role, String employeeID, String department) {
 
-        super(firstName, lastName, email, password_hash, role);
+        super(firstName, lastName, email, password, role);
 
         this.employeeID = employeeID;
         this.department = department;
@@ -22,9 +22,9 @@ public class Employee extends User {
 
     // Constructor for existing employees
     public Employee(int userID, String firstName, String lastName, String email,
-                    String password_hash, String role, String employeeID, String department) {
+                    String password, String role, String employeeID, String department) {
 
-        super(userID, firstName, lastName, email, password_hash, role);
+        super(userID, firstName, lastName, email, password, role);
 
         this.employeeID = employeeID;
         this.department = department;
@@ -44,13 +44,13 @@ public class Employee extends User {
 
     // Update Employee Information
     public void updateEmployee(int userID, String firstName, String lastName, String email,
-                               String password_hash, String role, String employeeID, String department) {
+                               String password, String role, String employeeID, String department) {
 
         this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
         this.setEmail(email);
-        this.setPassword(password_hash);
+        this.setPassword(password);
         this.setRole(role);
 
         this.employeeID = employeeID;

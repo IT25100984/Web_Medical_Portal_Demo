@@ -5,6 +5,7 @@ import com.webmedicalportaldemo.util.DBConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -24,7 +25,7 @@ public class PatientDAO {
         String checkEmailSql = "SELECT COUNT(*) FROM users WHERE email = ? ";
 
         String userSql = "INSERT INTO users " +
-                        "(first_name, last_name, email, password_hash, role, is_active) " +
+                        "(first_name, last_name, email, password, role, is_active) " +
                         "VALUES (?, ?, ?, ?, 'PATIENT', TRUE)";
 
         String patientSql =
@@ -127,5 +128,33 @@ public class PatientDAO {
     public boolean updateProfile(int userId, String bloodGroup, String medicalHistory) {
         String sql = "UPDATE patients SET blood_group = ?, medical_history = ? WHERE user_id = ?";
         return jdbcTemplate.update(sql, bloodGroup, medicalHistory, userId) > 0;
+    }
+
+    public Patient findByUserId(int userId) {
+        String sql = """
+        SELECT u.user_id, u.first_name, u.last_name, u.email, u.password, u.role, u.is_active,
+               p.blood_group, p.medical_history
+        FROM users u
+        JOIN patients p ON u.user_id = p.user_id
+        WHERE u.user_id = ?
+    """;
+
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                Patient patient = new Patient();
+                patient.setUserID(rs.getInt("user_id"));
+                patient.setFirstName(rs.getString("first_name"));
+                patient.setLastName(rs.getString("last_name"));
+                patient.setEmail(rs.getString("email"));
+                patient.setPassword(rs.getString("password")); // Update to 'password' if you renamed the database column
+                patient.setRole(rs.getString("role"));
+                patient.setActive(rs.getBoolean("is_active"));
+                patient.setBloodGroup(rs.getString("blood_group"));
+                patient.setMedicalHistory(rs.getString("medical_history"));
+                return patient;
+            }, userId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 }

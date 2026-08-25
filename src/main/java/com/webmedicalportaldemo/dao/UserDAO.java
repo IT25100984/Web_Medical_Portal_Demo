@@ -25,7 +25,7 @@ public class UserDAO {
 
     // UPDATED: Now uses GeneratedKeyHolder to fetch auto-increment IDs for file synchronization
     public int saveUser(User user) {
-        String sql = "INSERT INTO users (first_name, last_name, email, password_hash, role, is_active) "
+        String sql = "INSERT INTO users (first_name, last_name, email, password, role, is_active) "
         + " VALUES (?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -51,7 +51,7 @@ public class UserDAO {
     public User login(String email, String password) {
 
         String sql = " SELECT user_id, first_name, last_name, email, role, is_active "+
-            " FROM users WHERE email = ? AND password_hash = ? AND is_active = TRUE ";
+            " FROM users WHERE email = ? AND password = ? AND is_active = TRUE ";
 
         List<User> users = jdbcTemplate.query(sql, userRowMapper(), email, password);
 
@@ -73,7 +73,7 @@ public class UserDAO {
     }
 
     public boolean changePassword(int userId, String newPassword) {
-        String sql = "UPDATE users SET password_hash=? WHERE user_id=? ";
+        String sql = "UPDATE users SET password=? WHERE user_id=? ";
         return jdbcTemplate.update(sql, newPassword, userId) > 0;
     }
 

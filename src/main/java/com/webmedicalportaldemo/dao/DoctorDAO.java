@@ -25,7 +25,7 @@ public class DoctorDAO {
     public Doctor getDoctorProfile(int userId) {
         String sql = " SELECT u.user_id, u.first_name, u.last_name, u.email, d.specialization, d.license_id "+
                 " FROM users u JOIN employees e ON u.user_id = e.user_id " +
-                " JOIN doctors d ON e.employee_pk = d.employee_pk WHERE u.user_id = ? ;";
+                " LEFT JOIN doctors d ON e.employee_pk = d.employee_pk WHERE u.user_id = ? ;";
 
         List<Doctor> doctors = jdbcTemplate.query(sql, doctorRowMapper(), userId);
         return doctors.isEmpty() ? null : doctors.get(0);
@@ -93,6 +93,12 @@ public class DoctorDAO {
                         resultSet.getInt("doctor_id"), userID);
         return doctorIDs.isEmpty() ? null : doctorIDs.get(0);
     }
+
+    public boolean createDoctorProfile(int employeePk, String department) {
+        String sql = "INSERT INTO doctors (employee_pk, specialization, license_id) VALUES (?, ?, 0)";
+        return jdbcTemplate.update(sql, employeePk, department) > 0;
+    }
+
     /**
      * Maps SQL results to Doctor objects
      */
@@ -104,7 +110,7 @@ public class DoctorDAO {
             doctor.setLastName(rs.getString("last_name"));
             doctor.setEmail(rs.getString("email"));
             doctor.setRole("DOCTOR");
-            doctor.setSpecialization(rs.getString("specialization"));
+            doctor.setSpecialization(rs.getString("specialization") != null ? rs.getString("specialization") : "General");
             doctor.setLicenseID(rs.getInt("license_id"));
             return doctor;
         };

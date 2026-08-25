@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Electronic Health Records | WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         .ehr-viewer-header {
             background: linear-gradient(135deg, #0d6efd, #0dcaf0);
@@ -70,13 +70,14 @@
                     <c:url var="createHealthRecordUrl" value="/clinical/ehr/create">
                         <c:param name="patientID" value="${selectedPatientID}" />
                     </c:url>
-                    ${createHealthRecordUrl}
-                    <i class="bi bi-file-earmark-plus-fill me-1" aria-hidden="true"></i>Create Health Record
+                    <a href="${createHealthRecordUrl}" class="btn btn-light btn-sm text-primary fw-semibold">
+                        <i class="bi bi-file-earmark-plus-fill me-1" aria-hidden="true"></i>Create Health Record
                     </a>
                 </c:if>
             </div>
         </div>
     </section>
+
     <c:if test="${not empty errorMessage}">
         <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
@@ -102,6 +103,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+
     <c:if test="${currentUser.role eq 'DOCTOR' && empty selectedPatientID}">
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-dark text-white">
@@ -111,21 +113,22 @@
             </div>
             <div class="card-body">
                 <c:url var="ehrSearchUrl" value="/clinical/ehr" />
-                    ${ehrSearchUrl}
-                <div class="col-md-8">
-                    <label for="patientID" class="form-label">Patient ID</label>
-                    <input type="number" id="patientID" name="patientID" class="form-control" min="1" placeholder="Enter patients.patient_id" required>
-                    <div class="form-text">Enter the patient's ID to load the associated health records.</div>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>View Records
-                    </button>
-                </div>
+                <form action="${ehrSearchUrl}" method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <label for="patientID" class="form-label">Patient ID</label>
+                        <input type="number" id="patientID" name="patientID" class="form-control" min="1" placeholder="Enter patients.patient_id" required>
+                        <div class="form-text">Enter the patient's ID to load the associated health records.</div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>View Records
+                        </button>
+                    </div>
                 </form>
             </div>
         </section>
     </c:if>
+
     <c:if test="${not empty selectedPatientID || currentUser.role eq 'PATIENT'}">
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-body">
@@ -156,6 +159,7 @@
                 </div>
             </div>
         </section>
+
         <section class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
                 <h2 class="h4 mb-1">Clinical Record History</h2>
@@ -170,11 +174,12 @@
                 <c:url var="createRecordUrl" value="/clinical/ehr/create">
                     <c:param name="patientID" value="${selectedPatientID}" />
                 </c:url>
-                ${createRecordUrl}
-                <i class="bi bi-plus-circle-fill me-1" aria-hidden="true"></i>New Record
+                <a href="${createRecordUrl}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle-fill me-1" aria-hidden="true"></i>New Record
                 </a>
             </c:if>
         </section>
+
         <c:choose>
             <c:when test="${not empty healthRecords}">
                 <div id="healthRecordGrid" class="row g-4">
@@ -242,8 +247,8 @@
                                         </c:choose>
                                     </div>
                                     <c:url var="recordDetailsUrl" value="/clinical/ehr/${record.healthRecordID}" />
-                                        ${recordDetailsUrl}
-                                    <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>View Details
+                                    <a href="${recordDetailsUrl}" class="btn btn-outline-primary btn-sm mt-auto">
+                                        <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>View Details
                                     </a>
                                 </div>
                             </article>
@@ -273,8 +278,8 @@
                             <c:url var="firstRecordUrl" value="/clinical/ehr/create">
                                 <c:param name="patientID" value="${selectedPatientID}" />
                             </c:url>
-                            ${firstRecordUrl}
-                            <i class="bi bi-plus-circle-fill me-1" aria-hidden="true"></i>Create First Record
+                            <a href="${firstRecordUrl}" class="btn btn-primary mt-3">
+                                <i class="bi bi-plus-circle-fill me-1" aria-hidden="true"></i>Create First Record
                             </a>
                         </c:if>
                     </div>
@@ -282,6 +287,7 @@
             </c:otherwise>
         </c:choose>
     </c:if>
+
     <section class="d-flex flex-wrap justify-content-between gap-2 mt-4">
         <c:choose>
             <c:when test="${currentUser.role eq 'DOCTOR'}">
@@ -291,14 +297,16 @@
                 <c:url var="dashboardUrl" value="/patientDashboard" />
             </c:otherwise>
         </c:choose>
-        ${dashboardUrl}
-        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Return to Dashboard
+        <a href="${dashboardUrl}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Return to Dashboard
         </a>
     </section>
+
     <div class="alert alert-warning mt-4 mb-0" role="note">
         <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>Electronic health records contain confidential clinical information and must only be accessed for authorized healthcare purposes.
     </div>
 </main>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById("recordSearch");

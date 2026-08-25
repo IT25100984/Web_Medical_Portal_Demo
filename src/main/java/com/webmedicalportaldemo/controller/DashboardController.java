@@ -1,4 +1,5 @@
 package com.webmedicalportaldemo.controller;
+
 import com.webmedicalportaldemo.dao.AppointmentDAO;
 import com.webmedicalportaldemo.dao.DoctorDAO;
 import com.webmedicalportaldemo.dao.EmployeeDAO;
@@ -24,13 +25,16 @@ import java.util.List;
 
 @Controller
 public class DashboardController {
+
     private final AppointmentDAO apptDAO;
     private final DoctorDAO doctorDAO;
     private final PatientDAO patientDAO;
     private final EmployeeDAO employeeDAO;
     private final FeedbackDAO feedbackDAO;
     private final MedFileService medFileService;
-    public DashboardController(AppointmentDAO apptDAO, DoctorDAO doctorDAO, PatientDAO patientDAO, EmployeeDAO employeeDAO, FeedbackDAO feedbackDAO, MedFileService medFileService) {
+
+    public DashboardController(AppointmentDAO apptDAO, DoctorDAO doctorDAO, PatientDAO patientDAO,
+                               EmployeeDAO employeeDAO, FeedbackDAO feedbackDAO, MedFileService medFileService) {
         this.apptDAO = apptDAO;
         this.doctorDAO = doctorDAO;
         this.patientDAO = patientDAO;
@@ -38,6 +42,7 @@ public class DashboardController {
         this.feedbackDAO = feedbackDAO;
         this.medFileService = medFileService;
     }
+
     /*
      * Patient dashboard
      */
@@ -53,6 +58,7 @@ public class DashboardController {
         model.addAttribute("appointments", myAppointments);
         return "patient/patient_dashboard";
     }
+
     /*
      * Doctor dashboard
      */
@@ -75,6 +81,7 @@ public class DashboardController {
         model.addAttribute("myAppts", myAppointments);
         return "clinical/doctor_dashboard";
     }
+
     /*
      * Pharmacist dashboard
      */
@@ -95,6 +102,26 @@ public class DashboardController {
         model.addAttribute("allOrders", allOrders);
         return "pharmacy/pharmacist_dashboard";
     }
+
+    /*
+     * Lab Technician dashboard
+     */
+    @GetMapping("/labDashboard")
+    public String showLabDashboard(HttpSession session, Model model, HttpServletResponse response) {
+        preventDashboardCaching(response);
+        User currentUser = getCurrentUser(session);
+        if (!hasRole(currentUser, "LAB_TECHNICIAN")) {
+            return "redirect:/login";
+        }
+        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+        if (employee == null) {
+            return "redirect:/login?error=employeeProfileNotFound";
+        }
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("employee", employee);
+        return "lab/lab_dashboard";
+    }
+
     /*
      * Hospital administrator dashboard
      */
@@ -116,6 +143,7 @@ public class DashboardController {
         model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
         return "admin/admin_dashboard";
     }
+
     /*
      * System administrator dashboard
      */
@@ -134,6 +162,7 @@ public class DashboardController {
         model.addAttribute("employee", employee);
         return "admin/system_admin_dashboard";
     }
+
     /*
      * Display profile update page
      */
@@ -157,11 +186,16 @@ public class DashboardController {
         }
         return "updateProfilePage";
     }
+
     /*
      * Update patient or doctor profile
      */
     @PostMapping("/updateProfile")
-    public String updateProfile(@RequestParam(required = false) String bloodGroup, @RequestParam(required = false) String medicalHistory, @RequestParam(required = false) String specialization, @RequestParam(required = false, defaultValue = "0") int licenseID, HttpSession session) {
+    public String updateProfile(@RequestParam(required = false) String bloodGroup,
+                                @RequestParam(required = false) String medicalHistory,
+                                @RequestParam(required = false) String specialization,
+                                @RequestParam(required = false, defaultValue = "0") int licenseID,
+                                HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) {
             return "redirect:/login";
@@ -174,6 +208,7 @@ public class DashboardController {
         }
         return redirectToDashboard(currentUser, "unsupportedProfileUpdate");
     }
+
     /*
      * Patient profile update helper
      */
@@ -187,14 +222,15 @@ public class DashboardController {
         if (!success) {
             return "redirect:/patientDashboard?error=profileUpdateFailed";
         }
-        if (currentUser instanceof Patient) {
-            Patient patient = (Patient) currentUser;
+        if (currentUser instanceof Patient patient) {
             patient.setBloodGroup(cleanedBloodGroup);
             patient.setMedicalHistory(cleanedMedicalHistory);
             session.setAttribute("user", patient);
+            session.setAttribute("currentUser", patient);
         }
         return "redirect:/patientDashboard?updated=true";
     }
+
     /*
      * Doctor profile update helper
      */
@@ -210,30 +246,40 @@ public class DashboardController {
         if (!success) {
             return "redirect:/doctorDashboard?error=profileUpdateFailed";
         }
-        if (currentUser instanceof Doctor) {
-            Doctor doctor = (Doctor) currentUser;
+        if (currentUser instanceof Doctor doctor) {
             doctor.setSpecialization(cleanedSpecialization);
             doctor.setLicenseID(licenseID);
             session.setAttribute("user", doctor);
+            session.setAttribute("currentUser", doctor);
         }
         return "redirect:/doctorDashboard?updated=true";
     }
+
     /*
-     * Retrieve logged-in user from the HTTP session
+     * Retrieve logged-in user from the HTTP session safely checking both keys
      */
     private User getCurrentUser(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
         Object sessionUser = session.getAttribute("user");
         if (sessionUser instanceof User) {
             return (User) sessionUser;
         }
+        Object currentUser = session.getAttribute("currentUser");
+        if (currentUser instanceof User) {
+            return (User) currentUser;
+        }
         return null;
     }
+
     /*
      * Check the user's role safely
      */
     private boolean hasRole(User user, String requiredRole) {
         return user != null && user.getRole() != null && requiredRole.equalsIgnoreCase(user.getRole());
     }
+
     /*
      * Identify roles that require an employee record
      */
@@ -241,8 +287,11 @@ public class DashboardController {
         if (role == null) {
             return false;
         }
-        return "DOCTOR".equalsIgnoreCase(role) || "PHARMACIST".equalsIgnoreCase(role) || "LAB_TECHNICIAN".equalsIgnoreCase(role) || "HOSPITAL_ADMIN".equalsIgnoreCase(role) || "SYSTEM_ADMIN".equalsIgnoreCase(role);
+        return "DOCTOR".equalsIgnoreCase(role) || "PHARMACIST".equalsIgnoreCase(role)
+                || "LAB_TECHNICIAN".equalsIgnoreCase(role) || "HOSPITAL_ADMIN".equalsIgnoreCase(role)
+                || "SYSTEM_ADMIN".equalsIgnoreCase(role);
     }
+
     /*
      * Redirect a user to the correct dashboard
      */
@@ -268,6 +317,7 @@ public class DashboardController {
         }
         return "redirect:/login?error=invalidRole";
     }
+
     /*
      * Prevent dashboard access through the browser cache after logout
      */

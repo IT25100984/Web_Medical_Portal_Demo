@@ -21,7 +21,7 @@ public class HospitalAdmin extends Employee {
             String firstName,
             String lastName,
             String email,
-            String passwordHash,
+            String password,
             String employeeID,
             String department) {
 
@@ -29,7 +29,7 @@ public class HospitalAdmin extends Employee {
                 firstName,
                 lastName,
                 email,
-                passwordHash,
+                password,
                 HOSPITAL_ADMIN_ROLE,
                 employeeID,
                 department
@@ -47,7 +47,7 @@ public class HospitalAdmin extends Employee {
           String firstName,
           String lastName,
           String email,
-          String passwordHash,
+          String password,
           String employeeID,
           String department,
           boolean active) {
@@ -57,7 +57,7 @@ public class HospitalAdmin extends Employee {
                   firstName,
                   lastName,
                   email,
-                  passwordHash,
+                  password,
                   HOSPITAL_ADMIN_ROLE,
                   employeeID,
                   department
@@ -97,7 +97,7 @@ public class HospitalAdmin extends Employee {
             String firstName,
             String lastName,
             String email,
-            String passwordHash,
+            String password,
             String department) {
 
         setUserID(userID);
@@ -111,8 +111,8 @@ public class HospitalAdmin extends Employee {
          * Preserve the existing password when no replacement
          * password is supplied.
          */
-        if (passwordHash != null && !passwordHash.isBlank()) {
-            setPassword(passwordHash);
+        if (password != null && !password.isBlank()) {
+            setPassword(password);
         }
     }
 

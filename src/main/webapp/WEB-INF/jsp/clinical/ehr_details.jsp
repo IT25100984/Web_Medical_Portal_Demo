@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Health Record Details | WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         .ehr-header {
             background: linear-gradient(135deg, #0d6efd, #0dcaf0);
@@ -55,6 +55,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+
     <section class="ehr-header text-white rounded-3 shadow p-4 mb-4">
         <div class="row align-items-center g-3">
             <div class="col-lg-8">
@@ -70,6 +71,7 @@
             </div>
         </div>
     </section>
+
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
             <h2 class="h5 mb-0">
@@ -125,6 +127,7 @@
             </div>
         </div>
     </section>
+
     <div class="row g-4">
         <div class="col-lg-6">
             <section class="card record-section border-0 shadow-sm h-100">
@@ -232,22 +235,24 @@
             </section>
         </div>
     </div>
+
     <section class="d-flex flex-wrap justify-content-between gap-2 mt-4">
         <c:url var="healthRecordsUrl" value="/clinical/ehr">
             <c:if test="${currentUser.role eq 'DOCTOR'}">
                 <c:param name="patientID" value="${healthRecord.patientID}" />
             </c:if>
         </c:url>
-        ${healthRecordsUrl}
-        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to Health Records
+        <a href="${healthRecordsUrl}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to Health Records
         </a>
         <c:if test="${canEdit}">
             <c:url var="editHealthRecordUrl" value="/clinical/ehr/${healthRecord.healthRecordID}/edit" />
-            ${editHealthRecordUrl}
-            <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit Health Record
+            <a href="${editHealthRecordUrl}" class="btn btn-primary">
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit Health Record
             </a>
         </c:if>
     </section>
+
     <div class="alert alert-warning mt-4 mb-0" role="note">
         <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>
         This health record contains confidential clinical information. Access and changes should be limited to authorized users.

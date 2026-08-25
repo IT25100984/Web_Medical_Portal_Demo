@@ -12,10 +12,10 @@ public class Doctor extends User {
     }
 
     // Constructor for new Doctor registration
-    public Doctor(String firstName, String lastName, String email, String password_hash,
+    public Doctor(String firstName, String lastName, String email, String password,
                   String specialization, int licenseID) {
 
-        super(firstName, lastName, email, password_hash, "DOCTOR");
+        super(firstName, lastName, email, password, "DOCTOR");
 
         this.specialization = specialization;
         this.licenseID = licenseID;
@@ -23,9 +23,9 @@ public class Doctor extends User {
 
     // Constructor for existing Doctors loaded from DB
     public Doctor(int userID, String firstName, String lastName, String email,
-                  String password_hash, String specialization, int licenseID) {
+                  String password, String specialization, int licenseID) {
 
-        super(userID, firstName, lastName, email, password_hash, "DOCTOR");
+        super(userID, firstName, lastName, email, password, "DOCTOR");
 
         this.specialization = specialization;
         this.licenseID = licenseID;
@@ -58,13 +58,13 @@ public class Doctor extends User {
 
     // Update current doctor object
     public void updateDoctor(int userID, String firstName, String lastName, String email,
-                             String password_hash, String specialization, int licenseID) {
+                             String password, String specialization, int licenseID) {
 
         this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
         this.setEmail(email);
-        this.setPassword(password_hash);
+        this.setPassword(password);
 
         this.specialization = specialization;
         this.licenseID = licenseID;

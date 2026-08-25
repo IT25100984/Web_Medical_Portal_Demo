@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Doctor Dashboard | WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         .appointment-container {
             max-height: 520px;
@@ -128,8 +128,8 @@
                         <i class="bi bi-calendar-check me-1" aria-hidden="true"></i>Set Work Hours
                     </button>
                     <c:url var="ehrViewerUrl" value="/clinical/ehr" />
-                    ${ehrViewerUrl}
-                    <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Open EHR Viewer
+                    <a href="${ehrViewerUrl}" class="btn btn-outline-dark">
+                        <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Open EHR Viewer
                     </a>
                 </div>
             </div>
@@ -215,16 +215,16 @@
                                             <c:url var="patientEhrUrl" value="/clinical/ehr">
                                                 <c:param name="patientID" value="${appt.patientId}" />
                                             </c:url>
-                                                ${patientEhrUrl}
-                                            <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>EHR
+                                            <a href="${patientEhrUrl}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>EHR
                                             </a>
                                             <c:if test="${appt.status eq 'CONFIRMED' || appt.status eq 'COMPLETED'}">
                                                 <c:url var="createEhrUrl" value="/clinical/ehr/create">
                                                     <c:param name="patientID" value="${appt.patientId}" />
                                                     <c:param name="appointmentID" value="${appt.appointmentID}" />
                                                 </c:url>
-                                                ${createEhrUrl}
-                                                <i class="bi bi-file-earmark-plus me-1" aria-hidden="true"></i>New Record
+                                                <a href="${createEhrUrl}" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-file-earmark-plus me-1" aria-hidden="true"></i>New Record
                                                 </a>
                                             </c:if>
                                             <c:choose>
@@ -240,14 +240,14 @@
                                                             <c:param name="id" value="${appt.appointmentID}" />
                                                             <c:param name="action" value="accept" />
                                                         </c:url>
-                                                        ${acceptUrl}Accept</a>
+                                                        <a href="${acceptUrl}" class="btn btn-sm btn-success">Accept</a>
                                                     </c:if>
                                                     <c:if test="${appt.status eq 'CONFIRMED'}">
                                                         <c:url var="completeUrl" value="/updateAppointment">
                                                             <c:param name="id" value="${appt.appointmentID}" />
                                                             <c:param name="action" value="complete" />
                                                         </c:url>
-                                                        ${completeUrl}Complete</a>
+                                                        <a href="${completeUrl}" class="btn btn-sm btn-primary">Complete</a>
                                                     </c:if>
                                                     <c:if test="${not appt.rescheduled}">
                                                         <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#rescheduleModal${appt.appointmentID}">Reschedule</button>
@@ -311,32 +311,32 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <c:url var="updateAppointmentUrl" value="/updateAppointment" />
-                                                        ${updateAppointmentUrl}
-                                                    <c:if test="${not empty _csrf}">
-                                                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-                                                    </c:if>
-                                                    <div class="modal-body text-dark text-start">
-                                                        <input type="hidden" name="id" value="${appt.appointmentID}">
-                                                        <input type="hidden" name="action" value="rescheduled">
-                                                        <div class="mb-3">
-                                                            <label for="newDate${appt.appointmentID}" class="form-label fw-bold">Select New Date</label>
-                                                            <input type="date" id="newDate${appt.appointmentID}" name="newDate" class="form-control future-date-input" required>
+                                                    <form action="${updateAppointmentUrl}" method="post">
+                                                        <c:if test="${not empty _csrf}">
+                                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                                                        </c:if>
+                                                        <div class="modal-body text-dark text-start">
+                                                            <input type="hidden" name="id" value="${appt.appointmentID}">
+                                                            <input type="hidden" name="action" value="rescheduled">
+                                                            <div class="mb-3">
+                                                                <label for="newDate${appt.appointmentID}" class="form-label fw-bold">Select New Date</label>
+                                                                <input type="date" id="newDate${appt.appointmentID}" name="newDate" class="form-control future-date-input" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="newTime${appt.appointmentID}" class="form-label fw-bold">Select New Time</label>
+                                                                <select id="newTime${appt.appointmentID}" name="newTime" class="form-select" required>
+                                                                    <option value="" disabled selected>Choose a time...</option>
+                                                                    <c:forEach var="hour" begin="8" end="17">
+                                                                        <c:set var="displayTime" value="${hour lt 10 ? '0' : ''}${hour}:00" />
+                                                                        <option value="${displayTime}"><c:out value="${displayTime}" /></option>
+                                                                    </c:forEach>
+                                                                </select>
+                                                            </div>
                                                         </div>
-                                                        <div class="mb-3">
-                                                            <label for="newTime${appt.appointmentID}" class="form-label fw-bold">Select New Time</label>
-                                                            <select id="newTime${appt.appointmentID}" name="newTime" class="form-select" required>
-                                                                <option value="" disabled selected>Choose a time...</option>
-                                                                <c:forEach var="hour" begin="8" end="17">
-                                                                    <c:set var="displayTime" value="${hour lt 10 ? '0' : ''}${hour}:00" />
-                                                                    <option value="${displayTime}"><c:out value="${displayTime}" /></option>
-                                                                </c:forEach>
-                                                            </select>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Send Proposal</button>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        <button type="submit" class="btn btn-primary">Send Proposal</button>
-                                                    </div>
                                                     </form>
                                                 </div>
                                             </div>
@@ -367,30 +367,30 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <c:url var="updateProfileUrl" value="/updateProfile" />
-            ${updateProfileUrl}
-            <c:if test="${not empty _csrf}">
-                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-            </c:if>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="specialization" class="form-label fw-bold">Medical Specialization</label>
-                    <select id="specialization" name="specialization" class="form-select" required>
-                        <option value="" disabled ${empty doctor.specialization ? 'selected' : ''}>Choose specialization...</option>
-                        <c:forTokens items="General Practitioner,Cardiology,Dermatology,Pediatric,Neurology,Orthopedic" delims="," var="specializationOption">
-                            <option value="${specializationOption}" ${doctor.specialization eq specializationOption ? 'selected' : ''}><c:out value="${specializationOption}" /></option>
-                        </c:forTokens>
-                    </select>
+            <form action="${updateProfileUrl}" method="post">
+                <c:if test="${not empty _csrf}">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                </c:if>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="specialization" class="form-label fw-bold">Medical Specialization</label>
+                        <select id="specialization" name="specialization" class="form-select" required>
+                            <option value="" disabled ${empty doctor.specialization ? 'selected' : ''}>Choose specialization...</option>
+                            <c:forTokens items="General Practitioner,Cardiology,Dermatology,Pediatric,Neurology,Orthopedic" delims="," var="specializationOption">
+                                <option value="${specializationOption}" ${doctor.specialization eq specializationOption ? 'selected' : ''}><c:out value="${specializationOption}" /></option>
+                            </c:forTokens>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="licenseID" class="form-label fw-bold">Medical License ID</label>
+                        <input type="number" id="licenseID" name="licenseID" class="form-control" min="1" value="${doctor.licenseID}" required>
+                        <div class="form-text">Enter your verified numeric medical registration ID.</div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="licenseID" class="form-label fw-bold">Medical License ID</label>
-                    <input type="number" id="licenseID" name="licenseID" class="form-control" min="1" value="${doctor.licenseID}" required>
-                    <div class="form-text">Enter your verified numeric medical registration ID.</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-            </div>
             </form>
         </div>
     </div>
@@ -403,52 +403,55 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <c:url var="updateAvailabilityUrl" value="/updateAvailability" />
-            ${updateAvailabilityUrl}
-            <c:if test="${not empty _csrf}">
-                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-            </c:if>
-            <div class="modal-body text-start">
-                <p class="text-muted small">Select available days and one consistent time range.</p>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Available Days</label>
-                    <div class="d-flex flex-wrap gap-2">
-                        <c:forEach var="day" items="${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}" varStatus="dayStatus">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="workDays" value="${dayStatus.index + 1}" id="day${dayStatus.index + 1}">
-                                <label class="form-check-label" for="day${dayStatus.index + 1}"><c:out value="${day}" /></label>
-                            </div>
-                        </c:forEach>
+            <form action="${updateAvailabilityUrl}" method="post">
+                <c:if test="${not empty _csrf}">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                </c:if>
+                <div class="modal-body text-start">
+                    <p class="text-muted small">Select available days and one consistent time range.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Available Days</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <c:forEach var="day" items="${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}" varStatus="dayStatus">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="workDays" value="${dayStatus.index + 1}" id="day${dayStatus.index + 1}">
+                                    <label class="form-check-label" for="day${dayStatus.index + 1}"><c:out value="${day}" /></label>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="startTime" class="form-label fw-bold">Start Time</label>
+                            <select id="startTime" name="startTime" class="form-select" required>
+                                <c:forEach var="hour" begin="0" end="23">
+                                    <c:set var="formattedHour" value="${hour lt 10 ? '0' : ''}${hour}:00" />
+                                    <option value="${formattedHour}" ${currentStart eq formattedHour ? 'selected' : ''}><c:out value="${formattedHour}" /></option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="endTime" class="form-label fw-bold">End Time</label>
+                            <select id="endTime" name="endTime" class="form-select" required>
+                                <c:forEach var="hour" begin="1" end="24">
+                                    <c:set var="formattedEndHour" value="${hour eq 24 ? '23:59' : (hour lt 10 ? '0' : '')}${hour eq 24 ? '' : hour}${hour eq 24 ? '' : ':00'}" />
+                                    <option value="${formattedEndHour}" ${currentEnd eq formattedEndHour ? 'selected' : ''}><c:out value="${formattedEndHour}" /></option>
+                                </c:forEach>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <label for="startTime" class="form-label fw-bold">Start Time</label>
-                        <select id="startTime" name="startTime" class="form-select" required>
-                            <c:forEach var="hour" begin="0" end="23">
-                                <c:set var="formattedHour" value="${hour lt 10 ? '0' : ''}${hour}:00" />
-                                <option value="${formattedHour}" ${currentStart eq formattedHour ? 'selected' : ''}><c:out value="${formattedHour}" /></option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <label for="endTime" class="form-label fw-bold">End Time</label>
-                        <select id="endTime" name="endTime" class="form-select" required>
-                            <c:forEach var="hour" begin="1" end="24">
-                                <c:set var="formattedEndHour" value="${hour eq 24 ? '23:59' : (hour lt 10 ? '0' : '')}${hour eq 24 ? '' : hour}${hour eq 24 ? '' : ':00'}" />
-                                <option value="${formattedEndHour}" ${currentEnd eq formattedEndHour ? 'selected' : ''}><c:out value="${formattedEndHour}" /></option>
-                            </c:forEach>
-                        </select>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Schedule</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Save Schedule</button>
-            </div>
             </form>
         </div>
     </div>
 </div>
+<!-- Bootstrap 5 JS Bundle (loaded before custom inline scripts) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <c:url var="updateAppointmentBaseUrl" value="/updateAppointment" />
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -458,24 +461,34 @@
         const futureDateInputs = document.querySelectorAll(".future-date-input");
         const savedState = localStorage.getItem("doctor_showCancelled");
         const today = new Date().toISOString().split("T")[0];
+
         if (savedState !== null) {
             cancelledToggle.checked = savedState === "true";
         }
+
         futureDateInputs.forEach(function (input) {
             input.min = today;
         });
+
         function filterTable() {
             const filterDate = dateInput.value;
             const showCancelled = cancelledToggle.checked;
             localStorage.setItem("doctor_showCancelled", String(showCancelled));
+
             appointmentRows.forEach(function (row) {
                 const dateText = row.cells[0].textContent;
                 const status = (row.dataset.status || "").toUpperCase();
                 const matchesDate = filterDate === "" || dateText.includes(filterDate);
                 const matchesStatus = showCancelled || status !== "CANCELLED";
+
                 row.style.display = matchesDate && matchesStatus ? "" : "none";
             });
         }
+
+        if (dateInput) dateInput.addEventListener("input", filterTable);
+        if (cancelledToggle) cancelledToggle.addEventListener("change", filterTable);
+
+        // Confirmation dialog & routing for appointment cancellation
         document.querySelectorAll(".cancel-appointment-button").forEach(function (button) {
             button.addEventListener("click", function () {
                 const appointmentID = button.dataset.appointmentId;
@@ -484,11 +497,7 @@
                 }
             });
         });
-        dateInput.addEventListener("input", filterTable);
-        cancelledToggle.addEventListener("change", filterTable);
-        filterTable();
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

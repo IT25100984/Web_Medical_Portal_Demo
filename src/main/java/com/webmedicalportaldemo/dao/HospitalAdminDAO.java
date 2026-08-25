@@ -17,7 +17,7 @@ public class HospitalAdminDAO {
     /**
     public boolean registerAdmin(HospitalAdmin hospitalAdmin) {
         // SQL targets only base user columns and enforces the 'ADMIN' role explicitly
-        String sql = "INSERT INTO users (first_name, last_name, email, password_hash, role) " +
+        String sql = "INSERT INTO users (first_name, last_name, email, password, role) " +
                 "VALUES (?, ?, ?, ?, 'ADMIN')";
 
         try (Connection conn = DBConnection.getConnection();

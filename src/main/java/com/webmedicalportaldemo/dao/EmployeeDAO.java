@@ -80,6 +80,12 @@ public class EmployeeDAO {
         return employees.isEmpty() ? null : employees.get(0);
     }
 
+    public int getEmployeePkByUserId(int userId) {
+        String sql = "SELECT employee_pk FROM employees WHERE user_id = ?";
+        Integer pk = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return pk != null ? pk : 0;
+    }
+
     private RowMapper<Employee> employeeMapper() {
         return (rs, rowNum) -> {
             Employee employee = new Employee();
