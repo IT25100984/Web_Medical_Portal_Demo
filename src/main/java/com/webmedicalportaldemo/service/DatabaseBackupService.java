@@ -1,7 +1,10 @@
 package com.webmedicalportaldemo.service;
 
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
 public class DatabaseBackupService {
 
     public boolean executeBackup(String backupType) {

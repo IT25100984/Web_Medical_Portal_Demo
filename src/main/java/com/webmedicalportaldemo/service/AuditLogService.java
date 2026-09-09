@@ -1,8 +1,11 @@
 package com.webmedicalportaldemo.service;
 
 import com.webmedicalportaldemo.model.AuditLog;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
 public class AuditLogService {
 
     public void logAction(int actorUserId, String actionType, String description) {
