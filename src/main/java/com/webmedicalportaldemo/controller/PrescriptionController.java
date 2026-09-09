@@ -77,7 +77,7 @@ public class PrescriptionController {
          * The session contains users.user_id, but prescriptions
          * references patients.patient_id.
          */
-        Integer patientID = patientDAO.getPatientIdByUserId(currentUser.getUserID());
+        Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
         if (patientID == null || patientID <= 0) {
             return "redirect:/orderPrescription" + "?msg=patient_not_found";
         }

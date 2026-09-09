@@ -23,7 +23,7 @@ public class FeedbackDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public Integer submitFeedback(int patientId, int doctorId, Integer appointmentId, int rating, String comment) {
+    public Integer submitFeedback(int patientID, int doctorID, Integer appointmentID, int rating, String comment) {
         String sql = "INSERT INTO feedback (patient_id, doctor_id, appointment_id, rating, comment) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -33,12 +33,12 @@ public class FeedbackDAO {
                 public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                     // Crucial: Pass Statement.RETURN_GENERATED_KEYS to let JDBC know we want the ID back
                     PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                    ps.setInt(1, patientId);
-                    ps.setInt(2, doctorId);
+                    ps.setInt(1, patientID);
+                    ps.setInt(2, doctorID);
 
                     // Safe handling for nullable integer column
-                    if (appointmentId != null) {
-                        ps.setInt(3, appointmentId);
+                    if (appointmentID != null) {
+                        ps.setInt(3, appointmentID);
                     } else {
                         ps.setNull(3, Types.INTEGER);
                     }
@@ -72,16 +72,16 @@ public class FeedbackDAO {
     }
 
     /* Keep all other native DB methods unchanged (getFeedbackForDoctor, getFeedbackByPatient, getAllFeedback, etc.) */
-    public List<Feedback> getFeedbackForDoctor(int doctorId) {
+    public List<Feedback> getFeedbackForDoctor(int doctorID) {
         String sql = "SELECT f.*, CONCAT(p.first_name, ' ', p.last_name) AS patient_name, CONCAT(d.first_name, ' ', d.last_name) AS doctor_name " +
                 "FROM feedback f JOIN users p ON f.patient_id = p.user_id JOIN users d ON f.doctor_id = d.user_id WHERE f.doctor_id = ? ORDER BY f.created_at DESC";
-        return queryFeedback(sql, doctorId);
+        return queryFeedback(sql, doctorID);
     }
 
-    public List<Feedback> getFeedbackByPatient(int patientId) {
+    public List<Feedback> getFeedbackByPatient(int patientID) {
         String sql = "SELECT f.*, CONCAT(p.first_name, ' ', p.last_name) AS patient_name, CONCAT(d.first_name, ' ', d.last_name) AS doctor_name " +
                 "FROM feedback f JOIN users p ON f.patient_id = p.user_id JOIN users d ON f.doctor_id = d.user_id WHERE f.patient_id = ? ORDER BY f.created_at DESC";
-        return queryFeedback(sql, patientId);
+        return queryFeedback(sql, patientID);
     }
 
     public List<Feedback> getAllFeedback() {
@@ -90,15 +90,15 @@ public class FeedbackDAO {
         return queryFeedback(sql);
     }
 
-    public double getAverageRating(int doctorId) {
+    public double getAverageRating(int doctorID) {
         String sql = "SELECT COALESCE(AVG(rating), 0) FROM feedback WHERE doctor_id = ?";
-        Double avg = jdbcTemplate.queryForObject(sql, Double.class, doctorId);
+        Double avg = jdbcTemplate.queryForObject(sql, Double.class, doctorID);
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
     }
 
-    public boolean hasReviewed(int patientId, int appointmentId) {
+    public boolean hasReviewed(int patientID, int appointmentID) {
         String sql = "SELECT COUNT(*) FROM feedback WHERE patient_id = ? AND appointment_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, patientId, appointmentId);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, patientID, appointmentID);
         return count != null && count > 0;
     }
 
@@ -142,10 +142,10 @@ public class FeedbackDAO {
         jdbcTemplate.query(sql, rs -> {
             Feedback f = new Feedback();
             f.setFeedbackId(rs.getInt("feedback_id"));
-            f.setPatientId(rs.getInt("patient_id"));
-            f.setDoctorId(rs.getInt("doctor_id"));
+            f.setPatientID(rs.getInt("patient_id"));
+            f.setDoctorID(rs.getInt("doctor_id"));
             int apptId = rs.getInt("appointment_id");
-            f.setAppointmentId(rs.wasNull() ? null : apptId);
+            f.setAppointmentID(rs.wasNull() ? null : apptId);
             f.setRating(rs.getInt("rating"));
             f.setComment(rs.getString("comment"));
             f.setPatientName(rs.getString("patient_name"));

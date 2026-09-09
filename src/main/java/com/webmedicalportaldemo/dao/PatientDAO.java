@@ -1,14 +1,17 @@
 package com.webmedicalportaldemo.dao;
 
 import com.webmedicalportaldemo.model.Patient;
-import com.webmedicalportaldemo.util.DBConnection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 
 @Repository
@@ -21,108 +24,80 @@ public class PatientDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public boolean registerPatient(Patient patient) {
-        String checkEmailSql = "SELECT COUNT(*) FROM users WHERE email = ? ";
+    /**
+     * Retrieves all registered patients joined with their core user details.
+     */
+    public List<Patient> getAllPatients() {
+        String sql = """
+            SELECT p.patient_id, u.user_id, u.first_name, u.last_name, u.email, u.role, u.is_active,
+                   p.blood_group, p.medical_history
+            FROM patients p
+            JOIN users u ON p.user_id = u.user_id
+            ORDER BY p.patient_id ASC
+        """;
 
-        String userSql = "INSERT INTO users " +
-                        "(first_name, last_name, email, password, role, is_active) " +
-                        "VALUES (?, ?, ?, ?, 'PATIENT', TRUE)";
-
-        String patientSql =
-                "INSERT INTO patients (user_id, blood_group, medical_history) VALUES (?, ?, ?)";
-
-        Connection conn = null;
-        try {
-            // Check if email already exists
-            Integer count = jdbcTemplate.queryForObject(checkEmailSql, Integer.class, patient.getEmail());
-            if (count != null && count > 0) {
-                return false;
-            }
-            conn = DBConnection.getConnection();
-            if (conn == null) {
-                return false;
-            }
-            conn.setAutoCommit(false);
-            int userId;
-            // Insert into users table
-            try (PreparedStatement userStmt = conn.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS)) {
-                userStmt.setString(1, patient.getFirstName());
-                userStmt.setString(2, patient.getLastName());
-                userStmt.setString(3, patient.getEmail());
-                // Replace with BCrypt later
-                userStmt.setString(4, patient.getPassword());
-
-                int userRows = userStmt.executeUpdate();
-                if (userRows == 0) {
-                    conn.rollback();
-                    return false;
-                }
-                try (ResultSet rs = userStmt.getGeneratedKeys()) {
-                    if (!rs.next()) {
-                        conn.rollback();
-                        return false;
-                    }
-                    userId = rs.getInt(1);
-                }
-            }
-
-            // Store generated user ID inside the object
-            patient.setUserID(userId);
-            // Insert into patients table
-            try (PreparedStatement patientStmt = conn.prepareStatement(patientSql)) {
-                patientStmt.setInt(1, userId);
-                patientStmt.setString(2, patient.getBloodGroup());
-                patientStmt.setString(3, patient.getMedicalHistory());
-                int patientRows = patientStmt.executeUpdate();
-                if (patientRows == 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
-            conn.commit();
-            return true;
-        } catch (Exception e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Patient patient = new Patient();
+            patient.setPatientID(rs.getInt("patient_id"));
+            patient.setUserID(rs.getInt("user_id"));
+            patient.setFirstName(rs.getString("first_name"));
+            patient.setLastName(rs.getString("last_name"));
+            patient.setEmail(rs.getString("email"));
+            patient.setRole(rs.getString("role"));
+            patient.setActive(rs.getBoolean("is_active"));
+            patient.setBloodGroup(rs.getString("blood_group"));
+            patient.setMedicalHistory(rs.getString("medical_history"));
+            return patient;
+        });
     }
 
-    public Integer getPatientIdByUserId(int userID) {
-        String sql = "SELECT patient_id " + "FROM patients " + "WHERE user_id = ?";
+    /**
+     * Registers a new patient with transactional integrity.
+     */
+    @Transactional
+    public boolean registerPatient(Patient patient) {
+        String checkEmailSql = "SELECT COUNT(*) FROM users WHERE email = ?";
+
+        Integer count = jdbcTemplate.queryForObject(checkEmailSql, Integer.class, patient.getEmail());
+        if (count != null && count > 0) {
+            return false;
+        }
+
+        String userSql = "INSERT INTO users (first_name, last_name, email, password, role, is_active) VALUES (?, ?, ?, ?, 'PATIENT', TRUE)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        int userRows = jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, patient.getFirstName());
+            ps.setString(2, patient.getLastName());
+            ps.setString(3, patient.getEmail());
+            ps.setString(4, patient.getPassword());
+            return ps;
+        }, keyHolder);
+
+        if (userRows == 0 || keyHolder.getKey() == null) {
+            return false;
+        }
+
+        int userId = keyHolder.getKey().intValue();
+        patient.setUserID(userId);
+
+        String patientSql = "INSERT INTO patients (user_id, blood_group, medical_history) VALUES (?, ?, ?)";
+        int patientRows = jdbcTemplate.update(patientSql, userId, patient.getBloodGroup(), patient.getMedicalHistory());
+
+        return patientRows > 0;
+    }
+
+    public Integer getPatientIDByUserId(int userID) {
+        String sql = "SELECT patient_id FROM patients WHERE user_id = ?";
         List<Integer> patientIDs = jdbcTemplate.query(sql, (resultSet, rowNumber)
                 -> resultSet.getInt("patient_id"), userID);
         return patientIDs.isEmpty() ? null : patientIDs.get(0);
     }
 
     public boolean updateMedicalHistory(int userID, String newHistory) {
-        String sql = "UPDATE patients SET medical_history = ? WHERE user_id = ? ";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, newHistory);
-            stmt.setInt(2, userID);
-
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        String sql = "UPDATE patients SET medical_history = ? WHERE user_id = ?";
+        return jdbcTemplate.update(sql, newHistory, userID) > 0;
     }
 
     public boolean updateProfile(int userId, String bloodGroup, String medicalHistory) {
@@ -132,21 +107,22 @@ public class PatientDAO {
 
     public Patient findByUserId(int userId) {
         String sql = """
-        SELECT u.user_id, u.first_name, u.last_name, u.email, u.password, u.role, u.is_active,
-               p.blood_group, p.medical_history
-        FROM users u
-        JOIN patients p ON u.user_id = p.user_id
-        WHERE u.user_id = ?
-    """;
+            SELECT u.user_id, u.first_name, u.last_name, u.email, u.password, u.role, u.is_active,
+                   p.patient_id, p.blood_group, p.medical_history
+            FROM users u
+            JOIN patients p ON u.user_id = p.user_id
+            WHERE u.user_id = ?
+        """;
 
         try {
             return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
                 Patient patient = new Patient();
+                patient.setPatientID(rs.getInt("patient_id"));
                 patient.setUserID(rs.getInt("user_id"));
                 patient.setFirstName(rs.getString("first_name"));
                 patient.setLastName(rs.getString("last_name"));
                 patient.setEmail(rs.getString("email"));
-                patient.setPassword(rs.getString("password")); // Update to 'password' if you renamed the database column
+                patient.setPassword(rs.getString("password"));
                 patient.setRole(rs.getString("role"));
                 patient.setActive(rs.getBoolean("is_active"));
                 patient.setBloodGroup(rs.getString("blood_group"));
@@ -156,5 +132,12 @@ public class PatientDAO {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    /**
+     * Convenience alias for findByUserId to support standard naming conventions.
+     */
+    public Patient getPatientByUserId(int userId) {
+        return findByUserId(userId);
     }
 }

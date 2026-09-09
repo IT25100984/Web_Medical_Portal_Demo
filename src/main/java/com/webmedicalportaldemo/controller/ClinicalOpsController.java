@@ -1,6 +1,8 @@
 package com.webmedicalportaldemo.controller;
+
 import com.webmedicalportaldemo.dao.AppointmentDAO;
 import com.webmedicalportaldemo.dao.DoctorDAO;
+import com.webmedicalportaldemo.dao.HealthRecordDAO;
 import com.webmedicalportaldemo.dao.PatientDAO;
 import com.webmedicalportaldemo.dto.HealthRecordRequestDTO;
 import com.webmedicalportaldemo.model.HealthRecord;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,15 +30,19 @@ import java.util.Locale;
 @Controller
 public class ClinicalOpsController {
     private final EHRService ehrService;
+    private final HealthRecordDAO healthRecordDAO;
     private final PatientDAO patientDAO;
     private final DoctorDAO doctorDAO;
     private final AppointmentDAO appointmentDAO;
-    public ClinicalOpsController(EHRService ehrService, PatientDAO patientDAO, DoctorDAO doctorDAO, AppointmentDAO appointmentDAO) {
+
+    public ClinicalOpsController(EHRService ehrService, HealthRecordDAO healthRecordDAO, PatientDAO patientDAO, DoctorDAO doctorDAO, AppointmentDAO appointmentDAO) {
         this.ehrService = ehrService;
+        this.healthRecordDAO = healthRecordDAO;
         this.patientDAO = patientDAO;
         this.doctorDAO = doctorDAO;
         this.appointmentDAO = appointmentDAO;
     }
+
     /**
      * Displays health records for the logged-in patient or a patient selected by a doctor.
      */
@@ -48,14 +55,14 @@ public class ClinicalOpsController {
         }
         List<HealthRecord> healthRecords;
         if (hasRole(currentUser, "PATIENT")) {
-            Integer currentPatientID = patientDAO.getPatientIdByUserId(currentUser.getUserID());
+            Integer currentPatientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
             if (currentPatientID == null || currentPatientID <= 0) {
                 return "redirect:/patientDashboard?error=patientProfileNotFound";
             }
             healthRecords = ehrService.getLoggedInPatientHealthRecords(currentUser.getUserID());
             model.addAttribute("selectedPatientID", currentPatientID);
         } else if (hasRole(currentUser, "DOCTOR")) {
-            Integer doctorID = doctorDAO.getDoctorIdByUserId(currentUser.getUserID());
+            Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
             if (doctorID == null || doctorID <= 0) {
                 return "redirect:/doctorDashboard?error=doctorProfileNotFound";
             }
@@ -74,6 +81,21 @@ public class ClinicalOpsController {
         model.addAttribute("healthRecords", healthRecords);
         return "clinical/ehr_viewer";
     }
+
+    @GetMapping("/clinical/ehr/detail")
+    public String viewEHRDetail(@RequestParam(value = "id", required = false) Integer recordId,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        if (recordId == null || recordId == 0) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid Health Record ID.");
+            return "redirect:/doctor/dashboard";
+        }
+
+        HealthRecord record = healthRecordDAO.getHealthRecordById(recordId);
+        model.addAttribute("record", record);
+        return "clinical/ehr_details";
+    }
+
     /**
      * Displays the health-record creation form for doctors.
      */
@@ -84,7 +106,7 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
         if (doctorID == null || doctorID <= 0) {
             return "redirect:/doctorDashboard?error=doctorProfileNotFound";
         }
@@ -96,11 +118,31 @@ public class ClinicalOpsController {
             request.setAppointmentID(appointmentID);
         }
         request.setRecordType("CONSULTATION");
+
+        populateFormDropdowns(model);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("healthRecordRequest", request);
         model.addAttribute("formMode", "create");
         return "clinical/ehr_form";
     }
+
+    @PostMapping("/clinical/ehr/save")
+    public String saveEHR(@RequestParam("patientId") int patientId,
+                          @ModelAttribute("healthRecord") HealthRecord record,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            // Assign patientId explicitly before saving
+            record.setPatientID(patientId);
+            healthRecordDAO.saveRecord(record);
+
+            // Pass the valid patientId in redirect
+            return "redirect:/clinical/ehr/view?patientId=" + patientId;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "The requested operation could not be completed.");
+            return "redirect:/doctor/dashboard";
+        }
+    }
+
     /**
      * Creates a health record using the logged-in doctor's identity.
      */
@@ -110,22 +152,25 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
         if (doctorID == null || doctorID <= 0) {
             return "redirect:/doctorDashboard?error=doctorProfileNotFound";
         }
         if (bindingResult.hasErrors()) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("formMode", "create");
             return "clinical/ehr_form";
         }
         if (request.getPatientID() == null || request.getPatientID() <= 0) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("formMode", "create");
             model.addAttribute("errorMessage", "A valid patient must be selected.");
             return "clinical/ehr_form";
         }
         if (!isSupportedRecordType(request.getRecordType())) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("formMode", "create");
             model.addAttribute("errorMessage", "The selected health-record type is invalid.");
@@ -134,6 +179,7 @@ public class ClinicalOpsController {
         request.setRecordType(request.getRecordType().trim().toUpperCase(Locale.ROOT));
         int generatedRecordID = ehrService.createHealthRecord(request, currentUser.getUserID());
         if (generatedRecordID <= 0) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("formMode", "create");
             model.addAttribute("errorMessage", "The health record could not be created.");
@@ -141,6 +187,7 @@ public class ClinicalOpsController {
         }
         return "redirect:/clinical/ehr/" + generatedRecordID + "?msg=created";
     }
+
     /**
      * Displays one health record after checking access permissions.
      */
@@ -167,6 +214,7 @@ public class ClinicalOpsController {
         model.addAttribute("canEdit", canEditHealthRecord(currentUser, healthRecord));
         return "clinical/ehr_details";
     }
+
     /**
      * Displays the health-record editing form for the doctor associated with the record.
      */
@@ -188,12 +236,14 @@ public class ClinicalOpsController {
             return "redirect:/clinical/ehr/" + healthRecordID + "?error=accessDenied";
         }
         HealthRecordRequestDTO request = convertToRequestDTO(healthRecord);
+        populateFormDropdowns(model);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("healthRecord", healthRecord);
         model.addAttribute("healthRecordRequest", request);
         model.addAttribute("formMode", "edit");
         return "clinical/ehr_form";
     }
+
     /**
      * Updates a health record after validating doctor ownership.
      */
@@ -214,12 +264,14 @@ public class ClinicalOpsController {
             return "redirect:/clinical/ehr/" + healthRecordID + "?error=accessDenied";
         }
         if (bindingResult.hasErrors()) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("healthRecord", existingRecord);
             model.addAttribute("formMode", "edit");
             return "clinical/ehr_form";
         }
         if (!isSupportedRecordType(request.getRecordType())) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("healthRecord", existingRecord);
             model.addAttribute("formMode", "edit");
@@ -231,6 +283,7 @@ public class ClinicalOpsController {
         request.setRecordType(request.getRecordType().trim().toUpperCase(Locale.ROOT));
         boolean updated = ehrService.updateHealthRecord(healthRecordID, request, currentUser.getUserID());
         if (!updated) {
+            populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("healthRecord", existingRecord);
             model.addAttribute("formMode", "edit");
@@ -239,6 +292,15 @@ public class ClinicalOpsController {
         }
         return "redirect:/clinical/ehr/" + healthRecordID + "?msg=updated";
     }
+
+    /**
+     * Populates patient and appointment lists required for JSP dropdowns.
+     */
+    private void populateFormDropdowns(Model model) {
+        model.addAttribute("patientList", patientDAO.getAllPatients());
+        model.addAttribute("appointmentList", appointmentDAO.getAllAppointments());
+    }
+
     /**
      * Checks whether the current user may view a health record.
      */
@@ -247,11 +309,11 @@ public class ClinicalOpsController {
             return false;
         }
         if (hasRole(currentUser, "PATIENT")) {
-            Integer patientID = patientDAO.getPatientIdByUserId(currentUser.getUserID());
+            Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
             return patientID != null && patientID == healthRecord.getPatientID();
         }
         if (hasRole(currentUser, "DOCTOR")) {
-            Integer doctorID = doctorDAO.getDoctorIdByUserId(currentUser.getUserID());
+            Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
             return doctorID != null
                     && doctorID > 0
                     && appointmentDAO.doctorHasAccessToPatient(
@@ -261,6 +323,7 @@ public class ClinicalOpsController {
         }
         return false;
     }
+
     /**
      * Checks whether the logged-in doctor created and may edit the record.
      */
@@ -268,9 +331,10 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR") || healthRecord == null) {
             return false;
         }
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
         return doctorID != null && healthRecord.getDoctorID() != null && doctorID.equals(healthRecord.getDoctorID());
     }
+
     /**
      * Converts an existing record into an editable request DTO.
      */
@@ -288,6 +352,7 @@ public class ClinicalOpsController {
         request.setFollowUpInstructions(healthRecord.getFollowUpInstructions());
         return request;
     }
+
     /**
      * Validates health-record types against the MySQL ENUM values.
      */
@@ -300,6 +365,7 @@ public class ClinicalOpsController {
             default -> false;
         };
     }
+
     /**
      * Retrieves the logged-in user safely.
      */
@@ -310,12 +376,14 @@ public class ClinicalOpsController {
         Object sessionUser = session.getAttribute("user");
         return sessionUser instanceof User ? (User) sessionUser : null;
     }
+
     /**
      * Performs a null-safe role check.
      */
     private boolean hasRole(User user, String requiredRole) {
         return user != null && user.getRole() != null && requiredRole.equalsIgnoreCase(user.getRole());
     }
+
     /**
      * Redirects a user to the appropriate dashboard.
      */
@@ -333,6 +401,7 @@ public class ClinicalOpsController {
             default -> "redirect:/login?error=invalidRole";
         };
     }
+
     /**
      * Redirects a user to the appropriate dashboard with an error parameter.
      */
@@ -343,6 +412,7 @@ public class ClinicalOpsController {
         }
         return redirect.contains("?") ? redirect + "&error=" + error : redirect + "?error=" + error;
     }
+
     /**
      * Prevents clinical pages from being stored in the browser cache.
      */

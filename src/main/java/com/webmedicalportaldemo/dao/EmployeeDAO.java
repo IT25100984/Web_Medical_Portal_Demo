@@ -1,12 +1,12 @@
 package com.webmedicalportaldemo.dao;
 
 import com.webmedicalportaldemo.model.Employee;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -14,102 +14,66 @@ public class EmployeeDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public EmployeeDAO(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    public EmployeeDAO(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    /**
-     * Check if employee exists in registry
-     */
-    public boolean validateEmployeeID(String employeeID) {
-        String sql = "SELECT COUNT(*) FROM employee_registry WHERE employee_id = ?";
+    private final RowMapper<Employee> employeeRowMapper = new RowMapper<Employee>() {
+        @Override
+        public Employee mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Employee emp = new Employee();
+            emp.setEmployeeID(rs.getString("employee_id"));
+            emp.setFirstName(rs.getString("first_name"));
+            emp.setLastName(rs.getString("last_name"));
+            emp.setEmail(rs.getString("email"));
+            emp.setRole(rs.getString("role"));
+            emp.setDepartment(rs.getString("department"));
+            emp.setRegistered(rs.getBoolean("is_registered"));
+            return emp;
+        }
+    };
 
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, employeeID);
-        return count != null && count > 0;
+    public List<Employee> getAllEmployees() {
+        String sql = "SELECT * FROM employee_registry ORDER BY employee_id ASC";
+        return jdbcTemplate.query(sql, employeeRowMapper);
     }
 
-    /**
-     * Check if employee already registered
-     */
-    public boolean isRegistered(String employeeID) {
-        String sql = "SELECT is_registered FROM employee_registry WHERE employee_id = ?";
-
-        Boolean registered = jdbcTemplate.queryForObject(sql, Boolean.class, employeeID);
-        return registered != null && registered;
+    public Employee getEmployeeById(String employeeId) {
+        String sql = "SELECT * FROM employee_registry WHERE employee_id = ?";
+        List<Employee> list = jdbcTemplate.query(sql, employeeRowMapper, employeeId);
+        return list.isEmpty() ? null : list.get(0);
     }
 
-    /**
-     * Retrieve employee info from registry
-     */
-    public Employee findEmployeeByID(String employeeID) {
-        String sql = " SELECT employee_id, first_name, last_name, email, role, department "+
-                " FROM employee_registry WHERE employee_id = ? ";
-
-        List<Employee> employees = jdbcTemplate.query(sql, employeeRegistryMapper(), employeeID);
-        return employees.isEmpty() ? null : employees.get(0);
-    }
-
-    /**
-     * Mark employee as registered
-     */
-    public boolean markRegistered(String employeeID) {
-        String sql = " UPDATE employee_registry SET is_registered = TRUE WHERE employee_id = ? ";
-
-        return jdbcTemplate.update(sql, employeeID) > 0;
-    }
-
-    /**
-     * Insert into employees table
-     */
-    public boolean registerEmployee(Employee employee) {
-        String sql = " INSERT INTO employees (employee_id, user_id, department) VALUES (?, ?, ?) ";
-
-        return jdbcTemplate.update(sql, employee.getEmployeeID(), employee.getUserID(), employee.getDepartment()) > 0;
-    }
-
-    /**
-     * Get employee by user id
-     */
     public Employee getEmployeeByUserId(int userId) {
-        String sql = "SELECT e.employee_id, e.department, u.user_id, u.first_name,"
-                    + " u.last_name, u.email, u.role " +
-                " FROM employees e JOIN users u ON e.user_id = u.user_id WHERE u.user_id = ? ";
-
-        List<Employee> employees = jdbcTemplate.query(sql, employeeMapper(), userId);
-        return employees.isEmpty() ? null : employees.get(0);
+        String sql = "SELECT * FROM employee_registry WHERE user_id = ?";
+        List<Employee> list = jdbcTemplate.query(sql, employeeRowMapper, userId);
+        return list.isEmpty() ? null : list.get(0);
     }
 
-    public int getEmployeePkByUserId(int userId) {
-        String sql = "SELECT employee_pk FROM employees WHERE user_id = ?";
-        Integer pk = jdbcTemplate.queryForObject(sql, Integer.class, userId);
-        return pk != null ? pk : 0;
+    public boolean addEmployee(Employee emp) {
+        String sql = "INSERT INTO employee_registry (employee_id, first_name, last_name, email, role, department, is_registered, user_id) VALUES (?, ?, ?, ?, ?, ?, 0, NULL)";
+        return jdbcTemplate.update(sql, emp.getEmployeeId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getRole(), emp.getDepartment()) > 0;
     }
 
-    private RowMapper<Employee> employeeMapper() {
-        return (rs, rowNum) -> {
-            Employee employee = new Employee();
-            employee.setUserID(rs.getInt("user_id"));
-            employee.setEmployeeID(rs.getString("employee_id"));
-            employee.setFirstName(rs.getString("first_name"));
-            employee.setLastName(rs.getString("last_name"));
-            employee.setEmail(rs.getString("email"));
-            employee.setRole(rs.getString("role"));
-            employee.setDepartment(rs.getString("department"));
-            return employee;
-        };
+    public boolean linkUserToEmployee(String employeeId, int userId) {
+        // Finds the employee by employee_id and links user_id
+        String sql = "UPDATE employee_registry SET user_id = ?, is_registered = 1 WHERE employee_id = ?";
+        return jdbcTemplate.update(sql, userId, employeeId) > 0;
     }
 
-    private RowMapper<Employee> employeeRegistryMapper() {
-        return (rs, rowNum) -> {
-            Employee employee = new Employee();
-            employee.setEmployeeID(rs.getString("employee_id"));
-            employee.setFirstName(rs.getString("first_name"));
-            employee.setLastName(rs.getString("last_name"));
-            employee.setEmail(rs.getString("email"));
-            employee.setRole(rs.getString("role"));
-            employee.setDepartment(rs.getString("department"));
-            return employee;
-        };
+    public boolean updateEmployee(Employee emp) {
+        String sql = "UPDATE employee_registry SET first_name = ?, last_name = ?, email = ?, role = ?, department = ? WHERE employee_id = ?";
+        return jdbcTemplate.update(sql, emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getRole(), emp.getDepartment(), emp.getEmployeeId()) > 0;
+    }
+
+    public int getEmployeeCount() {
+        String sql = "SELECT COUNT(*) FROM employee_registry";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return (count != null) ? count : 0;
+    }
+
+    public boolean deleteEmployee(String employeeId) {
+        String sql = "DELETE FROM employee_registry WHERE employee_id = ?";
+        return jdbcTemplate.update(sql, employeeId) > 0;
     }
 }

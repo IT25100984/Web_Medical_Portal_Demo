@@ -1,69 +1,100 @@
 package com.webmedicalportaldemo.model;
 
 public class SystemAdmin extends Employee {
+
     private static final String SYSTEM_ADMIN_ROLE = "SYSTEM_ADMIN";
+
     public SystemAdmin() {
         super();
         setRole(SYSTEM_ADMIN_ROLE);
         setActive(true);
     }
-    public SystemAdmin(String firstName, String lastName, String email, String password, String employeeID, String department) {
-        super(firstName, lastName, email, password, SYSTEM_ADMIN_ROLE, employeeID, department);
-        setActive(true);
-    }
-    public SystemAdmin(int userID, String firstName, String lastName, String email, String password, String employeeID, String department) {
-        super(userID, firstName, lastName, email, password, SYSTEM_ADMIN_ROLE, employeeID, department);
-    }
-    public SystemAdmin(int userID, String firstName, String lastName, String employeeID) {
+
+    public SystemAdmin(String firstName, String lastName, String email, String password, String employeeId, String department) {
         super();
-        setUserID(userID);
-        setFirstName(firstName);
-        setLastName(lastName);
-        setEmployeeID(employeeID);
-        setRole(SYSTEM_ADMIN_ROLE);
-        setActive(true);
-    }
-    public void updateSystemAdmin(int userID, String firstName, String lastName, String email, String password, String department) {
-        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         setPassword(password);
+        setRole(SYSTEM_ADMIN_ROLE);
+        setEmployeeId(employeeId);
+        setDepartment(department);
+        setActive(true);
+    }
+
+    public SystemAdmin(int userId, String firstName, String lastName, String email, String password, String employeeId, String department) {
+        super();
+        setUserId(userId);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        setPassword(password);
+        setRole(SYSTEM_ADMIN_ROLE);
+        setEmployeeId(employeeId);
+        setDepartment(department);
+        setActive(true);
+    }
+
+    public SystemAdmin(int userId, String firstName, String lastName, String employeeId) {
+        super();
+        setUserId(userId);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmployeeId(employeeId);
+        setRole(SYSTEM_ADMIN_ROLE);
+        setActive(true);
+    }
+
+    public void updateSystemAdmin(int userId, String firstName, String lastName, String email, String password, String department) {
+        setUserId(userId);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
         setDepartment(department);
         setRole(SYSTEM_ADMIN_ROLE);
+
+        if (password != null && !password.isBlank()) {
+            setPassword(password);
+        }
     }
-    @Override
+
     public String getInteractionType() {
         return "SYSTEM_ADMIN_CONTROL_SESSION";
     }
-    @Override
+
     public String getDisplaySummary() {
-        return "System Administrator: " + getFullName() + " (User ID: #" + getUserID() + ", Employee ID: " + getEmployeeID() + ") initialized the system administration console.";
+        return "System Administrator: " + getFullName() + " (User ID: #" + getUserId() + ", Employee ID: " + getEmployeeId() + ") initialized the system administration console.";
     }
-    @Override
+
     public void displayDashboard() {
         System.out.println("Displaying System Administrator Portal for: " + getFullName());
     }
+
     public void manageUsers() {
         System.out.println("Opening system user management...");
     }
+
     public void manageRoles() {
         System.out.println("Opening role and permission management...");
     }
+
     public void reviewAuditLogs() {
         System.out.println("Opening system audit logs...");
     }
+
     public void manageSystemSettings() {
         System.out.println("Opening system configuration settings...");
     }
+
     public void performSystemBackup() {
         System.out.println("Starting system backup operation...");
     }
+
     @Override
     public String toString() {
         return "SystemAdmin{" +
-                "userID=" + getUserID() +
-                ", employeeID='" + getEmployeeID() + '\'' +
+                "userId=" + getUserId() +
+                ", employeeId='" + getEmployeeId() + '\'' +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +
                 ", email='" + getEmail() + '\'' +

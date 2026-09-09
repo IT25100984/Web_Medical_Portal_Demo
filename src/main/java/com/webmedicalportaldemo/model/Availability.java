@@ -2,7 +2,7 @@ package com.webmedicalportaldemo.model;
 
 public class Availability {
     private int id;
-    private int doctorId;
+    private int doctorID;
     private Integer dayOfWeek; // ✅ Added: 1 (Mon) to 7 (Sun) for weekly rules (can be null)
     private String date;       // Specific calendar date (can be null for weekly rules)
     private String startTime;
@@ -11,9 +11,9 @@ public class Availability {
     // --- Constructors ---
     public Availability() {}
 
-    public Availability(int id, int doctorId, Integer dayOfWeek, String date, String startTime, String endTime) {
+    public Availability(int id, int doctorID, Integer dayOfWeek, String date, String startTime, String endTime) {
         this.id = id;
-        this.doctorId = doctorId;
+        this.doctorID = doctorID;
         this.dayOfWeek = dayOfWeek;
         this.date = date;
         this.startTime = startTime;
@@ -30,12 +30,12 @@ public class Availability {
         this.id = id;
     }
 
-    public int getDoctorId() {
-        return doctorId;
+    public int getDoctorID() {
+        return doctorID;
     }
 
-    public void setDoctorId(int doctorId) {
-        this.doctorId = doctorId;
+    public void setDoctorID(int doctorID) {
+        this.doctorID = doctorID;
     }
 
     public Integer getDayOfWeek() {

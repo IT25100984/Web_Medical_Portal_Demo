@@ -23,8 +23,8 @@
 
           <form action="submitFeedback" method="POST">
 
-            <input type="hidden" name="doctorId" value="${selectedDoctorId}">
-            <input type="hidden" name="appointmentId" value="${selectedAppointmentId}">
+            <input type="hidden" name="doctorID" value="${selectedDoctorID}">
+            <input type="hidden" name="appointmentID" value="${selectedAppointmentID}">
 
             <div class="mb-3">
               <label class="form-label fw-bold text-secondary">Rating</label>

@@ -50,9 +50,9 @@ public class MedFileService extends FileService<Prescription> {
                     double price = Double.parseDouble(p[3].trim());
                     String status = p[4].trim();
                     String time = p[5].trim(); // Extracted from file
-                    int patientId = Integer.parseInt(p[6].trim());
+                    int patientID = Integer.parseInt(p[6].trim());
 
-                    Prescription ph = new Prescription(orderId, patientId, 0, "2026-05-12",
+                    Prescription ph = new Prescription(orderId, patientID, 0, "2026-05-12",
                                                 time, medName, qty, price, status);
                     //System.out.println("New Order: " + ph.toFileString());
                     list.add(ph);

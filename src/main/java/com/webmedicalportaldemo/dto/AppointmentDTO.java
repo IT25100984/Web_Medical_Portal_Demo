@@ -12,17 +12,17 @@ public class AppointmentDTO {
     private int lastModifiedBy;
     private String appointmentType;
     private String additionalCharge;
-    private int doctorId;
-    private int patientId;
+    private int doctorID;
+    private int patientID;
     private String patientName;
     private String doctorName;
 
     private BigDecimal totalFee;
 
-    public AppointmentDTO(int appointmentId, String fullDateTime, String oppositeName,
+    public AppointmentDTO(int appointmentID, String fullDateTime, String oppositeName,
                           String status, boolean isRescheduled, int lastModifiedBy,
-                          String appointmentType, String additionalCharge, int doctorId,
-                          int patientId, BigDecimal totalFee) {}
+                          String appointmentType, String additionalCharge, int doctorID,
+                          int patientID, BigDecimal totalFee) {}
 
     public AppointmentDTO(String dateTime, String oppositePartyName, String status) {
         this.dateTime = dateTime;
@@ -40,7 +40,7 @@ public class AppointmentDTO {
     }
 
     public AppointmentDTO(int appointmentID, String dateTime, String oppositePartyName, String status,
-                          boolean isRescheduled, int lastModifiedBy, String appointmentType, String additionalCharge, int doctorId, int patientId) {
+                          boolean isRescheduled, int lastModifiedBy, String appointmentType, String additionalCharge, int doctorID, int patientID) {
         this.appointmentID = appointmentID;
         this.dateTime = dateTime;
         this.oppositePartyName = oppositePartyName;
@@ -49,8 +49,8 @@ public class AppointmentDTO {
         this.lastModifiedBy = lastModifiedBy;
         this.appointmentType = appointmentType;
         this.additionalCharge = additionalCharge;
-        this.doctorId = doctorId;
-        this.patientId = patientId;
+        this.doctorID = doctorID;
+        this.patientID = patientID;
     }
 
     // Getters and Setters
@@ -84,11 +84,11 @@ public class AppointmentDTO {
     public String getAdditionalCharge() { return additionalCharge; }
     public void setAdditionalCharge(String additionalCharge) { this.additionalCharge = additionalCharge; }
 
-    public int getDoctorId() { return doctorId; }
-    public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
+    public int getDoctorID() { return doctorID; }
+    public void setDoctorID(int doctorID) { this.doctorID = doctorID; }
 
-    public int getPatientId() { return patientId; }
-    public void setPatientId(int patientId) { this.patientId = patientId; }
+    public int getPatientID() { return patientID; }
+    public void setPatientID(int patientID) { this.patientID = patientID; }
 
     public BigDecimal getTotalFee() {return totalFee;}
     public void setTotalFee(BigDecimal totalFee) {this.totalFee = totalFee;}

@@ -188,7 +188,7 @@
                                     <td><c:out value="${appt.dateTime}" /></td>
                                     <td>
                                         <span class="fw-semibold"><c:out value="${appt.oppositePartyName}" /></span>
-                                        <small class="text-muted d-block">Patient ID: #<c:out value="${appt.patientId}" /></small>
+                                        <small class="text-muted d-block">Patient ID: #<c:out value="${appt.patientID}" /></small>
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary"><c:out value="${appt.appointmentType}" /></span>
@@ -213,14 +213,14 @@
                                     <td class="appointment-actions">
                                         <div class="d-flex flex-wrap gap-2">
                                             <c:url var="patientEhrUrl" value="/clinical/ehr">
-                                                <c:param name="patientID" value="${appt.patientId}" />
+                                                <c:param name="patientID" value="${appt.patientID}" />
                                             </c:url>
                                             <a href="${patientEhrUrl}" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>EHR
                                             </a>
                                             <c:if test="${appt.status eq 'CONFIRMED' || appt.status eq 'COMPLETED'}">
                                                 <c:url var="createEhrUrl" value="/clinical/ehr/create">
-                                                    <c:param name="patientID" value="${appt.patientId}" />
+                                                    <c:param name="patientID" value="${appt.patientID}" />
                                                     <c:param name="appointmentID" value="${appt.appointmentID}" />
                                                 </c:url>
                                                 <a href="${createEhrUrl}" class="btn btn-sm btn-outline-success">
@@ -491,7 +491,7 @@
         // Confirmation dialog & routing for appointment cancellation
         document.querySelectorAll(".cancel-appointment-button").forEach(function (button) {
             button.addEventListener("click", function () {
-                const appointmentID = button.dataset.appointmentId;
+                const appointmentID = button.dataset.appointmentID;
                 if (window.confirm("Are you sure you want to cancel this appointment?")) {
                     window.location.href = "${updateAppointmentBaseUrl}?id=" + encodeURIComponent(appointmentID) + "&action=cancel";
                 }

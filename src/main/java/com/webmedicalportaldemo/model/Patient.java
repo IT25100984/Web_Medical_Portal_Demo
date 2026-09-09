@@ -2,6 +2,7 @@ package com.webmedicalportaldemo.model;
 
 public class Patient extends User {
 
+    private int patientID;
     private String medicalHistory;
     private String bloodGroup;
 
@@ -26,20 +27,22 @@ public class Patient extends User {
     }
 
     // Used when loading a complete patient from the database
-    public Patient(int userID, String firstName, String lastName,
+    public Patient(int patientID, int userID, String firstName, String lastName,
                    String email, String password,
                    String bloodGroup, String medicalHistory) {
 
         super(userID, firstName, lastName, email, password, "PATIENT");
 
+        this.patientID = patientID;
         this.bloodGroup = bloodGroup;
         this.medicalHistory = medicalHistory;
     }
 
-    // Used for search results and admin listings
-    public Patient(int userID, String firstName, String lastName,
+    // Used for search results and admin/dropdown listings
+    public Patient(int patientID, int userID, String firstName, String lastName,
                    String bloodGroup) {
 
+        this.patientID = patientID;
         this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
@@ -47,9 +50,10 @@ public class Patient extends User {
     }
 
     // Update current patient object
-    public void updatePatient(int userID, String firstName, String lastName, String email,
+    public void updatePatient(int patientID, int userID, String firstName, String lastName, String email,
                               String password, String bloodGroup, String medicalHistory) {
 
+        this.patientID = patientID;
         this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
@@ -61,6 +65,14 @@ public class Patient extends User {
     }
 
     // Getters and Setters
+
+    public int getPatientID() {
+        return patientID;
+    }
+
+    public void setPatientID(int patientID) {
+        this.patientID = patientID;
+    }
 
     public String getMedicalHistory() {
         return medicalHistory;
@@ -88,7 +100,8 @@ public class Patient extends User {
     @Override
     public String toFileString() {
         return "Patient{" +
-                "userID=" + getUserID() +
+                "patientID=" + patientID +
+                ", userID=" + getUserID() +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +
                 ", email='" + getEmail() + '\'' +

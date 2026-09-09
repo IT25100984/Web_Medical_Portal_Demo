@@ -21,7 +21,7 @@ public class EHRService {
     }
 
     public int createHealthRecord(HealthRecordRequestDTO request, int doctorUserID) {
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(doctorUserID);
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(doctorUserID);
         if (doctorID == null || doctorID <= 0) {
             return -1;
         }
@@ -50,7 +50,7 @@ public class EHRService {
         return healthRecordDAO.getHealthRecordById(healthRecordID);
     }
     public List<HealthRecord> getPatientHealthRecords(int patientID) {
-        return healthRecordDAO.getHealthRecordsByPatientId(patientID);
+        return healthRecordDAO.getHealthRecordsByPatientID(patientID);
     }
     public List<HealthRecord> getLoggedInPatientHealthRecords(int patientUserID) {
         return healthRecordDAO.getHealthRecordsByPatientUserId(patientUserID);
@@ -59,7 +59,7 @@ public class EHRService {
         if (healthRecordID <= 0) {
             return false;
         }
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(doctorUserID);
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(doctorUserID);
         if (doctorID == null || doctorID <= 0) {
             return false;
         }

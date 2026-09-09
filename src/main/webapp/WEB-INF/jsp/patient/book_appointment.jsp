@@ -85,7 +85,7 @@
             <div class="mb-3">
                 <label for="doctorSelect" class="form-label fw-semibold">Select Doctor</label>
                 <div class="input-group">
-                    <select name="doctorId" id="doctorSelect" class="form-select" required>
+                    <select name="doctorID" id="doctorSelect" class="form-select" required>
                         <option value="" selected disabled>Choose a doctor...</option>
                         <c:forEach var="doc" items="${doctorList}">
                             <option value="${doc.userID}">
@@ -219,7 +219,7 @@
             timeSlotSelect.disabled = true;
             timeSlotSelect.innerHTML = '<option value="" selected disabled>Loading available hours...</option>';
             const parameters = new URLSearchParams();
-            parameters.append("doctorId", doctorID);
+            parameters.append("doctorID", doctorID);
             parameters.append("date", selectedDate);
             fetch("${pageContext.request.contextPath}/getAvailableSlots?" + parameters.toString())
                 .then(function (response) {

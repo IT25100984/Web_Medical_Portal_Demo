@@ -37,8 +37,8 @@ public class FeedbackController {
      */
     @GetMapping("/feedback")
     public String feedbackPage(
-            @RequestParam(value = "doctorId", required = false) Integer doctorId,
-            @RequestParam(value = "appointmentId", required = false) Integer appointmentId,
+            @RequestParam(value = "doctorID", required = false) Integer doctorID,
+            @RequestParam(value = "appointmentID", required = false) Integer appointmentID,
             HttpSession session, Model model) {
 
         User currentUser = getCurrentUser(session);
@@ -49,8 +49,8 @@ public class FeedbackController {
          * Patient feedback form
          */
         if (hasRole(currentUser, "PATIENT")) {
-            model.addAttribute("selectedDoctorId", doctorId);
-            model.addAttribute("selectedAppointmentId", appointmentId);
+            model.addAttribute("selectedDoctorID", doctorID);
+            model.addAttribute("selectedAppointmentID", appointmentID);
             model.addAttribute("doctors", doctorDAO.getAllDoctors());
             model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
             return "shared/feedback_form";
@@ -93,10 +93,10 @@ public class FeedbackController {
      */
     @PostMapping("/submitFeedback")
     public String submitFeedback(
-            @RequestParam(value = "doctorId", required = false) Integer doctorId,
+            @RequestParam(value = "doctorID", required = false) Integer doctorID,
             @RequestParam(value = "rating", required = false) Integer rating,
             @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "appointmentId", required = false) Integer appointmentId,
+            @RequestParam(value = "appointmentID", required = false) Integer appointmentID,
             HttpSession session, Model model) {
 
         User currentUser = getCurrentUser(session);
@@ -113,11 +113,11 @@ public class FeedbackController {
          * Validate all required identifiers.
          *
          * If every feedback record must relate to an appointment,
-         * appointmentId must also be required.
+         * appointmentID must also be required.
          */
-        if (doctorId == null || doctorId <= 0 ||
-                appointmentId == null || appointmentId <= 0) {
-            return showPatientFeedbackError(currentUser, doctorId, appointmentId,
+        if (doctorID == null || doctorID <= 0 ||
+                appointmentID == null || appointmentID <= 0) {
+            return showPatientFeedbackError(currentUser, doctorID, appointmentID,
                     "A valid doctor and appointment are required.", model
             );
         }
@@ -126,8 +126,8 @@ public class FeedbackController {
          * The database constraint requires a value from 1 to 5.
          */
         if (rating == null || rating < 1 || rating > 5) {
-            return showPatientFeedbackError(currentUser, doctorId,
-                    appointmentId, "Rating must be between 1 and 5.", model
+            return showPatientFeedbackError(currentUser, doctorID,
+                    appointmentID, "Rating must be between 1 and 5.", model
             );
         }
 
@@ -137,7 +137,7 @@ public class FeedbackController {
          * This value may be changed to match the JSP and database.
          */
         if (cleanedComment.length() > 2000) {
-            return showPatientFeedbackError(currentUser, doctorId, appointmentId,
+            return showPatientFeedbackError(currentUser, doctorID, appointmentID,
                     "The feedback comment must not exceed 2000 characters.", model
             );
         }
@@ -151,10 +151,10 @@ public class FeedbackController {
          * before inserting the feedback record.
          */
         Integer newFeedbackId = feedbackDAO.submitFeedback(currentUser.getUserID(),
-                doctorId, appointmentId, rating, cleanedComment);
+                doctorID, appointmentID, rating, cleanedComment);
 
         if (newFeedbackId == null || newFeedbackId <= 0) {
-            return showPatientFeedbackError(currentUser, doctorId, appointmentId,
+            return showPatientFeedbackError(currentUser, doctorID, appointmentID,
                     "The database could not save the feedback.", model
             );
         }
@@ -167,7 +167,7 @@ public class FeedbackController {
          */
         try {
             String patientName = currentUser.getFullName();
-            String doctorName = feedbackDAO.getUserFullName(doctorId);
+            String doctorName = feedbackDAO.getUserFullName(doctorID);
             feedbackFileService.writeFeedbackToFile(newFeedbackId, patientName,
                     doctorName, rating, cleanedComment
             );
@@ -226,12 +226,12 @@ public class FeedbackController {
     /**
      * Rebuilds the patient feedback form after validation fails.
      */
-    private String showPatientFeedbackError(User currentUser, Integer doctorId,
-            Integer appointmentId, String errorMessage, Model model) {
+    private String showPatientFeedbackError(User currentUser, Integer doctorID,
+            Integer appointmentID, String errorMessage, Model model) {
 
         model.addAttribute("error", errorMessage);
-        model.addAttribute("selectedDoctorId", doctorId);
-        model.addAttribute("selectedAppointmentId", appointmentId);
+        model.addAttribute("selectedDoctorID", doctorID);
+        model.addAttribute("selectedAppointmentID", appointmentID);
         model.addAttribute("doctors", doctorDAO.getAllDoctors());
         model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
         return "shared/feedback_form";

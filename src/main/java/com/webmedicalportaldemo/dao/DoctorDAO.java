@@ -84,7 +84,7 @@ public class DoctorDAO {
 
         return jdbcTemplate.update(sql, specialization, licenseId, userId) > 0;
     }
-    public Integer getDoctorIdByUserId(int userID) {
+    public Integer getDoctorIDByUserId(int userID) {
         String sql = " SELECT d.doctor_id FROM doctors d JOIN employees e " +
                 " ON d.employee_pk = e.employee_pk WHERE e.user_id = ? ";
 

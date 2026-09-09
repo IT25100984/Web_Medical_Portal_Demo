@@ -29,8 +29,8 @@ public class DoctorFileService extends FileService<User> {
         if (ids == null || ids.length == 0) return false;
         try {
             String[] tokens = line.split("\\|");
-            int fileDoctorId = Integer.parseInt(tokens[0].trim());
-            return fileDoctorId == ids[0];
+            int fileDoctorID = Integer.parseInt(tokens[0].trim());
+            return fileDoctorID == ids[0];
         } catch (Exception e) {
             return false;
         }

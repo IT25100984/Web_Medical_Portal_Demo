@@ -90,21 +90,41 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label for="patientID" class="form-label required-label">Patient ID</label>
-                        <form:input path="patientID" id="patientID" type="number" min="1" cssClass="form-control" cssErrorClass="form-control is-invalid" readonly="${formMode eq 'edit'}" required="required" />
+                        <label for="patientID" class="form-label required-label">Patient</label>
+                        <c:if test="${formMode eq 'edit'}">
+                            <form:hidden path="patientID" />
+                        </c:if>
+                        <form:select path="patientID" id="patientID" cssClass="form-select" cssErrorClass="form-select is-invalid" disabled="${formMode eq 'edit'}" required="required">
+                            <form:option value="">-- Select Patient --</form:option>
+                            <c:forEach var="patient" items="${patientList}">
+                                <form:option value="${patient.patientID}">
+                                    Patient #${patient.patientID}<c:if test="${not empty patient.fullName}"> - <c:out value="${patient.fullName}" /></c:if>
+                                </form:option>
+                            </c:forEach>
+                        </form:select>
                         <form:errors path="patientID" cssClass="invalid-feedback d-block" />
                         <div class="form-text">
                             <c:choose>
                                 <c:when test="${formMode eq 'edit'}">The patient cannot be changed while editing a record.</c:when>
-                                <c:otherwise>Enter the patient's patients.patient_id value.</c:otherwise>
+                                <c:otherwise>Select the target patient for this record.</c:otherwise>
                             </c:choose>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label for="appointmentID" class="form-label">Appointment ID</label>
-                        <form:input path="appointmentID" id="appointmentID" type="number" min="1" cssClass="form-control" cssErrorClass="form-control is-invalid" readonly="${formMode eq 'edit'}" />
+                        <label for="appointmentID" class="form-label">Appointment</label>
+                        <c:if test="${formMode eq 'edit'}">
+                            <form:hidden path="appointmentID" />
+                        </c:if>
+                        <form:select path="appointmentID" id="appointmentID" cssClass="form-select" cssErrorClass="form-select is-invalid" disabled="${formMode eq 'edit'}">
+                            <form:option value="">-- None / Direct Consultation --</form:option>
+                            <c:forEach var="appointment" items="${appointmentList}">
+                                <form:option value="${appointment.appointmentID}">
+                                    Appt #${appointment.appointmentID}<c:if test="${not empty appointment.dateTime}"> (<c:out value="${appointment.dateTime}" />)</c:if>
+                                </form:option>
+                            </c:forEach>
+                        </form:select>
                         <form:errors path="appointmentID" cssClass="invalid-feedback d-block" />
-                        <div class="form-text">Optional when the record is not linked to an appointment.</div>
+                        <div class="form-text">Optional: Select an appointment to associate with this record.</div>
                     </div>
                     <div class="col-md-4">
                         <label for="recordType" class="form-label required-label">Record Type</label>

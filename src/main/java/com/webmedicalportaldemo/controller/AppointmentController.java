@@ -38,11 +38,11 @@ public class AppointmentController {
     }
     /**
      * Returns available appointment slots for a selected doctor and date.
-     * doctorId represents users.user_id because AppointmentDAO resolves the doctor entity ID internally.
+     * doctorID represents users.user_id because AppointmentDAO resolves the doctor entity ID internally.
      */
     @GetMapping("/getAvailableSlots")
     @ResponseBody
-    public List<String> getAvailableSlots(@RequestParam("doctorId") int doctorUserID, @RequestParam("date") String date, HttpSession session) {
+    public List<String> getAvailableSlots(@RequestParam("doctorID") int doctorUserID, @RequestParam("date") String date, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null || doctorUserID <= 0 || date == null || date.isBlank()) {
             return Collections.emptyList();
@@ -82,8 +82,8 @@ public class AppointmentController {
         if (!hasRole(currentUser, "PATIENT") || doctorUserID <= 0) {
             return Collections.emptyList();
         }
-        Integer patientID = patientDAO.getPatientIdByUserId(currentUser.getUserID());
-        Integer doctorID = doctorDAO.getDoctorIdByUserId(doctorUserID);
+        Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByUserId(doctorUserID);
         if (patientID == null || patientID <= 0 || doctorID == null || doctorID <= 0) {
             return Collections.emptyList();
         }
@@ -107,7 +107,7 @@ public class AppointmentController {
      * Books a new appointment for the logged-in patient.
      */
     @PostMapping("/bookAppointment")
-    public String bookAppointment(@RequestParam("date") String date, @RequestParam("time") String time, @RequestParam("doctorId") int doctorUserID, @RequestParam("appointmentType") String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
+    public String bookAppointment(@RequestParam("date") String date, @RequestParam("time") String time, @RequestParam("doctorID") int doctorUserID, @RequestParam("appointmentType") String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (!hasRole(currentUser, "PATIENT")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);

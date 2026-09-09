@@ -29,8 +29,8 @@ public class PatientFileService extends FileService<User> {
         if (ids == null || ids.length == 0) return false;
         try {
             String[] tokens = line.split("\\|");
-            int filePatientId = Integer.parseInt(tokens[0].trim());
-            return filePatientId == ids[0];
+            int filePatientID = Integer.parseInt(tokens[0].trim());
+            return filePatientID == ids[0];
         } catch (Exception e) {
             return false;
         }

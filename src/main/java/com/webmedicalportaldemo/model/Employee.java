@@ -1,96 +1,69 @@
 package com.webmedicalportaldemo.model;
 
-public class Employee extends User {
-
-    private String employeeID;
+public class Employee {
+    private int userId;
+    private String employeeId;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private String role;
     private String department;
+    private boolean active = true;
+    private boolean isRegistered;
 
-    // Default Constructor
-    public Employee() {
-        super();
-    }
+    public Employee() {}
 
-    // Constructor for new employee registration
-    public Employee(String firstName, String lastName, String email, String password,
-                    String role, String employeeID, String department) {
-
-        super(firstName, lastName, email, password, role);
-
-        this.employeeID = employeeID;
+    public Employee(String employeeId, String firstName, String lastName, String email, String role, String department, boolean isRegistered) {
+        this.employeeId = employeeId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.role = role;
         this.department = department;
+        this.isRegistered = isRegistered;
     }
 
-    // Constructor for existing employees
-    public Employee(int userID, String firstName, String lastName, String email,
-                    String password, String role, String employeeID, String department) {
+    // User ID Getters and Setters (supporting both casing styles)
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
+    public int getUserID() { return userId; }
+    public void setUserID(int userId) { this.userId = userId; }
 
-        super(userID, firstName, lastName, email, password, role);
+    // Employee ID Getters and Setters (supporting both casing styles)
+    public String getEmployeeId() { return employeeId; }
+    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public String getEmployeeID() { return employeeId; }
+    public void setEmployeeID(String employeeId) { this.employeeId = employeeId; }
 
-        this.employeeID = employeeID;
-        this.department = department;
+    // Names
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getFullName() {
+        return ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
     }
 
-    // Constructor for Search Results
-    public Employee(int userID, String firstName, String lastName,
-                    String role, String employeeID) {
+    // Account Credentials & Details
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-        this.setUserID(userID);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-        this.setRole(role);
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-        this.employeeID = employeeID;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    // Update Employee Information
-    public void updateEmployee(int userID, String firstName, String lastName, String email,
-                               String password, String role, String employeeID, String department) {
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 
-        this.setUserID(userID);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-        this.setEmail(email);
-        this.setPassword(password);
-        this.setRole(role);
+    // Account Status
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
-        this.employeeID = employeeID;
-        this.department = department;
-    }
-
-    // Getters and Setters
-
-    public String getEmployeeID() {
-        return employeeID;
-    }
-
-    public void setEmployeeID(String employeeID) {
-        this.employeeID = employeeID;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    @Override
-    public void displayDashboard() {
-        System.out.println(
-                "Displaying Employee Dashboard for: "
-                        + getFullName()
-        );
-    }
-
-    @Override
-    public String toString() {
-        return "Employee{" +
-                "userID=" + getUserID() +
-                ", employeeID='" + employeeID + '\'' +
-                ", name='" + getFullName() + '\'' +
-                ", role='" + getRole() + '\'' +
-                ", department='" + department + '\'' +
-                '}';
-    }
+    public boolean isRegistered() { return isRegistered; }
+    public void setRegistered(boolean isRegistered) { this.isRegistered = isRegistered; }
 }

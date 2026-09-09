@@ -247,8 +247,10 @@
                                         </c:choose>
                                     </div>
                                     <c:url var="recordDetailsUrl" value="/clinical/ehr/${record.healthRecordID}" />
-                                    <a href="${recordDetailsUrl}" class="btn btn-outline-primary btn-sm mt-auto">
-                                        <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>View Details
+                                        <%-- Check your property name: getter getRecordID() requires ${record.recordID} --%>
+                                    <a href="${pageContext.request.contextPath}/clinical/ehr/detail?id=${record.healthRecordID}"
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View Details
                                     </a>
                                 </div>
                             </article>

@@ -197,81 +197,54 @@ public class AuthController {
      * Registers staff using a pre-approved employee registry record.
      */
     private String registerStaff(RegistrationRequestDTO request, Model model) {
-        String employeeID = request.getEmployeeID();
+        String employeeId = request.getEmployeeID();
+        String cleanedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
 
-        if (employeeID == null || employeeID.isBlank()) {
-            model.addAttribute("errorMessage", "Employee ID is required for staff registration.");
-            return "register";
-        }
-
-        String cleanedEmployeeID = employeeID.trim().toUpperCase(Locale.ROOT);
-        String cleanedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
-
-        Employee registryEmployee = employeeDAO.findEmployeeByID(cleanedEmployeeID);
-
+        // 1. Verify employee exists in registry
+        Employee registryEmployee = employeeDAO.getEmployeeById(employeeId);
         if (registryEmployee == null) {
-            model.addAttribute("errorMessage", "The employee ID is not present in the hospital employee registry.");
+            model.addAttribute("errorMessage", "Employee ID not found in registry.");
             return "register";
         }
 
-        if (employeeDAO.isRegistered(cleanedEmployeeID)) {
-            model.addAttribute("errorMessage", "An account has already been registered for this employee ID.");
+        // 2. Ensure employee is not already registered
+        if (registryEmployee.isRegistered()) {
+            model.addAttribute("errorMessage", "This employee ID has already been registered.");
             return "register";
         }
 
-        if (!employeeDetailsMatch(registryEmployee, request.getFirstName(), request.getLastName(), cleanedEmail)) {
-            model.addAttribute("errorMessage", "The entered details do not match the hospital employee registry.");
-            return "register";
-        }
-
+        // 3. Ensure email is not already tied to an existing user account
         if (userDAO.findByEmail(cleanedEmail) != null) {
-            model.addAttribute("errorMessage", "An account already exists with that email address.");
+            model.addAttribute("errorMessage", "An account with this email already exists.");
             return "register";
         }
 
-        Employee employee = new Employee();
-        employee.setEmployeeID(registryEmployee.getEmployeeID());
-        employee.setFirstName(registryEmployee.getFirstName());
-        employee.setLastName(registryEmployee.getLastName());
-        employee.setEmail(registryEmployee.getEmail().trim().toLowerCase(Locale.ROOT));
-        employee.setPassword(request.getPassword());
-        employee.setRole(registryEmployee.getRole());
-        employee.setDepartment(registryEmployee.getDepartment());
-        employee.setActive(true);
+        // 4. Create and populate User entity for the users table
+        User newUser = new User();
+        newUser.setFirstName(registryEmployee.getFirstName());
+        newUser.setLastName(registryEmployee.getLastName());
+        newUser.setEmail(cleanedEmail);
+        newUser.setPassword(request.getPassword()); // Apply password hashing if active (e.g., passwordEncoder.encode(...))
+        newUser.setRole(registryEmployee.getRole()); // Inherit role from registry (DOCTOR, PHARMACIST, LAB_TECHNICIAN)
+        newUser.setActive(true);
 
-        int generatedUserID = userDAO.saveUser(employee);
+        // 5. Save user record and retrieve generated user_id
+        int generatedUserID = userDAO.saveUser(newUser);
 
         if (generatedUserID <= 0) {
-            model.addAttribute("errorMessage", "The staff user account could not be created.");
+            model.addAttribute("errorMessage", "The system encountered an error creating your account.");
             return "register";
         }
 
-        employee.setUserID(generatedUserID);
-        boolean employeeSaved = employeeDAO.registerEmployee(employee);
+        // 6. Link newly created user_id to employee_registry and set is_registered = 1
+        boolean linked = employeeDAO.linkUserToEmployee(registryEmployee.getEmployeeId(), generatedUserID);
 
-        if (!employeeSaved) {
-            userDAO.deleteUserById(generatedUserID);
-            model.addAttribute("errorMessage", "The employee profile could not be created.");
+        if (!linked) {
+            model.addAttribute("errorMessage", "Account created, but failed to link employee profile.");
             return "register";
         }
 
-        boolean registryUpdated = employeeDAO.markRegistered(cleanedEmployeeID);
-
-        if (!registryUpdated) {
-            System.err.println("Staff account user ID " + generatedUserID + " was created, but employee_registry was not marked as registered.");
-        }
-
-        if ("DOCTOR".equalsIgnoreCase(employee.getRole())) {
-            try {
-                int employeePk = employeeDAO.getEmployeePkByUserId(employee.getUserID());
-                doctorDAO.createDoctorProfile(employeePk, employee.getDepartment());
-                doctorFileService.logToFile(employee);
-            } catch (Exception exception) {
-                System.err.println("Doctor user ID " + generatedUserID + " was saved to MySQL, but doctors.txt could not be updated: " + exception.getMessage());
-            }
-        }
-
-        return "redirect:/login?status=registered";
+        return "redirect:/login?msg=registration_success";
     }
 
     /**

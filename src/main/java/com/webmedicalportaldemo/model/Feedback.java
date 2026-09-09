@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 // 1. Interface Implementation: Feedback now contracts to implement UserInteraction behaviors
 public class Feedback implements UserInteraction {
     private int feedbackId;
-    private int patientId;
-    private int doctorId;
-    private Integer appointmentId;
+    private int patientID;
+    private int doctorID;
+    private Integer appointmentID;
     private int rating;
     private String comment;
     private LocalDateTime createdAt; // Will double to satisfy the getTimestamp() contract
@@ -37,8 +37,8 @@ public class Feedback implements UserInteraction {
     @Override
     public String getDisplaySummary() {
         return "Feedback ID " + feedbackId + " submitted by " +
-                (patientName != null ? patientName : "Patient #" + patientId) +
-                " for Dr. " + (doctorName != null ? doctorName : "ID #" + doctorId) +
+                (patientName != null ? patientName : "Patient #" + patientID) +
+                " for Dr. " + (doctorName != null ? doctorName : "ID #" + doctorID) +
                 " [Rating: " + rating + "/5]";
     }
 
@@ -47,14 +47,14 @@ public class Feedback implements UserInteraction {
     public int getFeedbackId() { return feedbackId; }
     public void setFeedbackId(int feedbackId) { this.feedbackId = feedbackId; }
 
-    public int getPatientId() { return patientId; }
-    public void setPatientId(int patientId) { this.patientId = patientId; }
+    public int getPatientID() { return patientID; }
+    public void setPatientID(int patientID) { this.patientID = patientID; }
 
-    public int getDoctorId() { return doctorId; }
-    public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
+    public int getDoctorID() { return doctorID; }
+    public void setDoctorID(int doctorID) { this.doctorID = doctorID; }
 
-    public Integer getAppointmentId() { return appointmentId; }
-    public void setAppointmentId(Integer appointmentId) { this.appointmentId = appointmentId; }
+    public Integer getAppointmentID() { return appointmentID; }
+    public void setAppointmentID(Integer appointmentID) { this.appointmentID = appointmentID; }
 
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
@@ -84,9 +84,9 @@ public class Feedback implements UserInteraction {
     public String toFileString() {
         return "Feedback{" +
                 "feedback_id=" + feedbackId +
-                ", patientID=" + patientId +
-                ", doctorID=" + doctorId +
-                ", appointment_id='" + appointmentId + '\'' +
+                ", patientID=" + patientID +
+                ", doctorID=" + doctorID +
+                ", appointment_id='" + appointmentID + '\'' +
                 ", rating=" + rating +
                 ", comment=" + comment +
                 ", created_at='" + createdAt + '\'' +

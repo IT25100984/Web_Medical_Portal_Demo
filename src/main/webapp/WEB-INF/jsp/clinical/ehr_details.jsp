@@ -62,11 +62,11 @@
                 <h1 class="h2 fw-bold mb-2">
                     <i class="bi bi-file-earmark-medical-fill me-2" aria-hidden="true"></i>Electronic Health Record
                 </h1>
-                <p class="mb-0">Clinical record #<c:out value="${healthRecord.healthRecordID}" /></p>
+                <p class="mb-0">Clinical record #<c:out value="${record.healthRecordID}" /></p>
             </div>
             <div class="col-lg-4 text-lg-end">
                 <span class="badge bg-light text-primary fs-6">
-                    <c:out value="${healthRecord.recordType}" />
+                    <c:out value="${record.recordType}" />
                 </span>
             </div>
         </div>
@@ -82,17 +82,17 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="record-label">Health Record ID</div>
-                    <div class="fw-semibold">#<c:out value="${healthRecord.healthRecordID}" /></div>
+                    <div class="fw-semibold">#<c:out value="${record.healthRecordID}" /></div>
                 </div>
                 <div class="col-md-4">
                     <div class="record-label">Patient ID</div>
-                    <div class="fw-semibold">#<c:out value="${healthRecord.patientID}" /></div>
+                    <div class="fw-semibold">#<c:out value="${record.patientID}" /></div>
                 </div>
                 <div class="col-md-4">
                     <div class="record-label">Doctor ID</div>
                     <div class="fw-semibold">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.doctorID}">#<c:out value="${healthRecord.doctorID}" /></c:when>
+                            <c:when test="${not empty record.doctorID}">#<c:out value="${record.doctorID}" /></c:when>
                             <c:otherwise>Not assigned</c:otherwise>
                         </c:choose>
                     </div>
@@ -101,7 +101,7 @@
                     <div class="record-label">Appointment ID</div>
                     <div class="fw-semibold">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.appointmentID}">#<c:out value="${healthRecord.appointmentID}" /></c:when>
+                            <c:when test="${not empty record.appointmentID}">#<c:out value="${record.appointmentID}" /></c:when>
                             <c:otherwise>Not associated</c:otherwise>
                         </c:choose>
                     </div>
@@ -110,7 +110,7 @@
                     <div class="record-label">Created At</div>
                     <div class="fw-semibold">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.createdAt}"><c:out value="${healthRecord.createdAt}" /></c:when>
+                            <c:when test="${not empty record.createdAt}"><c:out value="${record.createdAt}" /></c:when>
                             <c:otherwise>Not available</c:otherwise>
                         </c:choose>
                     </div>
@@ -119,7 +119,7 @@
                     <div class="record-label">Last Updated</div>
                     <div class="fw-semibold">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.updatedAt}"><c:out value="${healthRecord.updatedAt}" /></c:when>
+                            <c:when test="${not empty record.updatedAt}"><c:out value="${record.updatedAt}" /></c:when>
                             <c:otherwise>Not available</c:otherwise>
                         </c:choose>
                     </div>
@@ -137,7 +137,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.symptoms}"><c:out value="${healthRecord.symptoms}" /></c:when>
+                            <c:when test="${not empty record.symptoms}"><c:out value="${record.symptoms}" /></c:when>
                             <c:otherwise>No symptoms were recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -152,7 +152,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.diagnosis}"><c:out value="${healthRecord.diagnosis}" /></c:when>
+                            <c:when test="${not empty record.diagnosis}"><c:out value="${record.diagnosis}" /></c:when>
                             <c:otherwise>No diagnosis was recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -167,7 +167,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.treatmentPlan}"><c:out value="${healthRecord.treatmentPlan}" /></c:when>
+                            <c:when test="${not empty record.treatmentPlan}"><c:out value="${record.treatmentPlan}" /></c:when>
                             <c:otherwise>No treatment plan was recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -182,7 +182,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.clinicalNotes}"><c:out value="${healthRecord.clinicalNotes}" /></c:when>
+                            <c:when test="${not empty record.clinicalNotes}"><c:out value="${record.clinicalNotes}" /></c:when>
                             <c:otherwise>No clinical notes were recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -197,7 +197,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.allergies}"><c:out value="${healthRecord.allergies}" /></c:when>
+                            <c:when test="${not empty record.allergies}"><c:out value="${record.allergies}" /></c:when>
                             <c:otherwise>No allergy information was recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -212,7 +212,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.medications}"><c:out value="${healthRecord.medications}" /></c:when>
+                            <c:when test="${not empty record.medications}"><c:out value="${record.medications}" /></c:when>
                             <c:otherwise>No medication information was recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -227,7 +227,7 @@
                     </h2>
                     <div class="record-content text-secondary">
                         <c:choose>
-                            <c:when test="${not empty healthRecord.followUpInstructions}"><c:out value="${healthRecord.followUpInstructions}" /></c:when>
+                            <c:when test="${not empty record.followUpInstructions}"><c:out value="${record.followUpInstructions}" /></c:when>
                             <c:otherwise>No follow-up instructions were recorded.</c:otherwise>
                         </c:choose>
                     </div>
@@ -239,14 +239,14 @@
     <section class="d-flex flex-wrap justify-content-between gap-2 mt-4">
         <c:url var="healthRecordsUrl" value="/clinical/ehr">
             <c:if test="${currentUser.role eq 'DOCTOR'}">
-                <c:param name="patientID" value="${healthRecord.patientID}" />
+                <c:param name="patientID" value="${record.patientID}" />
             </c:if>
         </c:url>
         <a href="${healthRecordsUrl}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to Health Records
         </a>
         <c:if test="${canEdit}">
-            <c:url var="editHealthRecordUrl" value="/clinical/ehr/${healthRecord.healthRecordID}/edit" />
+            <c:url var="editHealthRecordUrl" value="/clinical/ehr/${record.healthRecordID}/edit" />
             <a href="${editHealthRecordUrl}" class="btn btn-primary">
                 <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit Health Record
             </a>

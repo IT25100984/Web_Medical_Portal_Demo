@@ -89,7 +89,7 @@ public class PrescriptionDAO {
     /**
      * Finds one prescription using its prescription ID.
      */
-    public Prescription getPrescriptionById(int orderID) {
+    public Prescription getPrescriptionById(int prescriptionID) {
         String sql = """
                 SELECT
                     p.prescription_id,
@@ -105,7 +105,7 @@ public class PrescriptionDAO {
                 WHERE p.prescription_id = ?
                 """;
 
-        List<Prescription> results = jdbcTemplate.query(sql, prescriptionRowMapper(), orderID);
+        List<Prescription> results = jdbcTemplate.query(sql, prescriptionRowMapper(), prescriptionID);
         return results.isEmpty() ? null : results.get(0);
     }
     /**
@@ -135,7 +135,7 @@ public class PrescriptionDAO {
      *
      * This method expects patients.patient_id.
      */
-    public List<Prescription> getPrescriptionsByPatientId(int patientID) {
+    public List<Prescription> getPrescriptionsByPatientID(int patientID) {
         String sql = """
                 SELECT
                     p.prescription_id,
@@ -188,7 +188,7 @@ public class PrescriptionDAO {
      *
      * This method expects doctors.doctor_id.
      */
-    public List<Prescription> getPrescriptionsByDoctorId(int doctorID) {
+    public List<Prescription> getPrescriptionsByDoctorID(int doctorID) {
         String sql = """
                 SELECT
                     p.prescription_id,
@@ -209,22 +209,37 @@ public class PrescriptionDAO {
         return jdbcTemplate.query(sql, prescriptionRowMapper(), doctorID);
     }
 
+    public List<Prescription> getPrescriptionsByPatientId(int patientID) {
+        String sql = "SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY prescription_id DESC";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Prescription prescription = new Prescription();
+            prescription.setPrescriptionID(rs.getInt("prescription_id"));
+            prescription.setPatientID(rs.getInt("patient_id"));
+            prescription.setMedicineName(rs.getString("medicine_name"));
+            prescription.setQuantity(rs.getInt("quantity"));
+            prescription.setMedicinePrice(rs.getDouble("medicine_price"));
+            prescription.setStatus(rs.getString("status"));
+            return prescription;
+        }, patientID);
+    }
+
     /**
      * Updates the status of a prescription.
      */
-    public boolean updateStatus(int orderID, String status) {
+    public boolean updateStatus(int prescriptionID, String status) {
         String normalizedStatus = normalizeStatus(status);
         String sql = """
                 UPDATE prescriptions
                 SET status = ?
                 WHERE prescription_id = ?
                 """;
-        return jdbcTemplate.update(sql, normalizedStatus, orderID) > 0;
+        return jdbcTemplate.update(sql, normalizedStatus, prescriptionID) > 0;
     }
     /**
      * Updates a prescription's medicine details.
      */
-    public boolean updatePrescription(int orderID, String medicineName, int quantity, double medicinePrice) {
+    public boolean updatePrescription(int prescriptionID, String medicineName, int quantity, double medicinePrice) {
         if (medicineName == null || medicineName.isBlank() ||
                 quantity <= 0 || medicinePrice < 0) {
             return false;
@@ -238,12 +253,12 @@ public class PrescriptionDAO {
                 WHERE prescription_id = ?
                 """;
         return jdbcTemplate.update(sql, medicineName.trim(),
-                quantity, medicinePrice, orderID) > 0;
+                quantity, medicinePrice, prescriptionID) > 0;
     }
     /**
      * Associates a doctor with an existing prescription.
      */
-    public boolean assignDoctor(int orderID, int doctorID) {
+    public boolean assignDoctor(int prescriptionID, int doctorID) {
         if (doctorID <= 0) {
             return false;
         }
@@ -252,17 +267,17 @@ public class PrescriptionDAO {
                 SET doctor_id = ?
                 WHERE prescription_id = ?
                 """;
-        return jdbcTemplate.update(sql, doctorID, orderID) > 0;
+        return jdbcTemplate.update(sql, doctorID, prescriptionID) > 0;
     }
     /**
      * Deletes a prescription.
      */
-    public boolean deletePrescriptionById(int orderID) {
+    public boolean deletePrescriptionById(int prescriptionID) {
         String sql = """
                 DELETE FROM prescriptions
                 WHERE prescription_id = ?
                 """;
-        return jdbcTemplate.update(sql, orderID) > 0;
+        return jdbcTemplate.update(sql, prescriptionID) > 0;
     }
     /**
      * Converts a prescription database row into a
@@ -278,7 +293,7 @@ public class PrescriptionDAO {
             if (resultSet.wasNull()) {
                 doctorID = 0;
             }
-            prescription.setDoctorID(doctorID);
+            prescription.setDoctorID(resultSet.wasNull() ? null : doctorID);
             prescription.setMedicineName(resultSet.getString("medicine_name"));
             prescription.setQuantity(resultSet.getInt("quantity"));
             prescription.setMedicinePrice(resultSet.getDouble("medicine_price"));

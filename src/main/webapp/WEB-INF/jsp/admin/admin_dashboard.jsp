@@ -33,6 +33,16 @@
             background-color: #fb8500;
             color: #ffffff;
         }
+        .btn-navy-action {
+            background-color: #023047;
+            color: #ffffff;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-navy-action:hover {
+            background-color: #124559;
+            color: #ffffff;
+        }
         .admin-details {
             background-color: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.35);
@@ -90,9 +100,10 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+
     <section class="p-4 p-lg-5 mb-4 bg-admin-gold text-white rounded-3 shadow">
         <div class="row align-items-center g-4">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
                 <h1 class="display-6 fw-bold text-white mb-3">
                     <i class="bi bi-building-lock me-2" aria-hidden="true"></i>Hospital Administration Dashboard
                 </h1>
@@ -116,15 +127,21 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <button type="button" class="btn btn-gold-action w-100 py-3 shadow-sm text-uppercase" data-bs-toggle="modal" data-bs-target="#adminFeedbackModal">
-                    <i class="bi bi-star-fill me-2" aria-hidden="true"></i>Manage Patient Reviews
-                </button>
+            <div class="col-lg-5">
+                <div class="d-grid gap-3">
+                    <a href="${pageContext.request.contextPath}/admin/employees" class="btn btn-navy-action py-3 shadow-sm text-uppercase text-center text-decoration-none">
+                        <i class="bi bi-people-fill me-2" aria-hidden="true"></i>Manage Employee Registry
+                    </a>
+                    <button type="button" class="btn btn-gold-action py-3 shadow-sm text-uppercase" data-bs-toggle="modal" data-bs-target="#adminFeedbackModal">
+                        <i class="bi bi-star-fill me-2" aria-hidden="true"></i>Manage Patient Reviews
+                    </button>
+                </div>
             </div>
         </div>
     </section>
+
     <section class="row g-3 mb-4">
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-3">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-primary-subtle text-primary">
@@ -142,7 +159,25 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="summary-icon bg-info-subtle text-info">
+                        <i class="bi bi-person-vcard-fill" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Employee Registry</p>
+                        <h2 class="h4 mb-0">
+                            <c:choose>
+                                <c:when test="${not empty employeeCount}"><c:out value="${employeeCount}" /></c:when>
+                                <c:otherwise>Manage</c:otherwise>
+                            </c:choose>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-warning-subtle text-warning">
@@ -160,7 +195,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-3">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-success-subtle text-success">
@@ -174,6 +209,7 @@
             </div>
         </div>
     </section>
+
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
@@ -195,6 +231,7 @@
             </div>
         </div>
     </section>
+
     <section class="card shadow-sm border-0">
         <div class="card-header bg-dark text-white d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h2 class="h5 mb-0">
@@ -222,11 +259,11 @@
                                     <td class="fw-bold">#<c:out value="${app.appointmentID}" /></td>
                                     <td>
                                         <span class="fw-semibold"><c:out value="${app.patientName}" /></span>
-                                        <small class="text-muted d-block">Patient ID: #<c:out value="${app.patientId}" /></small>
+                                        <small class="text-muted d-block">Patient ID: #<c:out value="${app.patientID}" /></small>
                                     </td>
                                     <td>
                                         <span class="fw-semibold">Dr. <c:out value="${app.doctorName}" /></span>
-                                        <small class="text-muted d-block">Doctor ID: #<c:out value="${app.doctorId}" /></small>
+                                        <small class="text-muted d-block">Doctor ID: #<c:out value="${app.doctorID}" /></small>
                                     </td>
                                     <td>
                                         <c:choose>

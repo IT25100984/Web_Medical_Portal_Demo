@@ -107,8 +107,8 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     }
     @Override
     public boolean bookAppointment(int doctorUserID, int patientUserID, String date, String time, String type, String additionalCharge, BigDecimal totalFee) {
-        Integer doctorID = getDoctorIdByUserId(doctorUserID);
-        Integer patientID = getPatientIdByUserId(patientUserID);
+        Integer doctorID = getDoctorIDByUserId(doctorUserID);
+        Integer patientID = getPatientIDByUserId(patientUserID);
         if (doctorID == null || patientID == null || doctorID <= 0 || patientID <= 0 || totalFee == null || totalFee.signum() < 0) {
             return false;
         }
@@ -165,7 +165,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     }
     @Override
     public boolean setDoctorAvailability(int doctorUserID, Integer dayOfWeek, String startTime, String endTime) {
-        Integer doctorID = getDoctorIdByUserId(doctorUserID);
+        Integer doctorID = getDoctorIDByUserId(doctorUserID);
         if (doctorID == null || doctorID <= 0 || dayOfWeek == null || dayOfWeek < 1 || dayOfWeek > 7 || !isValidTimeRange(startTime, endTime)) {
             return false;
         }
@@ -175,7 +175,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     }
     @Override
     public boolean setDoctorAvailability(int doctorUserID, String availableDate, String startTime, String endTime) {
-        Integer doctorID = getDoctorIdByUserId(doctorUserID);
+        Integer doctorID = getDoctorIDByUserId(doctorUserID);
         if (doctorID == null || doctorID <= 0 || availableDate == null || availableDate.isBlank() || !isValidTimeRange(startTime, endTime)) {
             return false;
         }
@@ -191,7 +191,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
     @Override
     public List<String> getAvailableSlots(int doctorUserID, String date) {
         List<String> availableSlots = new ArrayList<>();
-        Integer doctorID = getDoctorIdByUserId(doctorUserID);
+        Integer doctorID = getDoctorIDByUserId(doctorUserID);
         if (doctorID == null || doctorID <= 0 || date == null || date.isBlank()) {
             return availableSlots;
         }
@@ -221,7 +221,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         }, doctorID, databaseDate, dayOfWeek, databaseDate);
         return availableSlots;
     }
-    private Integer getDoctorIdByUserId(int userID) {
+    private Integer getDoctorIDByUserId(int userID) {
         if (userID <= 0) {
             return null;
         }
@@ -229,7 +229,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         List<Integer> doctorIDs = jdbcTemplate.query(sql, (resultSet, rowNumber) -> resultSet.getInt("doctor_id"), userID);
         return doctorIDs.isEmpty() ? null : doctorIDs.get(0);
     }
-    private Integer getPatientIdByUserId(int userID) {
+    private Integer getPatientIDByUserId(int userID) {
         if (userID <= 0) {
             return null;
         }

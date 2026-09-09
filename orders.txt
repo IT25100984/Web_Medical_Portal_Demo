@@ -1,2 +1,5 @@
-17777|Panadol|3|50.0|COMPLETED|09:45|5
-17784|Amoxicillin|1|450.0|CANCELLED|09:45|5
+Prescription{prescriptionID=3, patientID=1, doctorID=0, medicineName='Panadol', quantity=1, medicinePrice=50.0, status='PENDING'}
+Prescription{prescriptionID=4, patientID=1, doctorID=0, medicineName='Salbutamol', quantity=1, medicinePrice=300.0, status='PENDING'}
+Prescription{prescriptionID=5, patientID=2, doctorID=0, medicineName='Amoxicillin', quantity=1, medicinePrice=450.0, status='PENDING'}
+Prescription{prescriptionID=6, patientID=2, doctorID=0, medicineName='Salbutamol', quantity=1, medicinePrice=300.0, status='PENDING'}
+Prescription{prescriptionID=7, patientID=2, doctorID=0, medicineName='Panadol', quantity=1, medicinePrice=50.0, status='PENDING'}

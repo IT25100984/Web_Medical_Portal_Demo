@@ -1,10 +1,10 @@
 package com.webmedicalportaldemo.model;
 
-public class Prescription extends User{
+public class Prescription extends User {
 
-    private int orderID;
+    private int prescriptionID;
     private int patientID;
-    private int doctorID;
+    private Integer doctorID;
     private String medicineName;
     private int quantity;
     private double medicinePrice;
@@ -13,13 +13,23 @@ public class Prescription extends User{
     private String orderTime;
     private String oppositePartyName;
 
-    public Prescription(){}
     // Default constructor
-    public Prescription(int orderId, int patientId, int doctorID, String date, String time, String medName, int qty, double price, String status) {
-        this.status = "PENDING";
+    public Prescription() {}
+
+    // Constructor for order/file parsing (fixed parameter assignment)
+    public Prescription(int prescriptionID, int patientID, int doctorID, String orderDate, String orderTime, String medicineName, int quantity, double medicinePrice, String status) {
+        this.prescriptionID = prescriptionID;
+        this.patientID = patientID;
+        this.doctorID = doctorID;
+        this.orderDate = orderDate;
+        this.orderTime = orderTime;
+        this.medicineName = medicineName;
+        this.quantity = quantity;
+        this.medicinePrice = medicinePrice;
+        this.status = (status != null && !status.isBlank()) ? status : "PENDING";
     }
 
-    // Constructor for new orders
+    // Constructor for creating new prescriptions
     public Prescription(int patientID,
                         int doctorID,
                         String medicineName,
@@ -35,7 +45,7 @@ public class Prescription extends User{
     }
 
     // Constructor for loading from database
-    public Prescription(int orderID,
+    public Prescription(int prescriptionID,
                         int patientID,
                         int doctorID,
                         String medicineName,
@@ -45,7 +55,7 @@ public class Prescription extends User{
                         String orderDate,
                         String orderTime) {
 
-        this.orderID = orderID;
+        this.prescriptionID = prescriptionID;
         this.patientID = patientID;
         this.doctorID = doctorID;
         this.medicineName = medicineName;
@@ -68,12 +78,22 @@ public class Prescription extends User{
 
     // Getters and Setters
 
-    public int getOrderID() {
-        return orderID;
+    // Added to resolve Jakarta EL ${prescription.prescriptionID} lookup
+    public int getPrescriptionID() {
+        return prescriptionID;
     }
 
-    public void setOrderID(int orderID) {
-        this.orderID = orderID;
+    public void setPrescriptionID(int prescriptionID) {
+        this.prescriptionID = prescriptionID;
+    }
+
+    // Kept as alias for legacy order compatibility
+    public int getOrderID() {
+        return prescriptionID;
+    }
+
+    public void setOrderID(int prescriptionID) {
+        this.prescriptionID = prescriptionID;
     }
 
     public int getPatientID() {
@@ -84,11 +104,11 @@ public class Prescription extends User{
         this.patientID = patientID;
     }
 
-    public int getDoctorID() {
+    public Integer getDoctorID() {
         return doctorID;
     }
 
-    public void setDoctorID(int doctorID) {
+    public void setDoctorID(Integer doctorID) {
         this.doctorID = doctorID;
     }
 
@@ -151,7 +171,7 @@ public class Prescription extends User{
     @Override
     public String toFileString() {
         return "Prescription{" +
-                "orderID=" + orderID +
+                "prescriptionID=" + prescriptionID +
                 ", patientID=" + patientID +
                 ", doctorID=" + doctorID +
                 ", medicineName='" + medicineName + '\'' +
