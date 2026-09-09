@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Book Appointment | WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         .booking-card {
             max-width: 560px;
@@ -47,7 +47,7 @@
                 </div>
             </c:if>
             <c:url var="bookAppointmentUrl" value="/bookAppointment" />
-            ${bookAppointmentUrl}
+            <form action="${bookAppointmentUrl}" method="POST">
             <c:if test="${not empty _csrf}">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             </c:if>
@@ -125,7 +125,7 @@
             <div class="d-grid gap-2">
                 <button type="submit" id="bookingButton" class="btn btn-success fw-bold">Confirm Booking</button>
                 <c:url var="patientDashboardUrl" value="/patientDashboard" />
-                ${patientDashboardUrl}Cancel</a>
+                <a href="${patientDashboardUrl}" class="btn btn-secondary fw-bold">Cancel</a>
             </div>
             </form>
         </div>

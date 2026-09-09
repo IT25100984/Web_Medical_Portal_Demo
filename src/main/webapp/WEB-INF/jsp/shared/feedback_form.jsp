@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light">
 
-<jsp:include page="/shared/header.jsp" />
+<jsp:include page="header.jsp" />
 
 <div class="container my-5">
   <div class="row justify-content-center">
