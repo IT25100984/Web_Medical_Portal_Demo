@@ -1,9 +1,11 @@
 package com.webmedicalportaldemo.dao;
 
 import com.webmedicalportaldemo.model.Employee;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,13 +24,19 @@ public class EmployeeDAO {
         @Override
         public Employee mapRow(ResultSet rs, int rowNum) throws SQLException {
             Employee emp = new Employee();
-            emp.setEmployeeID(rs.getString("employee_id"));
+            emp.setEmployeeId(rs.getString("employee_id"));
             emp.setFirstName(rs.getString("first_name"));
             emp.setLastName(rs.getString("last_name"));
             emp.setEmail(rs.getString("email"));
             emp.setRole(rs.getString("role"));
             emp.setDepartment(rs.getString("department"));
             emp.setRegistered(rs.getBoolean("is_registered"));
+
+            int userId = rs.getInt("user_id");
+            if (!rs.wasNull()) {
+                emp.setUserId(userId);
+            }
+
             return emp;
         }
     };
@@ -50,20 +58,60 @@ public class EmployeeDAO {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    public boolean createActiveEmployee(String employeeId, int userId, String department) {
+        String sql = "INSERT INTO employees (employee_id, user_id, department) VALUES (?, ?, ?)";
+        return jdbcTemplate.update(sql, employeeId, userId, department) > 0;
+    }
+
     public boolean addEmployee(Employee emp) {
         String sql = "INSERT INTO employee_registry (employee_id, first_name, last_name, email, role, department, is_registered, user_id) VALUES (?, ?, ?, ?, ?, ?, 0, NULL)";
         return jdbcTemplate.update(sql, emp.getEmployeeId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getRole(), emp.getDepartment()) > 0;
     }
 
     public boolean linkUserToEmployee(String employeeId, int userId) {
-        // Finds the employee by employee_id and links user_id
         String sql = "UPDATE employee_registry SET user_id = ?, is_registered = 1 WHERE employee_id = ?";
         return jdbcTemplate.update(sql, userId, employeeId) > 0;
     }
 
+    @Transactional
     public boolean updateEmployee(Employee emp) {
+        // 1. Update management registry
         String sql = "UPDATE employee_registry SET first_name = ?, last_name = ?, email = ?, role = ?, department = ? WHERE employee_id = ?";
-        return jdbcTemplate.update(sql, emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getRole(), emp.getDepartment(), emp.getEmployeeId()) > 0;
+        int registryRows = jdbcTemplate.update(
+                sql,
+                emp.getFirstName(),
+                emp.getLastName(),
+                emp.getEmail(),
+                emp.getRole(),
+                emp.getDepartment(),
+                emp.getEmployeeId()
+        );
+
+        // 2. Retrieve linked user_id if not present on the object
+        Integer userId = emp.getUserId();
+        if (userId == null || userId == 0) {
+            String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
+            try {
+                userId = jdbcTemplate.queryForObject(findUserSql, Integer.class, emp.getEmployeeId());
+            } catch (EmptyResultDataAccessException e) {
+                userId = null;
+            }
+        }
+
+        // 3. Cascade updates (email, names, role) to the active users authentication table
+        if (userId != null && userId > 0) {
+            String updateUserSql = "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ? WHERE user_id = ?";
+            jdbcTemplate.update(
+                    updateUserSql,
+                    emp.getFirstName(),
+                    emp.getLastName(),
+                    emp.getEmail(),
+                    emp.getRole(),
+                    userId
+            );
+        }
+
+        return registryRows > 0;
     }
 
     public int getEmployeeCount() {
@@ -72,8 +120,24 @@ public class EmployeeDAO {
         return (count != null) ? count : 0;
     }
 
+    @Transactional
     public boolean deleteEmployee(String employeeId) {
-        String sql = "DELETE FROM employee_registry WHERE employee_id = ?";
-        return jdbcTemplate.update(sql, employeeId) > 0;
+        String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
+        Integer userId = null;
+        try {
+            userId = jdbcTemplate.queryForObject(findUserSql, Integer.class, employeeId);
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+
+        jdbcTemplate.update("DELETE FROM employees WHERE employee_id = ?", employeeId);
+
+        int registryDeleted = jdbcTemplate.update("DELETE FROM employee_registry WHERE employee_id = ?", employeeId);
+
+        if (userId != null) {
+            jdbcTemplate.update("DELETE FROM users WHERE user_id = ?", userId);
+        }
+
+        return registryDeleted > 0;
     }
 }

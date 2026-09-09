@@ -236,13 +236,16 @@ public class AuthController {
             return "register";
         }
 
-        // 6. Link newly created user_id to employee_registry and set is_registered = 1
+        // 6. Link newly created user_id to employee_registry
         boolean linked = employeeDAO.linkUserToEmployee(registryEmployee.getEmployeeId(), generatedUserID);
 
         if (!linked) {
             model.addAttribute("errorMessage", "Account created, but failed to link employee profile.");
             return "register";
         }
+
+// 7. Insert operational record into employees table
+        employeeDAO.createActiveEmployee(registryEmployee.getEmployeeId(), generatedUserID, registryEmployee.getDepartment());
 
         return "redirect:/login?msg=registration_success";
     }

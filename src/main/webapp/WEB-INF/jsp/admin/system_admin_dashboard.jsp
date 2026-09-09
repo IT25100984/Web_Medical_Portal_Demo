@@ -45,6 +45,17 @@
         }
         .quick-action-button {
             min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .quick-action-button:hover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd !important;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -65,6 +76,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+
     <section class="system-admin-header text-white rounded-3 shadow p-4 p-lg-5 mb-4">
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
@@ -81,8 +93,8 @@
                             <small class="d-block text-white-50">Employee ID</small>
                             <strong>
                                 <c:choose>
-                                    <c:when test="${not empty employee.employeeID}">
-                                        <c:out value="${employee.employeeID}" />
+                                    <c:when test="${not empty employee.employeeId}">
+                                        <c:out value="${employee.employeeId}" />
                                     </c:when>
                                     <c:otherwise>Not available</c:otherwise>
                                 </c:choose>
@@ -95,7 +107,7 @@
                                     <c:when test="${not empty employee.department}">
                                         <c:out value="${employee.department}" />
                                     </c:when>
-                                    <c:otherwise>System Administration</c:otherwise>
+                                    <c:otherwise>IT & Infrastructure</c:otherwise>
                                 </c:choose>
                             </strong>
                         </div>
@@ -112,16 +124,18 @@
                         <h2 class="h6 fw-bold">System Status</h2>
                         <p class="mb-2">
                             <span class="system-status-indicator" aria-hidden="true"></span>
-                            Application available
+                            Application Operational
                         </p>
                         <small class="text-muted">
-                            Status is based on successful access to the administration dashboard.
+                            Status based on database connectivity and application health.
                         </small>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Overview Cards mapped to Backlog Requirements -->
     <section class="row g-3 mb-4">
         <div class="col-md-6 col-xl-3">
             <div class="card dashboard-card shadow-sm">
@@ -129,9 +143,9 @@
                     <div class="dashboard-icon bg-primary-subtle text-primary mb-3">
                         <i class="bi bi-people-fill" aria-hidden="true"></i>
                     </div>
-                    <h2 class="h5">User Management</h2>
+                    <h2 class="h5">User Accounts</h2>
                     <p class="text-muted mb-0">
-                        Review user accounts, roles, activation status, and access permissions.
+                        Manage user accounts, status, and credentials across all 6 roles (PBI-24).
                     </p>
                 </div>
             </div>
@@ -140,11 +154,11 @@
             <div class="card dashboard-card shadow-sm">
                 <div class="card-body">
                     <div class="dashboard-icon bg-success-subtle text-success mb-3">
-                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
                     </div>
-                    <h2 class="h5">Security</h2>
+                    <h2 class="h5">Role Access</h2>
                     <p class="text-muted mb-0">
-                        Monitor account access, authentication settings, and role-based permissions.
+                        Configure role-based access control (RBAC) permissions (PBI-21).
                     </p>
                 </div>
             </div>
@@ -155,9 +169,9 @@
                     <div class="dashboard-icon bg-warning-subtle text-warning mb-3">
                         <i class="bi bi-journal-text" aria-hidden="true"></i>
                     </div>
-                    <h2 class="h5">Audit Logs</h2>
+                    <h2 class="h5">Audit Trails</h2>
                     <p class="text-muted mb-0">
-                        Review important system actions, account changes, and administrative activity.
+                        Review system actions, critical alerts, and emergency logs (PBI-22).
                     </p>
                 </div>
             </div>
@@ -166,16 +180,18 @@
             <div class="card dashboard-card shadow-sm">
                 <div class="card-body">
                     <div class="dashboard-icon bg-danger-subtle text-danger mb-3">
-                        <i class="bi bi-database-check" aria-hidden="true"></i>
+                        <i class="bi bi-database-gear" aria-hidden="true"></i>
                     </div>
-                    <h2 class="h5">Database Status</h2>
+                    <h2 class="h5">Database Backups</h2>
                     <p class="text-muted mb-0">
-                        Review database availability, backup information, and storage status.
+                        Schedule and trigger automated daily differential database backups (PBI-23).
                     </p>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Corrected System Actions Grid with full <a> tags -->
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
             <h2 class="h5 mb-0">
@@ -187,61 +203,60 @@
             <div class="row g-3">
                 <div class="col-md-6 col-xl-3">
                     <c:url var="userManagementUrl" value="/system/users" />
-                    ${userManagementUrl}
-                    <i class="bi bi-person-gear fs-3 mb-2" aria-hidden="true"></i>
-                    <span class="fw-semibold">Manage Users</span>
+                    <a href="${userManagementUrl}" class="btn btn-outline-dark w-100 quick-action-button rounded-3">
+                        <i class="bi bi-person-gear fs-3 mb-2" aria-hidden="true"></i>
+                        <span class="fw-semibold">Manage Accounts (PBI-24)</span>
                     </a>
                 </div>
                 <div class="col-md-6 col-xl-3">
                     <c:url var="roleManagementUrl" value="/system/roles" />
-                    ${roleManagementUrl}
-                    <i class="bi bi-key-fill fs-3 mb-2" aria-hidden="true"></i>
-                    <span class="fw-semibold">Manage Roles</span>
+                    <a href="${roleManagementUrl}" class="btn btn-outline-dark w-100 quick-action-button rounded-3">
+                        <i class="bi bi-key-fill fs-3 mb-2" aria-hidden="true"></i>
+                        <span class="fw-semibold">Role Access Control (PBI-21)</span>
                     </a>
                 </div>
                 <div class="col-md-6 col-xl-3">
                     <c:url var="auditLogUrl" value="/system/auditLogs" />
-                    ${auditLogUrl}
-                    <i class="bi bi-clock-history fs-3 mb-2" aria-hidden="true"></i>
-                    <span class="fw-semibold">View Audit Logs</span>
+                    <a href="${auditLogUrl}" class="btn btn-outline-dark w-100 quick-action-button rounded-3">
+                        <i class="bi bi-clock-history fs-3 mb-2" aria-hidden="true"></i>
+                        <span class="fw-semibold">View Audit Logs (PBI-22)</span>
                     </a>
                 </div>
                 <div class="col-md-6 col-xl-3">
-                    <c:url var="systemSettingsUrl" value="/system/settings" />
-                    ${systemSettingsUrl}
-                    <i class="bi bi-gear-fill fs-3 mb-2" aria-hidden="true"></i>
-                    <span class="fw-semibold">System Settings</span>
+                    <c:url var="backupUrl" value="/system/backups" />
+                    <a href="${backupUrl}" class="btn btn-outline-dark w-100 quick-action-button rounded-3">
+                        <i class="bi bi-database-check fs-3 mb-2" aria-hidden="true"></i>
+                        <span class="fw-semibold">Database Backups (PBI-23)</span>
                     </a>
                 </div>
             </div>
         </div>
     </section>
+
     <section class="card border-0 shadow-sm">
         <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h2 class="h5 mb-0">
                 <i class="bi bi-info-circle-fill text-primary me-2" aria-hidden="true"></i>
-                System Administrator Responsibilities
+                System Administrator Backlog Scope
             </h2>
-            <span class="badge bg-primary">Technical Administration</span>
+            <span class="badge bg-primary">PBI-21 to PBI-24</span>
         </div>
         <div class="card-body">
             <div class="row g-4">
                 <div class="col-lg-6">
                     <h3 class="h6 fw-bold">Account and Access Management</h3>
                     <ul class="text-muted mb-0">
-                        <li>Review and activate system accounts.</li>
-                        <li>Manage role-based access permissions.</li>
-                        <li>Disable compromised or invalid accounts.</li>
-                        <li>Monitor authentication-related activity.</li>
+                        <li>Configure role-based access control across all 6 user roles (PBI-21).</li>
+                        <li>Manage user accounts, active statuses, and password resets (PBI-24).</li>
+                        <li>Disable compromised or inactive accounts immediately.</li>
                     </ul>
                 </div>
                 <div class="col-lg-6">
-                    <h3 class="h6 fw-bold">Technical System Management</h3>
+                    <h3 class="h6 fw-bold">Technical Operations & Security</h3>
                     <ul class="text-muted mb-0">
-                        <li>Review system and audit logs.</li>
-                        <li>Monitor database and application availability.</li>
-                        <li>Manage backup and recovery processes.</li>
-                        <li>Maintain technical system configuration.</li>
+                        <li>Log critical patient alerts and escalations in audit trails (PBI-22).</li>
+                        <li>Schedule and monitor automated daily differential database backups (PBI-23).</li>
+                        <li>Monitor database health and application uptime.</li>
                     </ul>
                 </div>
             </div>
