@@ -39,7 +39,7 @@ public class PatientDAO {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Patient patient = new Patient();
             patient.setPatientID(rs.getInt("patient_id"));
-            patient.setUserID(rs.getInt("user_id"));
+            patient.setuserID(rs.getInt("user_id"));
             patient.setFirstName(rs.getString("first_name"));
             patient.setLastName(rs.getString("last_name"));
             patient.setEmail(rs.getString("email"));
@@ -79,16 +79,16 @@ public class PatientDAO {
             return false;
         }
 
-        int userId = keyHolder.getKey().intValue();
-        patient.setUserID(userId);
+        int userID = keyHolder.getKey().intValue();
+        patient.setuserID(userID);
 
         String patientSql = "INSERT INTO patients (user_id, blood_group, medical_history) VALUES (?, ?, ?)";
-        int patientRows = jdbcTemplate.update(patientSql, userId, patient.getBloodGroup(), patient.getMedicalHistory());
+        int patientRows = jdbcTemplate.update(patientSql, userID, patient.getBloodGroup(), patient.getMedicalHistory());
 
         return patientRows > 0;
     }
 
-    public Integer getPatientIDByUserId(int userID) {
+    public Integer getPatientIDByuserID(int userID) {
         String sql = "SELECT patient_id FROM patients WHERE user_id = ?";
         List<Integer> patientIDs = jdbcTemplate.query(sql, (resultSet, rowNumber)
                 -> resultSet.getInt("patient_id"), userID);
@@ -100,12 +100,12 @@ public class PatientDAO {
         return jdbcTemplate.update(sql, newHistory, userID) > 0;
     }
 
-    public boolean updateProfile(int userId, String bloodGroup, String medicalHistory) {
+    public boolean updateProfile(int userID, String bloodGroup, String medicalHistory) {
         String sql = "UPDATE patients SET blood_group = ?, medical_history = ? WHERE user_id = ?";
-        return jdbcTemplate.update(sql, bloodGroup, medicalHistory, userId) > 0;
+        return jdbcTemplate.update(sql, bloodGroup, medicalHistory, userID) > 0;
     }
 
-    public Patient findByUserId(int userId) {
+    public Patient findByuserID(int userID) {
         String sql = """
             SELECT u.user_id, u.first_name, u.last_name, u.email, u.password, u.role, u.is_active,
                    p.patient_id, p.blood_group, p.medical_history
@@ -118,7 +118,7 @@ public class PatientDAO {
             return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
                 Patient patient = new Patient();
                 patient.setPatientID(rs.getInt("patient_id"));
-                patient.setUserID(rs.getInt("user_id"));
+                patient.setuserID(rs.getInt("user_id"));
                 patient.setFirstName(rs.getString("first_name"));
                 patient.setLastName(rs.getString("last_name"));
                 patient.setEmail(rs.getString("email"));
@@ -128,16 +128,16 @@ public class PatientDAO {
                 patient.setBloodGroup(rs.getString("blood_group"));
                 patient.setMedicalHistory(rs.getString("medical_history"));
                 return patient;
-            }, userId);
+            }, userID);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     /**
-     * Convenience alias for findByUserId to support standard naming conventions.
+     * Convenience alias for findByuserID to support standard naming conventions.
      */
-    public Patient getPatientByUserId(int userId) {
-        return findByUserId(userId);
+    public Patient getPatientByuserID(int userID) {
+        return findByuserID(userID);
     }
 }

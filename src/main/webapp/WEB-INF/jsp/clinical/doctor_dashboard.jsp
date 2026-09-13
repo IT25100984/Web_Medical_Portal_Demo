@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -226,6 +227,12 @@
                                                 <a href="${createEhrUrl}" class="btn btn-sm btn-outline-success">
                                                     <i class="bi bi-file-earmark-plus me-1" aria-hidden="true"></i>New Record
                                                 </a>
+                                                <button type="button" class="btn btn-sm btn-outline-dark"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#orderLabModal"
+                                                        onclick="populateLabModal('${appt.patientID}', '${fn:escapeXml(appt.oppositePartyName)}', '${appt.appointmentID}')">
+                                                    <i class="bi bi-vial me-1" aria-hidden="true"></i>Order Lab
+                                                </button>
                                             </c:if>
                                             <c:choose>
                                                 <c:when test="${appt.status eq 'CANCELLED'}">
@@ -257,6 +264,8 @@
                                             </c:choose>
                                             <button type="button" class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">About</button>
                                         </div>
+
+                                        <!-- About Modal -->
                                         <div class="modal fade" id="aboutModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content border-0 shadow">
@@ -275,21 +284,21 @@
                                                             <div class="col-6 text-end">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Total Cost</small>
                                                                 <span class="fw-bold text-success">
-                                                                        LKR
-                                                                        <c:choose>
-                                                                            <c:when test="${not empty appt.totalFee}"><c:out value="${appt.totalFee}" /></c:when>
-                                                                            <c:otherwise>0.00</c:otherwise>
-                                                                        </c:choose>
-                                                                    </span>
+                                                            LKR
+                                                            <c:choose>
+                                                                <c:when test="${not empty appt.totalFee}"><c:out value="${appt.totalFee}" /></c:when>
+                                                                <c:otherwise>0.00</c:otherwise>
+                                                            </c:choose>
+                                                        </span>
                                                             </div>
                                                             <div class="col-6">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Additional Requirement</small>
                                                                 <span>
-                                                                        <c:choose>
-                                                                            <c:when test="${not empty appt.additionalCharge}"><c:out value="${appt.additionalCharge}" /></c:when>
-                                                                            <c:otherwise>None</c:otherwise>
-                                                                        </c:choose>
-                                                                    </span>
+                                                            <c:choose>
+                                                                <c:when test="${not empty appt.additionalCharge}"><c:out value="${appt.additionalCharge}" /></c:when>
+                                                                <c:otherwise>None</c:otherwise>
+                                                            </c:choose>
+                                                        </span>
                                                             </div>
                                                             <div class="col-6 text-end">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Schedule</small>
@@ -303,53 +312,13 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="modal fade" id="rescheduleModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h3 class="h5 modal-title">Reschedule Appointment</h3>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <c:url var="updateAppointmentUrl" value="/updateAppointment" />
-                                                    <form action="${updateAppointmentUrl}" method="post">
-                                                        <c:if test="${not empty _csrf}">
-                                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-                                                        </c:if>
-                                                        <div class="modal-body text-dark text-start">
-                                                            <input type="hidden" name="id" value="${appt.appointmentID}">
-                                                            <input type="hidden" name="action" value="rescheduled">
-                                                            <div class="mb-3">
-                                                                <label for="newDate${appt.appointmentID}" class="form-label fw-bold">Select New Date</label>
-                                                                <input type="date" id="newDate${appt.appointmentID}" name="newDate" class="form-control future-date-input" required>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label for="newTime${appt.appointmentID}" class="form-label fw-bold">Select New Time</label>
-                                                                <select id="newTime${appt.appointmentID}" name="newTime" class="form-select" required>
-                                                                    <option value="" disabled selected>Choose a time...</option>
-                                                                    <c:forEach var="hour" begin="8" end="17">
-                                                                        <c:set var="displayTime" value="${hour lt 10 ? '0' : ''}${hour}:00" />
-                                                                        <option value="${displayTime}"><c:out value="${displayTime}" /></option>
-                                                                    </c:forEach>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                            <button type="submit" class="btn btn-primary">Send Proposal</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-calendar-x fs-2 d-block mb-2" aria-hidden="true"></i>No appointments found.
-                                </td>
+                                <td colspan="5" class="text-center text-muted py-4">No appointments found.</td>
                             </tr>
                         </c:otherwise>
                     </c:choose>
@@ -357,6 +326,71 @@
                 </table>
             </div>
         </div>
+
+        <!-- Global Single Order Lab Modal (Placed outside table loop) -->
+        <div class="modal fade" id="orderLabModal" tabindex="-1" aria-labelledby="orderLabModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-start">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold" id="orderLabModalLabel">
+                            <i class="bi bi-vial-fill text-primary me-2"></i>Order Diagnostic Lab Test
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/doctor/lab-requests/create" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="modalPatientId" name="patientId" />
+                            <input type="hidden" id="modalAppointmentId" name="appointmentId" />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Patient Reference</label>
+                                <input type="text" id="modalPatientName" class="form-control-plaintext text-muted ps-0" readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="testType" class="form-label fw-bold">Select Diagnostic Test</label>
+                                <select class="form-select" id="testType" name="testType" required>
+                                    <option value="" selected disabled>-- Choose Test --</option>
+                                    <option value="Full Blood Count (FBC)">Full Blood Count (FBC)</option>
+                                    <option value="Lipid Profile">Lipid Profile</option>
+                                    <option value="Fasting Blood Sugar (FBS)">Fasting Blood Sugar (FBS)</option>
+                                    <option value="Liver Function Test (LFT)">Liver Function Test (LFT)</option>
+                                    <option value="Renal Function Test (RFT)">Renal Function Test (RFT)</option>
+                                    <option value="Urinalysis">Urinalysis</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="priority" class="form-label fw-bold">Priority Level</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="ROUTINE" selected>Routine</option>
+                                    <option value="URGENT">Urgent</option>
+                                    <option value="STAT_EMERGENCY">STAT / Emergency</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="clinicalNotes" class="form-label fw-bold">Clinical Instructions / Notes</label>
+                                <textarea class="form-control" id="clinicalNotes" name="clinicalNotes" rows="3"
+                                          placeholder="Specify reason or instructions for lab technician..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Submit Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function populateLabModal(patientId, patientName, appointmentId) {
+                document.getElementById('modalPatientId').value = patientId;
+                document.getElementById('modalPatientName').value = patientName + ' (ID: #' + patientId + ')';
+                document.getElementById('modalAppointmentId').value = appointmentId;
+            }
+        </script>
     </section>
 </main>
 <div class="modal fade" id="doctorProfileModal" tabindex="-1" aria-hidden="true">

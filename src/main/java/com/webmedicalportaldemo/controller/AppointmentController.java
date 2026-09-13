@@ -42,9 +42,9 @@ public class AppointmentController {
      */
     @GetMapping("/getAvailableSlots")
     @ResponseBody
-    public List<String> getAvailableSlots(@RequestParam("doctorID") int doctorUserID, @RequestParam("date") String date, HttpSession session) {
+    public List<String> getAvailableSlots(@RequestParam("doctorID") int doctoruserID, @RequestParam("date") String date, HttpSession session) {
         User currentUser = getCurrentUser(session);
-        if (currentUser == null || doctorUserID <= 0 || date == null || date.isBlank()) {
+        if (currentUser == null || doctoruserID <= 0 || date == null || date.isBlank()) {
             return Collections.emptyList();
         }
         try {
@@ -55,7 +55,7 @@ public class AppointmentController {
         } catch (Exception exception) {
             return Collections.emptyList();
         }
-        return apptDAO.getAvailableSlots(doctorUserID, date);
+        return apptDAO.getAvailableSlots(doctoruserID, date);
     }
     /**
      * Returns doctors by specialization as JSON.
@@ -77,13 +77,13 @@ public class AppointmentController {
      */
     @GetMapping("/history")
     @ResponseBody
-    public List<String> getDoctorPatientHistory(@RequestParam("doctorID") int doctorUserID, HttpSession session) {
+    public List<String> getDoctorPatientHistory(@RequestParam("doctorID") int doctoruserID, HttpSession session) {
         User currentUser = getCurrentUser(session);
-        if (!hasRole(currentUser, "PATIENT") || doctorUserID <= 0) {
+        if (!hasRole(currentUser, "PATIENT") || doctoruserID <= 0) {
             return Collections.emptyList();
         }
-        Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
-        Integer doctorID = doctorDAO.getDoctorIDByUserId(doctorUserID);
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
+        Integer doctorID = doctorDAO.getDoctorIDByuserID(doctoruserID);
         if (patientID == null || patientID <= 0 || doctorID == null || doctorID <= 0) {
             return Collections.emptyList();
         }
@@ -107,12 +107,12 @@ public class AppointmentController {
      * Books a new appointment for the logged-in patient.
      */
     @PostMapping("/bookAppointment")
-    public String bookAppointment(@RequestParam("date") String date, @RequestParam("time") String time, @RequestParam("doctorID") int doctorUserID, @RequestParam("appointmentType") String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
+    public String bookAppointment(@RequestParam("date") String date, @RequestParam("time") String time, @RequestParam("doctorID") int doctoruserID, @RequestParam("appointmentType") String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (!hasRole(currentUser, "PATIENT")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        if (doctorUserID <= 0 || date == null || date.isBlank() || time == null || time.isBlank()) {
+        if (doctoruserID <= 0 || date == null || date.isBlank() || time == null || time.isBlank()) {
             return "redirect:/patient/book_appointment?error=invalidInput";
         }
         if (!isValidFutureAppointment(date, time)) {
@@ -125,14 +125,14 @@ public class AppointmentController {
         }
         Appointment appointment;
         if ("SURGERY".equalsIgnoreCase(normalizedType)) {
-            Surgery surgery = new Surgery(doctorUserID, currentUser.getUserID(), date, time, "UNASSIGNED");
+            Surgery surgery = new Surgery(doctoruserID, currentUser.getuserID(), date, time, "UNASSIGNED");
             surgery.setAddCharge(normalizedCharge);
             appointment = surgery;
         } else {
-            appointment = new Consultation(doctorUserID, currentUser.getUserID(), date, time, "UNASSIGNED");
+            appointment = new Consultation(doctoruserID, currentUser.getuserID(), date, time, "UNASSIGNED");
         }
         BigDecimal totalFee = BigDecimal.valueOf(appointment.calculateFee()).setScale(2);
-        boolean success = apptDAO.bookAppointment(doctorUserID, currentUser.getUserID(), date, time, normalizedType, normalizedCharge, totalFee);
+        boolean success = apptDAO.bookAppointment(doctoruserID, currentUser.getuserID(), date, time, normalizedType, normalizedCharge, totalFee);
         return success ? "redirect:/patientDashboard?msg=bookingSuccess" : "redirect:/patient/book_appointment?error=slotUnavailable";
     }
 
@@ -163,12 +163,12 @@ public class AppointmentController {
             if (!hasRole(currentUser, "DOCTOR")) {
                 return redirectByRoleWithMessage(currentUser, "unauthorized");
             }
-            success = apptDAO.updateAppointmentStatus(appointmentID, "CONFIRMED", null, null, currentUser.getUserID());
+            success = apptDAO.updateAppointmentStatus(appointmentID, "CONFIRMED", null, null, currentUser.getuserID());
         } else if ("complete".equalsIgnoreCase(action)) {
             if (!hasRole(currentUser, "DOCTOR")) {
                 return redirectByRoleWithMessage(currentUser, "unauthorized");
             }
-            success = apptDAO.updateAppointmentStatus(appointmentID, "COMPLETED", null, null, currentUser.getUserID());
+            success = apptDAO.updateAppointmentStatus(appointmentID, "COMPLETED", null, null, currentUser.getuserID());
         } else if ("cancel".equalsIgnoreCase(action)) {
             if (!hasRole(currentUser, "PATIENT") && !hasRole(currentUser, "DOCTOR") && !hasRole(currentUser, "HOSPITAL_ADMIN")) {
                 return redirectByRoleWithMessage(currentUser, "unauthorized");
@@ -194,7 +194,7 @@ public class AppointmentController {
         if (appointmentID <= 0 || !"rescheduled".equalsIgnoreCase(action) || !isValidFutureAppointment(newDate, newTime)) {
             return redirectByRoleWithMessage(currentUser, "invalidReschedule");
         }
-        boolean success = apptDAO.updateAppointmentStatus(appointmentID, "RESCHEDULED", newDate, newTime, currentUser.getUserID());
+        boolean success = apptDAO.updateAppointmentStatus(appointmentID, "RESCHEDULED", newDate, newTime, currentUser.getuserID());
         return redirectByRoleWithMessage(currentUser, success ? "rescheduled" : "error");
     }
     /**
@@ -215,7 +215,7 @@ public class AppointmentController {
                 allUpdated = false;
                 continue;
             }
-            boolean updated = apptDAO.setDoctorAvailability(currentUser.getUserID(), dayOfWeek, startTime, endTime);
+            boolean updated = apptDAO.setDoctorAvailability(currentUser.getuserID(), dayOfWeek, startTime, endTime);
             if (!updated) {
                 allUpdated = false;
             }

@@ -12,6 +12,7 @@ import com.webmedicalportaldemo.model.Employee;
 import com.webmedicalportaldemo.model.Patient;
 import com.webmedicalportaldemo.model.Prescription;
 import com.webmedicalportaldemo.model.User;
+import com.webmedicalportaldemo.service.LabReportService;
 import com.webmedicalportaldemo.service.MedFileService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,9 +40,10 @@ public class DashboardController {
     private final FeedbackDAO feedbackDAO;
     private final PrescriptionDAO prescriptionDAO;
     private final MedFileService medFileService;
+    private final LabReportService labReportService;
 
     public DashboardController(AppointmentDAO apptDAO, DoctorDAO doctorDAO, PatientDAO patientDAO,
-                               EmployeeDAO employeeDAO, FeedbackDAO feedbackDAO,
+                               EmployeeDAO employeeDAO, FeedbackDAO feedbackDAO, LabReportService labReportService,
                                PrescriptionDAO prescriptionDAO, MedFileService medFileService) {
         this.apptDAO = apptDAO;
         this.doctorDAO = doctorDAO;
@@ -49,6 +52,7 @@ public class DashboardController {
         this.feedbackDAO = feedbackDAO;
         this.prescriptionDAO = prescriptionDAO;
         this.medFileService = medFileService;
+        this.labReportService = labReportService;
     }
 
     /*
@@ -63,10 +67,10 @@ public class DashboardController {
         }
 
         // Existing appointments query
-        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByPatient(currentUser.getUserID());
+        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByPatient(currentUser.getuserID());
 
         // Fetch prescription orders for the logged-in patient
-        Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
         if (patientID != null) {
             List<Prescription> myPrescriptions = prescriptionDAO.getPrescriptionsByPatientId(patientID);
             model.addAttribute("myPrescriptions", myPrescriptions);
@@ -87,12 +91,12 @@ public class DashboardController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return "redirect:/login";
         }
-        Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getUserID());
-        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+        Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getuserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
         if (doctor == null || employee == null) {
             return "redirect:/login?error=doctorProfileNotFound";
         }
-        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByDoctor(currentUser.getUserID());
+        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByDoctor(currentUser.getuserID());
         populateUserAttributes(model, currentUser);
         model.addAttribute("doctor", doctor);
         model.addAttribute("employee", employee);
@@ -110,7 +114,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "PHARMACIST")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -128,26 +132,6 @@ public class DashboardController {
 
         return "pharmacy/pharmacist_dashboard";
     }
-
-    /*
-     * Lab Technician dashboard
-     */
-    @GetMapping("/labDashboard")
-    public String showLabDashboard(HttpSession session, Model model, HttpServletResponse response) {
-        preventDashboardCaching(response);
-        User currentUser = getCurrentUser(session);
-        if (!hasRole(currentUser, "LAB_TECHNICIAN")) {
-            return "redirect:/login";
-        }
-        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
-        if (employee == null) {
-            return "redirect:/login?error=employeeProfileNotFound";
-        }
-        populateUserAttributes(model, currentUser);
-        model.addAttribute("employee", employee);
-        return "lab/lab_dashboard";
-    }
-
     /*
      * Hospital administrator dashboard
      */
@@ -158,7 +142,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "HOSPITAL_ADMIN")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -184,7 +168,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "SYSTEM_ADMIN")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -205,12 +189,12 @@ public class DashboardController {
         }
         populateUserAttributes(model, currentUser);
         if (hasRole(currentUser, "DOCTOR")) {
-            Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getUserID());
-            Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+            Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getuserID());
+            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
             model.addAttribute("doctor", doctor);
             model.addAttribute("employee", employee);
         } else if (isEmployeeRole(currentUser.getRole())) {
-            Employee employee = employeeDAO.getEmployeeByUserId(currentUser.getUserID());
+            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
             model.addAttribute("employee", employee);
         }
         return "updateProfilePage";
@@ -241,9 +225,39 @@ public class DashboardController {
         return redirectToDashboard(currentUser, "unsupportedProfileUpdate");
     }
 
-    /*
-     * Patient profile update helper
-     */
+    @PostMapping("/doctor/lab-requests/create")
+    public String createLabRequest(@RequestParam("patientId") int patientId,
+                                   @RequestParam("appointmentId") int appointmentId,
+                                   @RequestParam("testType") String testType,
+                                   @RequestParam("priority") String priority,
+                                   @RequestParam("clinicalNotes") String clinicalNotes,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+
+        User doctor = (User) session.getAttribute("currentUser");
+        if (doctor == null || !"DOCTOR".equalsIgnoreCase(doctor.getRole())) {
+            return "redirect:/login";
+        }
+
+        boolean created = labReportService.createDiagnosticRequest(
+                patientId,
+                doctor.getuserID(),
+                appointmentId,
+                testType,
+                priority,
+                clinicalNotes
+        );
+
+        if (created) {
+            redirectAttributes.addFlashAttribute("msg", "Lab test order submitted successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to submit lab test order.");
+        }
+
+        return "redirect:/doctorDashboard";
+    }
+
+
     /*
      * Patient profile update helper
      */
@@ -255,7 +269,7 @@ public class DashboardController {
         String cleanedMedicalHistory = medicalHistory == null ? "" : medicalHistory.trim();
 
         // Fixed: Passing exactly 3 arguments (userID, bloodGroup, medicalHistory)
-        boolean success = patientDAO.updateProfile(currentUser.getUserID(), cleanedBloodGroup, cleanedMedicalHistory);
+        boolean success = patientDAO.updateProfile(currentUser.getuserID(), cleanedBloodGroup, cleanedMedicalHistory);
 
         if (!success) {
             return "redirect:/patientDashboard?error=profileUpdateFailed";
@@ -279,7 +293,7 @@ public class DashboardController {
             return "redirect:/doctorDashboard?error=invalidLicense";
         }
         String cleanedSpecialization = specialization.trim();
-        boolean success = doctorDAO.updateProfile(currentUser.getUserID(), cleanedSpecialization, licenseID);
+        boolean success = doctorDAO.updateProfile(currentUser.getuserID(), cleanedSpecialization, licenseID);
         if (!success) {
             return "redirect:/doctorDashboard?error=profileUpdateFailed";
         }
@@ -361,7 +375,7 @@ public class DashboardController {
             return "redirect:/pharmacistDashboard" + errorParameter;
         }
         if (hasRole(user, "LAB_TECHNICIAN")) {
-            return "redirect:/labDashboard" + errorParameter;
+            return "redirect:/lab/dashboard" + errorParameter;
         }
         if (hasRole(user, "HOSPITAL_ADMIN")) {
             return "redirect:/adminDashboard" + errorParameter;

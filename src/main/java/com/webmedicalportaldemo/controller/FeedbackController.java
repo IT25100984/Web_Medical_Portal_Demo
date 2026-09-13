@@ -52,7 +52,7 @@ public class FeedbackController {
             model.addAttribute("selectedDoctorID", doctorID);
             model.addAttribute("selectedAppointmentID", appointmentID);
             model.addAttribute("doctors", doctorDAO.getAllDoctors());
-            model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
+            model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
             return "shared/feedback_form";
         }
         /*
@@ -65,9 +65,9 @@ public class FeedbackController {
              *
              * See the database ID note below.
              */
-            List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(currentUser.getUserID());
+            List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(currentUser.getuserID());
 
-            double averageRating = feedbackDAO.getAverageRating(currentUser.getUserID());
+            double averageRating = feedbackDAO.getAverageRating(currentUser.getuserID());
 
             model.addAttribute("reviews", reviews);
             model.addAttribute("avgRating", averageRating);
@@ -144,13 +144,13 @@ public class FeedbackController {
         /*
          * Important:
          *
-         * currentUser.getUserID() is users.user_id.
+         * currentUser.getuserID() is users.user_id.
          *
          * If feedback.patient_id references patients.patient_id,
          * FeedbackDAO must convert users.user_id into patient_id
          * before inserting the feedback record.
          */
-        Integer newFeedbackId = feedbackDAO.submitFeedback(currentUser.getUserID(),
+        Integer newFeedbackId = feedbackDAO.submitFeedback(currentUser.getuserID(),
                 doctorID, appointmentID, rating, cleanedComment);
 
         if (newFeedbackId == null || newFeedbackId <= 0) {
@@ -233,7 +233,7 @@ public class FeedbackController {
         model.addAttribute("selectedDoctorID", doctorID);
         model.addAttribute("selectedAppointmentID", appointmentID);
         model.addAttribute("doctors", doctorDAO.getAllDoctors());
-        model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
+        model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
         return "shared/feedback_form";
     }
     /**

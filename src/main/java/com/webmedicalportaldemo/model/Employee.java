@@ -1,7 +1,7 @@
 package com.webmedicalportaldemo.model;
 
 public class Employee {
-    private int userId;
+    private int userID;
     private String employeeId;
     private String firstName;
     private String lastName;
@@ -25,10 +25,8 @@ public class Employee {
     }
 
     // User ID Getters and Setters (supporting both casing styles)
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
-    public int getUserID() { return userId; }
-    public void setUserID(int userId) { this.userId = userId; }
+    public int getuserID() { return userID; }
+    public void setuserID(int userID) { this.userID = userID; }
 
     // Employee ID Getters and Setters (supporting both casing styles)
     public String getEmployeeId() { return employeeId; }

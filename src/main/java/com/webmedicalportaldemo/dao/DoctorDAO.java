@@ -22,12 +22,12 @@ public class DoctorDAO {
     /**
      * Get a single doctor profile using the User ID
      */
-    public Doctor getDoctorProfile(int userId) {
+    public Doctor getDoctorProfile(int userID) {
         String sql = " SELECT u.user_id, u.first_name, u.last_name, u.email, d.specialization, d.license_id "+
                 " FROM users u JOIN employees e ON u.user_id = e.user_id " +
                 " LEFT JOIN doctors d ON e.employee_pk = d.employee_pk WHERE u.user_id = ? ;";
 
-        List<Doctor> doctors = jdbcTemplate.query(sql, doctorRowMapper(), userId);
+        List<Doctor> doctors = jdbcTemplate.query(sql, doctorRowMapper(), userID);
         return doctors.isEmpty() ? null : doctors.get(0);
     }
 
@@ -58,33 +58,33 @@ public class DoctorDAO {
     /**
      * Update specialization
      */
-    public boolean updateSpecialization(int userId, String specialization) {
+    public boolean updateSpecialization(int userID, String specialization) {
         String sql = "UPDATE doctors d JOIN employees e ON d.employee_pk = e.employee_pk "+
                 " SET d.specialization = ? WHERE e.user_id = ? ";
 
-        return jdbcTemplate.update(sql, specialization, userId) > 0;
+        return jdbcTemplate.update(sql, specialization, userID) > 0;
     }
 
     /**
      * Update medical license
      */
-    public boolean updateLicense(int userId, int licenseId) {
+    public boolean updateLicense(int userID, int licenseId) {
         String sql = "UPDATE doctors d JOIN employees e ON d.employee_pk = e.employee_pk "+
                 " SET d.license_id = ? WHERE e.user_id = ? ";
 
-        return jdbcTemplate.update(sql, licenseId, userId) > 0;
+        return jdbcTemplate.update(sql, licenseId, userID) > 0;
     }
 
     /**
      * Update both specialization and license
      */
-    public boolean updateProfile(int userId, String specialization, int licenseId) {
+    public boolean updateProfile(int userID, String specialization, int licenseId) {
         String sql = "UPDATE doctors d JOIN employees e ON d.employee_pk = e.employee_pk "+
                 " SET d.specialization = ?, d.license_id = ? WHERE e.user_id = ? " ;
 
-        return jdbcTemplate.update(sql, specialization, licenseId, userId) > 0;
+        return jdbcTemplate.update(sql, specialization, licenseId, userID) > 0;
     }
-    public Integer getDoctorIDByUserId(int userID) {
+    public Integer getDoctorIDByuserID(int userID) {
         String sql = " SELECT d.doctor_id FROM doctors d JOIN employees e " +
                 " ON d.employee_pk = e.employee_pk WHERE e.user_id = ? ";
 
@@ -105,7 +105,7 @@ public class DoctorDAO {
     private RowMapper<Doctor> doctorRowMapper() {
         return (rs, rowNum) -> {
             Doctor doctor = new Doctor();
-            doctor.setUserID(rs.getInt("user_id"));
+            doctor.setuserID(rs.getInt("user_id"));
             doctor.setFirstName(rs.getString("first_name"));
             doctor.setLastName(rs.getString("last_name"));
             doctor.setEmail(rs.getString("email"));

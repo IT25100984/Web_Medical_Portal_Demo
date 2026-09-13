@@ -36,6 +36,9 @@
     </div>
 
     <%-- Filter Section --%>
+    <div class="alert alert-warning fw-bold">
+        DEBUG: List Status = ${labRequests != null ? labRequests.size() : 'NULL'}
+    </div>
     <div class="card shadow border-0 mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
@@ -48,7 +51,7 @@
                 <div class="col-md-6 text-end">
                     <select id="statusFilter" class="form-select d-inline-block w-auto">
                         <option value="ALL">All Statuses</option>
-                        <option value="PENDING">Pending</option>
+                        <option value="REQUESTED">Requested / Pending</option>
                         <option value="IN_TESTING">In Testing</option>
                         <option value="COMPLETED">Completed</option>
                     </select>
@@ -70,6 +73,7 @@
                     <th>Patient</th>
                     <th>Requested By</th>
                     <th>Test Name</th>
+                    <th>Priority</th>
                     <th>Sample Pipeline</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -79,11 +83,27 @@
                 <c:choose>
                     <c:when test="${not empty labRequests}">
                         <c:forEach var="req" items="${labRequests}">
-                            <tr class="lab-row">
-                                <td><strong>#${req.requestID}</strong></td>
+                            <tr class="lab-row" data-status="${req.status}">
+                                <td><strong>#${req.requestId}</strong></td>
                                 <td><i class="bi bi-person me-1"></i>${req.patientName}</td>
                                 <td>${req.doctorName}</td>
-                                <td><span class="badge bg-secondary">${req.category}</span> ${req.testName}</td>
+                                    <%-- FIXED: Removed the premature </td> tag here so the clinical notes icon renders in the correct column --%>
+                                <td>
+                                    <span class="badge bg-secondary">${req.category}</span> ${req.testName}
+                                    <c:if test="${not empty req.clinicalNotes && req.clinicalNotes != 'NA'}">
+                                        <i class="bi bi-sticky text-warning ms-1" data-bs-toggle="tooltip" title="Notes: ${req.clinicalNotes}"></i>
+                                    </c:if>
+                                </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${req.priority == 'URGENT' || req.priority == 'STAT'}">
+                                            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>${req.priority}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge bg-info text-dark">${req.priority != null ? req.priority : 'ROUTINE'}</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                                 <td>
                                     <span class="badge bg-light text-dark border">
                                         <i class="bi bi-box-seam me-1"></i>${req.sampleStatus}
@@ -91,8 +111,8 @@
                                 </td>
                                 <td>
                                     <c:choose>
-                                        <c:when test="${req.status == 'PENDING'}">
-                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>PENDING</span>
+                                        <c:when test="${req.status == 'REQUESTED' || req.status == 'PENDING'}">
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>${req.status}</span>
                                         </c:when>
                                         <c:when test="${req.status == 'IN_TESTING'}">
                                             <span class="badge bg-info text-dark"><i class="bi bi-gear-wide-connected me-1"></i>IN TESTING</span>
@@ -108,27 +128,27 @@
                                 <td>
                                     <div class="d-flex gap-2">
                                             <%-- Update Pipeline Modal Trigger --%>
-                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pipelineModal${req.requestID}">
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pipelineModal${req.requestId}">
                                             <i class="bi bi-arrow-repeat me-1"></i>Pipeline
                                         </button>
 
                                             <%-- Upload Results Modal Trigger --%>
-                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resultsModal${req.requestID}">
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resultsModal${req.requestId}">
                                             <i class="bi bi-file-earmark-medical me-1"></i>Results
                                         </button>
                                     </div>
 
                                         <%-- Pipeline Status Modal --%>
-                                    <div class="modal fade" id="pipelineModal${req.requestID}" tabindex="-1">
+                                    <div class="modal fade" id="pipelineModal${req.requestId}" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Update Sample Pipeline (#${req.requestID})</h5>
+                                                    <h5 class="modal-title">Update Sample Pipeline (#${req.requestId})</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <form action="${pageContext.request.contextPath}/lab/updateStatus" method="post">
                                                     <div class="modal-body">
-                                                        <input type="hidden" name="requestId" value="${req.requestID}">
+                                                        <input type="hidden" name="requestId" value="${req.requestId}">
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold">Sample Status</label>
                                                             <select name="sampleStatus" class="form-select">
@@ -140,6 +160,7 @@
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold">Overall Status</label>
                                                             <select name="status" class="form-select">
+                                                                <option value="REQUESTED" ${req.status == 'REQUESTED' ? 'selected' : ''}>Requested</option>
                                                                 <option value="PENDING" ${req.status == 'PENDING' ? 'selected' : ''}>Pending</option>
                                                                 <option value="IN_TESTING" ${req.status == 'IN_TESTING' ? 'selected' : ''}>In Testing</option>
                                                                 <option value="COMPLETED" ${req.status == 'COMPLETED' ? 'selected' : ''}>Completed</option>
@@ -156,16 +177,16 @@
                                     </div>
 
                                         <%-- Results Entry Modal --%>
-                                    <div class="modal fade" id="resultsModal${req.requestID}" tabindex="-1">
+                                    <div class="modal fade" id="resultsModal${req.requestId}" tabindex="-1">
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header bg-success text-white">
-                                                    <h5 class="modal-title"><i class="bi bi-journal-check me-2"></i>Log Diagnostic Results (#${req.requestID})</h5>
+                                                    <h5 class="modal-title"><i class="bi bi-journal-check me-2"></i>Log Diagnostic Results (#${req.requestId})</h5>
                                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <form action="${pageContext.request.contextPath}/lab/submitResults" method="post" enctype="multipart/form-data">
                                                     <div class="modal-body">
-                                                        <input type="hidden" name="requestId" value="${req.requestID}">
+                                                        <input type="hidden" name="requestId" value="${req.requestId}">
 
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold">Test Name</label>
@@ -195,7 +216,7 @@
                         </c:forEach>
                     </c:when>
                     <c:otherwise>
-                        <tr><td colspan="7" class="text-center py-5 text-muted">No lab requests available in queue.</td></tr>
+                        <tr><td colspan="8" class="text-center py-5 text-muted">No lab requests available in queue.</td></tr>
                     </c:otherwise>
                 </c:choose>
                 </tbody>
@@ -207,6 +228,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
         const rows = document.querySelectorAll('.lab-row');
@@ -217,10 +244,12 @@
 
             rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-                const statusBadge = row.cells[5].innerText.trim();
+                const rowStatus = row.getAttribute('data-status');
 
                 let matchesSearch = text.includes(query);
-                let matchesStatus = (filter === 'ALL') || statusBadge.includes(filter);
+                let matchesStatus = (filter === 'ALL') ||
+                    (filter === 'REQUESTED' && (rowStatus === 'REQUESTED' || rowStatus === 'PENDING')) ||
+                    (rowStatus === filter);
 
                 row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
             });

@@ -41,14 +41,15 @@ public class SystemAdminController {
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         // Pass session user metadata to header panel
         User currentUser = (User) session.getAttribute("currentUser");
         model.addAttribute("currentUser", currentUser);
 
-        return "system/system_admin_dashboard";
+        // CORRECTED: Pointing to the admin folder
+        return "admin/system_admin_dashboard";
     }
 
     /**
@@ -57,27 +58,29 @@ public class SystemAdminController {
     @GetMapping("/users")
     public String manageUsers(HttpSession session, Model model) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         List<User> userList = userService.getAllUsers();
         model.addAttribute("users", userList);
-        return "system/user_management";
+
+        // CORRECTED: Pointing to the nested views folder
+        return "admin/system_admin_views/user_management";
     }
 
     @PostMapping("/users/toggle-status")
-    public String toggleUserStatus(@RequestParam("userId") int userId,
+    public String toggleUserStatus(@RequestParam("userID") int userID,
                                    @RequestParam("active") boolean active,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
-        boolean success = userService.updateUserStatus(userId, active);
+        boolean success = userService.updateUserStatus(userID, active);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
-                    "TOGGLE_USER_STATUS", "Updated user ID " + userId + " active status to " + active);
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+                    "TOGGLE_USER_STATUS", "Updated user ID " + userID + " active status to " + active);
             redirectAttributes.addAttribute("msg", "success");
         } else {
             redirectAttributes.addAttribute("error", "operationFailed");
@@ -87,18 +90,18 @@ public class SystemAdminController {
     }
 
     @PostMapping("/users/reset-password")
-    public String resetUserPassword(@RequestParam("userId") int userId,
+    public String resetUserPassword(@RequestParam("userID") int userID,
                                     @RequestParam("newPassword") String newPassword,
                                     HttpSession session,
                                     RedirectAttributes redirectAttributes) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
-        boolean success = userService.adminResetPassword(userId, newPassword);
+        boolean success = userService.adminResetPassword(userID, newPassword);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
-                    "ADMIN_PASSWORD_RESET", "Reset password for user ID: " + userId);
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+                    "ADMIN_PASSWORD_RESET", "Reset password for user ID: " + userID);
             redirectAttributes.addAttribute("msg", "success");
         } else {
             redirectAttributes.addAttribute("error", "operationFailed");
@@ -113,27 +116,47 @@ public class SystemAdminController {
     @GetMapping("/roles")
     public String manageRoles(HttpSession session, Model model) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         model.addAttribute("roles", roleService.getAllSystemRoles());
         model.addAttribute("userRoleMappings", roleService.getUserRoleMappings());
-        return "system/role_management";
+
+        // CORRECTED: Pointing to the nested views folder
+        return "admin/system_admin_views/role_management";
+    }
+
+    @GetMapping("/roles/edit")
+    public String showEditRolePage(@RequestParam("role") String role, HttpSession session, Model model) {
+        if (!isSystemAdmin(session)) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("selectedRole", role);
+
+        // Filter users directly using your existing userService
+        List<User> roleUsers = userService.getAllUsers().stream()
+                .filter(u -> role.equalsIgnoreCase(u.getRole()))
+                .toList();
+
+        model.addAttribute("roleUsers", roleUsers);
+
+        return "admin/system_admin_views/role_edit";
     }
 
     @PostMapping("/roles/update")
-    public String updateUserRole(@RequestParam("userId") int userId,
+    public String updateUserRole(@RequestParam("userID") int userID,
                                  @RequestParam("role") String newRole,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
-        boolean success = roleService.assignUserRole(userId, newRole);
+        boolean success = roleService.assignUserRole(userID, newRole);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
-                    "UPDATE_ROLE", "Assigned role " + newRole + " to user ID " + userId);
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+                    "UPDATE_ROLE", "Assigned role " + newRole + " to user ID " + userID);
             redirectAttributes.addAttribute("msg", "success");
         } else {
             redirectAttributes.addAttribute("error", "operationFailed");
@@ -148,12 +171,14 @@ public class SystemAdminController {
     @GetMapping("/auditLogs")
     public String viewAuditLogs(HttpSession session, Model model) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         List<AuditLog> logs = auditLogService.getRecentAuditLogs();
         model.addAttribute("auditLogs", logs);
-        return "system/audit_logs";
+
+        // CORRECTED: Pointing to the nested views folder
+        return "admin/system_admin_views/audit_logs";
     }
 
     /**
@@ -162,25 +187,30 @@ public class SystemAdminController {
     @GetMapping("/backups")
     public String manageBackups(HttpSession session, Model model) {
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         model.addAttribute("backupHistory", backupService.getBackupLogs());
         model.addAttribute("backupSchedule", backupService.getCurrentScheduleConfig());
-        return "system/database_backups";
+
+        // CORRECTED: Pointing to the nested views folder
+        return "admin/system_admin_views/database_backups";
     }
 
     @PostMapping("/backups/trigger")
-    public String triggerManualBackup(@RequestParam("backupType") String backupType,
-                                      HttpSession session,
-                                      RedirectAttributes redirectAttributes) {
+    public String triggerManualBackup(
+            // CORRECTED: Added defaultValue to prevent 400 Bad Request if the JSP form doesn't send it
+            @RequestParam(value = "backupType", defaultValue = "FULL") String backupType,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
         if (!isSystemAdmin(session)) {
-            return "redirect:/access-denied";
+            return "redirect:/login";
         }
 
         boolean success = backupService.executeBackup(backupType); // "FULL" or "DIFFERENTIAL"
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
                     "MANUAL_BACKUP", "Executed manual " + backupType + " database backup.");
             redirectAttributes.addAttribute("msg", "success");
         } else {
@@ -189,7 +219,7 @@ public class SystemAdminController {
 
         return "redirect:/system/backups";
     }
-
+    
     /**
      * Private Security Helper Check
      */

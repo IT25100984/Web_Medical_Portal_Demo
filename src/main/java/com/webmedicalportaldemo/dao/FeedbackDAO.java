@@ -62,10 +62,10 @@ public class FeedbackDAO {
     }
 
     /** Helper method to grab user names for file operations */
-    public String getUserFullName(int userId) {
+    public String getUserFullName(int userID) {
         String sql = "SELECT CONCAT(first_name, ' ', last_name) FROM users WHERE user_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, String.class, userId);
+            return jdbcTemplate.queryForObject(sql, String.class, userID);
         } catch (Exception e) {
             return "Unknown User";
         }

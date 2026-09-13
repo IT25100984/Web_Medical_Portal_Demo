@@ -1,13 +1,17 @@
 package com.webmedicalportaldemo.model;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-public class LabTest {
-    private int requestID;
-    private int patientID;
-    private int doctorID;
+public class LabReport {
+    private int requestId;
+    private int patientId;
+    private int doctorId;
+    private int appointmentId;
     private String testName;
     private String category;
+    private String priority;
+    private String clinicalNotes;
     private String status;
     private String sampleStatus;
     private String resultsSummary;
@@ -19,17 +23,21 @@ public class LabTest {
     private String patientName;
     private String doctorName;
 
-    public LabTest() {
+    public LabReport() {
     }
 
-    public LabTest(int requestID, int patientID, int doctorID, String testName, String category,
-                   String status, String sampleStatus, String resultsSummary, String filePath,
-                   Timestamp requestedDate, Timestamp completedDate) {
-        this.requestID = requestID;
-        this.patientID = patientID;
-        this.doctorID = doctorID;
+    public LabReport(int requestId, int patientId, int doctorId, int appointmentId, String testName,
+                     String category, String priority, String clinicalNotes, String status,
+                     String sampleStatus, String resultsSummary, String filePath,
+                     Timestamp requestedDate, Timestamp completedDate) {
+        this.requestId = requestId;
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        this.appointmentId = appointmentId;
         this.testName = testName;
         this.category = category;
+        this.priority = priority;
+        this.clinicalNotes = clinicalNotes;
         this.status = status;
         this.sampleStatus = sampleStatus;
         this.resultsSummary = resultsSummary;
@@ -38,29 +46,38 @@ public class LabTest {
         this.completedDate = completedDate;
     }
 
-    // Getters and Setters
-    public int getRequestID() {
-        return requestID;
+    // --- Getters & Setters ---
+
+    public int getRequestId() {
+        return requestId;
     }
 
-    public void setRequestID(int requestID) {
-        this.requestID = requestID;
+    public void setRequestId(int requestId) {
+        this.requestId = requestId;
     }
 
-    public int getPatientID() {
-        return patientID;
+    public int getPatientId() {
+        return patientId;
     }
 
-    public void setPatientID(int patientID) {
-        this.patientID = patientID;
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
     }
 
-    public int getDoctorID() {
-        return doctorID;
+    public int getDoctorId() {
+        return doctorId;
     }
 
-    public void setDoctorID(int doctorID) {
-        this.doctorID = doctorID;
+    public void setDoctorId(int doctorId) {
+        this.doctorId = doctorId;
+    }
+
+    public int getAppointmentId() {
+        return appointmentId;
+    }
+
+    public void setAppointmentId(int appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     public String getTestName() {
@@ -71,12 +88,37 @@ public class LabTest {
         this.testName = testName;
     }
 
+    // Alias methods for testType <-> testName mapping
+    public String getTestType() {
+        return testName;
+    }
+
+    public void setTestType(String testType) {
+        this.testName = testType;
+    }
+
     public String getCategory() {
         return category;
     }
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public String getClinicalNotes() {
+        return clinicalNotes;
+    }
+
+    public void setClinicalNotes(String clinicalNotes) {
+        this.clinicalNotes = clinicalNotes;
     }
 
     public String getStatus() {
@@ -117,6 +159,13 @@ public class LabTest {
 
     public void setRequestedDate(Timestamp requestedDate) {
         this.requestedDate = requestedDate;
+    }
+
+    // LocalDateTime overload for service layer compatibility
+    public void setRequestedAt(LocalDateTime requestedAt) {
+        if (requestedAt != null) {
+            this.requestedDate = Timestamp.valueOf(requestedAt);
+        }
     }
 
     public Timestamp getCompletedDate() {

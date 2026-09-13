@@ -55,14 +55,14 @@ public class ClinicalOpsController {
         }
         List<HealthRecord> healthRecords;
         if (hasRole(currentUser, "PATIENT")) {
-            Integer currentPatientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
+            Integer currentPatientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
             if (currentPatientID == null || currentPatientID <= 0) {
                 return "redirect:/patientDashboard?error=patientProfileNotFound";
             }
-            healthRecords = ehrService.getLoggedInPatientHealthRecords(currentUser.getUserID());
+            healthRecords = ehrService.getLoggedInPatientHealthRecords(currentUser.getuserID());
             model.addAttribute("selectedPatientID", currentPatientID);
         } else if (hasRole(currentUser, "DOCTOR")) {
-            Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
+            Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getuserID());
             if (doctorID == null || doctorID <= 0) {
                 return "redirect:/doctorDashboard?error=doctorProfileNotFound";
             }
@@ -106,7 +106,7 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getuserID());
         if (doctorID == null || doctorID <= 0) {
             return "redirect:/doctorDashboard?error=doctorProfileNotFound";
         }
@@ -152,7 +152,7 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getuserID());
         if (doctorID == null || doctorID <= 0) {
             return "redirect:/doctorDashboard?error=doctorProfileNotFound";
         }
@@ -177,7 +177,7 @@ public class ClinicalOpsController {
             return "clinical/ehr_form";
         }
         request.setRecordType(request.getRecordType().trim().toUpperCase(Locale.ROOT));
-        int generatedRecordID = ehrService.createHealthRecord(request, currentUser.getUserID());
+        int generatedRecordID = ehrService.createHealthRecord(request, currentUser.getuserID());
         if (generatedRecordID <= 0) {
             populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
@@ -281,7 +281,7 @@ public class ClinicalOpsController {
         request.setPatientID(existingRecord.getPatientID());
         request.setAppointmentID(existingRecord.getAppointmentID());
         request.setRecordType(request.getRecordType().trim().toUpperCase(Locale.ROOT));
-        boolean updated = ehrService.updateHealthRecord(healthRecordID, request, currentUser.getUserID());
+        boolean updated = ehrService.updateHealthRecord(healthRecordID, request, currentUser.getuserID());
         if (!updated) {
             populateFormDropdowns(model);
             model.addAttribute("currentUser", currentUser);
@@ -309,11 +309,11 @@ public class ClinicalOpsController {
             return false;
         }
         if (hasRole(currentUser, "PATIENT")) {
-            Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
+            Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
             return patientID != null && patientID == healthRecord.getPatientID();
         }
         if (hasRole(currentUser, "DOCTOR")) {
-            Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
+            Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getuserID());
             return doctorID != null
                     && doctorID > 0
                     && appointmentDAO.doctorHasAccessToPatient(
@@ -331,7 +331,7 @@ public class ClinicalOpsController {
         if (!hasRole(currentUser, "DOCTOR") || healthRecord == null) {
             return false;
         }
-        Integer doctorID = doctorDAO.getDoctorIDByUserId(currentUser.getUserID());
+        Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getuserID());
         return doctorID != null && healthRecord.getDoctorID() != null && doctorID.equals(healthRecord.getDoctorID());
     }
 

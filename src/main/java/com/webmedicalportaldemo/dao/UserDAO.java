@@ -41,9 +41,9 @@ public class UserDAO {
         }, keyHolder);
 
         if (rowsAffected > 0 && keyHolder.getKey() != null) {
-            int userId = keyHolder.getKey().intValue();
-            user.setUserID(userId);
-            return userId;
+            int userID = keyHolder.getKey().intValue();
+            user.setuserID(userID);
+            return userID;
         }
         return -1;
     }
@@ -59,9 +59,9 @@ public class UserDAO {
     }
 
     // NEW: Deletion method required to complete individual CRUD requirements (Delete)
-    public boolean deleteUserById(int userId) {
+    public boolean deleteUserById(int userID) {
         String sql = "DELETE FROM users WHERE user_id = ? ";
-        return jdbcTemplate.update(sql, userId) > 0;
+        return jdbcTemplate.update(sql, userID) > 0;
     }
 
     public User findByEmail(String email) {
@@ -72,15 +72,15 @@ public class UserDAO {
         return users.isEmpty() ? null : users.get(0);
     }
 
-    public boolean changePassword(int userId, String newPassword) {
+    public boolean changePassword(int userID, String newPassword) {
         String sql = "UPDATE users SET password=? WHERE user_id=? ";
-        return jdbcTemplate.update(sql, newPassword, userId) > 0;
+        return jdbcTemplate.update(sql, newPassword, userID) > 0;
     }
 
     private RowMapper<User> userRowMapper() {
         return (rs, rowNum) -> {
             User user = new User();
-            user.setUserID(rs.getInt("user_id"));
+            user.setuserID(rs.getInt("user_id"));
             user.setFirstName(rs.getString("first_name"));
             user.setLastName(rs.getString("last_name"));
             user.setEmail(rs.getString("email"));

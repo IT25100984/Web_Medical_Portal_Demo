@@ -34,7 +34,7 @@ public class Doctor extends User {
     // Constructor for Patient Search Results
     public Doctor(int userID, String firstName, String lastName, String specialization, int licenseID) {
 
-        this.setUserID(userID);
+        this.setuserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
 
@@ -47,7 +47,7 @@ public class Doctor extends User {
     // Constructor for Admin Search Results
     public Doctor(int userID, String firstName, String lastName, String specialization) {
 
-        this.setUserID(userID);
+        this.setuserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
 
@@ -60,7 +60,7 @@ public class Doctor extends User {
     public void updateDoctor(int userID, String firstName, String lastName, String email,
                              String password, String specialization, int licenseID) {
 
-        this.setUserID(userID);
+        this.setuserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
         this.setEmail(email);
@@ -98,7 +98,7 @@ public class Doctor extends User {
     @Override
     public String toFileString() {
         return "Doctor{" +
-                "userID=" + getUserID() +
+                "userID=" + getuserID() +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +
                 ", specialization='" + specialization + '\'' +

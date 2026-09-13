@@ -86,7 +86,7 @@ public class HealthRecordDAO {
         return jdbcTemplate.query(sql, healthRecordRowMapper(), patientID);
     }
 
-    public List<HealthRecord> getHealthRecordsByPatientUserId(int userID) {
+    public List<HealthRecord> getHealthRecordsByPatientuserID(int userID) {
         String sql = "SELECT hr.health_record_id, hr.patient_id, hr.doctor_id, hr.appointment_id, " +
                 "hr.record_type, hr.diagnosis, hr.symptoms, hr.treatment_plan, hr.clinical_notes, " +
                 "hr.allergies, hr.medications, hr.follow_up_instructions, hr.created_at, hr.updated_at " +

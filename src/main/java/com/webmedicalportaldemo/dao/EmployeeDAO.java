@@ -32,9 +32,9 @@ public class EmployeeDAO {
             emp.setDepartment(rs.getString("department"));
             emp.setRegistered(rs.getBoolean("is_registered"));
 
-            int userId = rs.getInt("user_id");
+            int userID = rs.getInt("user_id");
             if (!rs.wasNull()) {
-                emp.setUserId(userId);
+                emp.setuserID(userID);
             }
 
             return emp;
@@ -52,15 +52,15 @@ public class EmployeeDAO {
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public Employee getEmployeeByUserId(int userId) {
+    public Employee getEmployeeByuserID(int userID) {
         String sql = "SELECT * FROM employee_registry WHERE user_id = ?";
-        List<Employee> list = jdbcTemplate.query(sql, employeeRowMapper, userId);
+        List<Employee> list = jdbcTemplate.query(sql, employeeRowMapper, userID);
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public boolean createActiveEmployee(String employeeId, int userId, String department) {
+    public boolean createActiveEmployee(String employeeId, int userID, String department) {
         String sql = "INSERT INTO employees (employee_id, user_id, department) VALUES (?, ?, ?)";
-        return jdbcTemplate.update(sql, employeeId, userId, department) > 0;
+        return jdbcTemplate.update(sql, employeeId, userID, department) > 0;
     }
 
     public boolean addEmployee(Employee emp) {
@@ -68,9 +68,9 @@ public class EmployeeDAO {
         return jdbcTemplate.update(sql, emp.getEmployeeId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getRole(), emp.getDepartment()) > 0;
     }
 
-    public boolean linkUserToEmployee(String employeeId, int userId) {
+    public boolean linkUserToEmployee(String employeeId, int userID) {
         String sql = "UPDATE employee_registry SET user_id = ?, is_registered = 1 WHERE employee_id = ?";
-        return jdbcTemplate.update(sql, userId, employeeId) > 0;
+        return jdbcTemplate.update(sql, userID, employeeId) > 0;
     }
 
     @Transactional
@@ -88,18 +88,18 @@ public class EmployeeDAO {
         );
 
         // 2. Retrieve linked user_id if not present on the object
-        Integer userId = emp.getUserId();
-        if (userId == null || userId == 0) {
+        Integer userID = emp.getuserID();
+        if (userID == null || userID == 0) {
             String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
             try {
-                userId = jdbcTemplate.queryForObject(findUserSql, Integer.class, emp.getEmployeeId());
+                userID = jdbcTemplate.queryForObject(findUserSql, Integer.class, emp.getEmployeeId());
             } catch (EmptyResultDataAccessException e) {
-                userId = null;
+                userID = null;
             }
         }
 
         // 3. Cascade updates (email, names, role) to the active users authentication table
-        if (userId != null && userId > 0) {
+        if (userID != null && userID > 0) {
             String updateUserSql = "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ? WHERE user_id = ?";
             jdbcTemplate.update(
                     updateUserSql,
@@ -107,7 +107,7 @@ public class EmployeeDAO {
                     emp.getLastName(),
                     emp.getEmail(),
                     emp.getRole(),
-                    userId
+                    userID
             );
         }
 
@@ -123,9 +123,9 @@ public class EmployeeDAO {
     @Transactional
     public boolean deleteEmployee(String employeeId) {
         String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
-        Integer userId = null;
+        Integer userID = null;
         try {
-            userId = jdbcTemplate.queryForObject(findUserSql, Integer.class, employeeId);
+            userID = jdbcTemplate.queryForObject(findUserSql, Integer.class, employeeId);
         } catch (EmptyResultDataAccessException e) {
             return false;
         }
@@ -134,8 +134,8 @@ public class EmployeeDAO {
 
         int registryDeleted = jdbcTemplate.update("DELETE FROM employee_registry WHERE employee_id = ?", employeeId);
 
-        if (userId != null) {
-            jdbcTemplate.update("DELETE FROM users WHERE user_id = ?", userId);
+        if (userID != null) {
+            jdbcTemplate.update("DELETE FROM users WHERE user_id = ?", userID);
         }
 
         return registryDeleted > 0;

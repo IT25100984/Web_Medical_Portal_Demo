@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class AuditLog {
     private int logId;
-    private int userId;
+    private int userID;
     private String actionType;
     private String description;
     private LocalDateTime timestamp;
@@ -12,8 +12,8 @@ public class AuditLog {
     public AuditLog() {
     }
 
-    public AuditLog(int userId, String actionType, String description, LocalDateTime timestamp) {
-        this.userId = userId;
+    public AuditLog(int userID, String actionType, String description, LocalDateTime timestamp) {
+        this.userID = userID;
         this.actionType = actionType;
         this.description = description;
         this.timestamp = timestamp;
@@ -27,12 +27,12 @@ public class AuditLog {
         this.logId = logId;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getuserID() {
+        return userID;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setuserID(int userID) {
+        this.userID = userID;
     }
 
     public String getActionType() {

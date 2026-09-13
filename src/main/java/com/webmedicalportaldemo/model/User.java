@@ -84,11 +84,11 @@ public class User implements UserInteraction {
         return this.createdAt;
     }
 
-    public int getUserID() {
+    public int getuserID() {
         return userID;
     }
 
-    public void setUserID(int userID) {
+    public void setuserID(int userID) {
         this.userID = userID;
     }
 

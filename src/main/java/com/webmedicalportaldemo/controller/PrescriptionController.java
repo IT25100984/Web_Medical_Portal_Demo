@@ -48,7 +48,7 @@ public class PrescriptionController {
             return "redirect:/login";
         }
         List<Prescription> allOrders = medService.getAllOrders();
-        List<Prescription> myOrders = prescriptionDAO.getPrescriptionsByPatientUserId(user.getUserID());
+        List<Prescription> myOrders = prescriptionDAO.getPrescriptionsByPatientuserID(user.getuserID());
         model.addAttribute("myOrders", myOrders);
         return "pharmacy/prescriptions";
     }
@@ -77,7 +77,7 @@ public class PrescriptionController {
          * The session contains users.user_id, but prescriptions
          * references patients.patient_id.
          */
-        Integer patientID = patientDAO.getPatientIDByUserId(currentUser.getUserID());
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
         if (patientID == null || patientID <= 0) {
             return "redirect:/orderPrescription" + "?msg=patient_not_found";
         }

@@ -10,7 +10,7 @@ public class RoleService {
 
     public List<String> getAllSystemRoles() {
         // Returns the 6 core system roles
-        return List.of("PATIENT", "DOCTOR", "NURSE", "PHARMACIST", "HOSPITAL_ADMIN", "SYSTEM_ADMIN");
+        return List.of("PATIENT", "DOCTOR", "PHARMACIST", "LAB_TECHNICIAN", "HOSPITAL_ADMIN", "SYSTEM_ADMIN");
     }
 
     public Map<Integer, String> getUserRoleMappings() {
@@ -18,7 +18,7 @@ public class RoleService {
         return Map.of();
     }
 
-    public boolean assignUserRole(int userId, String newRole) {
+    public boolean assignUserRole(int userID, String newRole) {
         // Logic to update user RBAC permissions
         return true;
     }

@@ -60,8 +60,9 @@
     </style>
 </head>
 <body class="bg-light">
+<!-- Path goes up one level to jsp/, then into shared/ -->
 <%@ include file="../shared/header.jsp" %>
-<main class="container pb-5">
+<main class="container pb-5 mt-4">
     <c:if test="${param.msg eq 'success'}">
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
@@ -85,7 +86,7 @@
                     System Administration Dashboard
                 </h1>
                 <p class="fs-4 mb-3">
-                    Welcome, <strong><c:out value="${currentUser.fullName}" /></strong>
+                    Welcome, <strong><c:out value="${currentUser.fullName}" default="Administrator" /></strong>
                 </p>
                 <div class="admin-information-panel p-3">
                     <div class="row g-3">
@@ -135,7 +136,7 @@
         </div>
     </section>
 
-    <!-- Overview Cards mapped to Backlog Requirements -->
+    <!-- Overview Cards -->
     <section class="row g-3 mb-4">
         <div class="col-md-6 col-xl-3">
             <div class="card dashboard-card shadow-sm">
@@ -144,9 +145,7 @@
                         <i class="bi bi-people-fill" aria-hidden="true"></i>
                     </div>
                     <h2 class="h5">User Accounts</h2>
-                    <p class="text-muted mb-0">
-                        Manage user accounts, status, and credentials across all 6 roles (PBI-24).
-                    </p>
+                    <p class="text-muted mb-0">Manage user accounts, status, and credentials across all 6 roles (PBI-24).</p>
                 </div>
             </div>
         </div>
@@ -157,9 +156,7 @@
                         <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
                     </div>
                     <h2 class="h5">Role Access</h2>
-                    <p class="text-muted mb-0">
-                        Configure role-based access control (RBAC) permissions (PBI-21).
-                    </p>
+                    <p class="text-muted mb-0">Configure role-based access control (RBAC) permissions (PBI-21).</p>
                 </div>
             </div>
         </div>
@@ -170,9 +167,7 @@
                         <i class="bi bi-journal-text" aria-hidden="true"></i>
                     </div>
                     <h2 class="h5">Audit Trails</h2>
-                    <p class="text-muted mb-0">
-                        Review system actions, critical alerts, and emergency logs (PBI-22).
-                    </p>
+                    <p class="text-muted mb-0">Review system actions, critical alerts, and emergency logs (PBI-22).</p>
                 </div>
             </div>
         </div>
@@ -183,15 +178,13 @@
                         <i class="bi bi-database-gear" aria-hidden="true"></i>
                     </div>
                     <h2 class="h5">Database Backups</h2>
-                    <p class="text-muted mb-0">
-                        Schedule and trigger automated daily differential database backups (PBI-23).
-                    </p>
+                    <p class="text-muted mb-0">Schedule and trigger automated daily differential database backups (PBI-23).</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Corrected System Actions Grid with full <a> tags -->
+    <!-- Action Buttons -->
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
             <h2 class="h5 mb-0">
@@ -228,36 +221,6 @@
                         <i class="bi bi-database-check fs-3 mb-2" aria-hidden="true"></i>
                         <span class="fw-semibold">Database Backups (PBI-23)</span>
                     </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="card border-0 shadow-sm">
-        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h2 class="h5 mb-0">
-                <i class="bi bi-info-circle-fill text-primary me-2" aria-hidden="true"></i>
-                System Administrator Backlog Scope
-            </h2>
-            <span class="badge bg-primary">PBI-21 to PBI-24</span>
-        </div>
-        <div class="card-body">
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <h3 class="h6 fw-bold">Account and Access Management</h3>
-                    <ul class="text-muted mb-0">
-                        <li>Configure role-based access control across all 6 user roles (PBI-21).</li>
-                        <li>Manage user accounts, active statuses, and password resets (PBI-24).</li>
-                        <li>Disable compromised or inactive accounts immediately.</li>
-                    </ul>
-                </div>
-                <div class="col-lg-6">
-                    <h3 class="h6 fw-bold">Technical Operations & Security</h3>
-                    <ul class="text-muted mb-0">
-                        <li>Log critical patient alerts and escalations in audit trails (PBI-22).</li>
-                        <li>Schedule and monitor automated daily differential database backups (PBI-23).</li>
-                        <li>Monitor database health and application uptime.</li>
-                    </ul>
                 </div>
             </div>
         </div>

@@ -161,7 +161,7 @@ public class PrescriptionDAO {
      * This is useful because the logged-in session stores userID,
      * while prescriptions stores patients.patient_id.
      */
-    public List<Prescription> getPrescriptionsByPatientUserId(int userID) {
+    public List<Prescription> getPrescriptionsByPatientuserID(int userID) {
         String sql = """
                 SELECT
                     pr.prescription_id,

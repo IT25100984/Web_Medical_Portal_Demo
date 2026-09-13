@@ -8,7 +8,7 @@ import java.util.List;
 @Service
 public class AuditLogService {
 
-    public void logAction(int actorUserId, String actionType, String description) {
+    public void logAction(int actoruserID, String actionType, String description) {
         // Persist audit record to database with timestamp and IP/actor info
     }
 

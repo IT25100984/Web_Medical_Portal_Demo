@@ -89,7 +89,7 @@ public class AuthController {
         // Populate full Patient or User object into session attributes for JSP view resolution
         User sessionUser;
         if ("PATIENT".equalsIgnoreCase(user.getRole())) {
-            Patient patient = patientDAO.findByUserId(user.getUserID());
+            Patient patient = patientDAO.findByuserID(user.getuserID());
             sessionUser = (patient != null) ? patient : user;
         } else {
             sessionUser = user;
@@ -187,7 +187,7 @@ public class AuthController {
         try {
             patientFileService.logToFile(patient);
         } catch (Exception exception) {
-            System.err.println("Patient user ID " + patient.getUserID() + " was saved to MySQL, but patients.txt could not be updated: " + exception.getMessage());
+            System.err.println("Patient user ID " + patient.getuserID() + " was saved to MySQL, but patients.txt could not be updated: " + exception.getMessage());
         }
 
         return "redirect:/login?status=registered";
@@ -229,15 +229,15 @@ public class AuthController {
         newUser.setActive(true);
 
         // 5. Save user record and retrieve generated user_id
-        int generatedUserID = userDAO.saveUser(newUser);
+        int generateduserID = userDAO.saveUser(newUser);
 
-        if (generatedUserID <= 0) {
+        if (generateduserID <= 0) {
             model.addAttribute("errorMessage", "The system encountered an error creating your account.");
             return "register";
         }
 
         // 6. Link newly created user_id to employee_registry
-        boolean linked = employeeDAO.linkUserToEmployee(registryEmployee.getEmployeeId(), generatedUserID);
+        boolean linked = employeeDAO.linkUserToEmployee(registryEmployee.getEmployeeId(), generateduserID);
 
         if (!linked) {
             model.addAttribute("errorMessage", "Account created, but failed to link employee profile.");
@@ -245,7 +245,7 @@ public class AuthController {
         }
 
 // 7. Insert operational record into employees table
-        employeeDAO.createActiveEmployee(registryEmployee.getEmployeeId(), generatedUserID, registryEmployee.getDepartment());
+        employeeDAO.createActiveEmployee(registryEmployee.getEmployeeId(), generateduserID, registryEmployee.getDepartment());
 
         return "redirect:/login?msg=registration_success";
     }
@@ -266,7 +266,7 @@ public class AuthController {
             return redirectByRole(currentUser.getRole());
         }
 
-        int userID = currentUser.getUserID();
+        int userID = currentUser.getuserID();
         boolean deleted = userDAO.deleteUserById(userID);
 
         if (!deleted) {
