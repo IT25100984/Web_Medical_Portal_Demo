@@ -375,7 +375,7 @@ public class DashboardController {
             return "redirect:/pharmacistDashboard" + errorParameter;
         }
         if (hasRole(user, "LAB_TECHNICIAN")) {
-            return "redirect:/lab/dashboard" + errorParameter;
+            return "redirect://labDashboard" + errorParameter;
         }
         if (hasRole(user, "HOSPITAL_ADMIN")) {
             return "redirect:/adminDashboard" + errorParameter;

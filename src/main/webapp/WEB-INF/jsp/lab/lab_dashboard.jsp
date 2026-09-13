@@ -146,7 +146,7 @@
                                                     <h5 class="modal-title">Update Sample Pipeline (#${req.requestId})</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <form action="${pageContext.request.contextPath}/lab/updateStatus" method="post">
+                                                <form action="${pageContext.request.contextPath}/updateStatus" method="post">
                                                     <div class="modal-body">
                                                         <input type="hidden" name="requestId" value="${req.requestId}">
                                                         <div class="mb-3">
@@ -184,7 +184,7 @@
                                                     <h5 class="modal-title"><i class="bi bi-journal-check me-2"></i>Log Diagnostic Results (#${req.requestId})</h5>
                                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <form action="${pageContext.request.contextPath}/lab/submitResults" method="post" enctype="multipart/form-data">
+                                                <form action="${pageContext.request.contextPath}/submitResults" method="post" enctype="multipart/form-data">
                                                     <div class="modal-body">
                                                         <input type="hidden" name="requestId" value="${req.requestId}">
 

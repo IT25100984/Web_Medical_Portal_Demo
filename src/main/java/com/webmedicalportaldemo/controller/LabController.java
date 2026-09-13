@@ -69,13 +69,12 @@ public class LabController {
 
         boolean updated = labReportService.updateSampleStatus(requestId, sampleStatus, status);
         if (updated) {
-            // Changed to addAttribute so it appears as ?msg=status_updated in the URL for your JSP <c:if> logic
             redirectAttributes.addAttribute("msg", "status_updated");
         } else {
             redirectAttributes.addFlashAttribute("error", "Failed to update sample status.");
         }
 
-        return "redirect:/lab/dashboard";
+        return "redirect:/labDashboard";
     }
 
     @PostMapping("/submitResults")
@@ -99,7 +98,7 @@ public class LabController {
             } catch (IOException e) {
                 log.error("File upload error: ", e);
                 redirectAttributes.addFlashAttribute("error", "Failed to upload attached report file.");
-                return "redirect:/lab/dashboard";
+                return "redirect:/labDashboard";
             }
         }
 
@@ -110,12 +109,11 @@ public class LabController {
         );
 
         if (submitted) {
-            // Changed to addAttribute so it appears as ?msg=results_submitted in the URL for your JSP <c:if> logic
             redirectAttributes.addAttribute("msg", "results_submitted");
         } else {
             redirectAttributes.addFlashAttribute("error", "Failed to record lab test results.");
         }
 
-        return "redirect:/lab/dashboard";
+        return "redirect:/labDashboard";
     }
 }

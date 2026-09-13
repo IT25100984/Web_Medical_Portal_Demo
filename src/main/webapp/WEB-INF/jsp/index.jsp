@@ -60,7 +60,7 @@
             <c:url var="dashboardUrl" value="/pharmacistDashboard" />
         </c:when>
         <c:when test="${sessionScope.user.role eq 'LAB_TECHNICIAN'}">
-            <c:url var="dashboardUrl" value="/lab/dashboard" />
+            <c:url var="dashboardUrl" value="//labDashboard" />
         </c:when>
         <c:when test="${sessionScope.user.role eq 'HOSPITAL_ADMIN'}">
             <c:url var="dashboardUrl" value="/adminDashboard" />
