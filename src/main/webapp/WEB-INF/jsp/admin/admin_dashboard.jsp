@@ -140,8 +140,9 @@
         </div>
     </section>
 
+    <!-- Stat Summary Cards Row -->
     <section class="row g-3 mb-4">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-xl">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-primary-subtle text-primary">
@@ -159,7 +160,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-xl">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-info-subtle text-info">
@@ -177,7 +178,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-xl">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-warning-subtle text-warning">
@@ -195,7 +196,26 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <!-- Active Emergencies Card -->
+        <div class="col-md-6 col-xl">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="summary-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Active Emergencies</p>
+                        <h2 class="h4 mb-0">
+                            <c:choose>
+                                <c:when test="${not empty activeEmergenciesCount}"><c:out value="${activeEmergenciesCount}" /></c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl">
             <div class="card summary-card shadow-sm">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="summary-icon bg-success-subtle text-success">

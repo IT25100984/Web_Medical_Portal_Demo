@@ -1,11 +1,6 @@
 package com.webmedicalportaldemo.controller;
 
-import com.webmedicalportaldemo.dao.AppointmentDAO;
-import com.webmedicalportaldemo.dao.DoctorDAO;
-import com.webmedicalportaldemo.dao.EmployeeDAO;
-import com.webmedicalportaldemo.dao.FeedbackDAO;
-import com.webmedicalportaldemo.dao.PatientDAO;
-import com.webmedicalportaldemo.dao.PrescriptionDAO;
+import com.webmedicalportaldemo.dao.*;
 import com.webmedicalportaldemo.dto.AppointmentDTO;
 import com.webmedicalportaldemo.model.Doctor;
 import com.webmedicalportaldemo.model.Employee;
@@ -41,10 +36,11 @@ public class DashboardController {
     private final PrescriptionDAO prescriptionDAO;
     private final MedFileService medFileService;
     private final LabReportService labReportService;
+    private final EmergencyDAO emergencyDAO;
 
     public DashboardController(AppointmentDAO apptDAO, DoctorDAO doctorDAO, PatientDAO patientDAO,
                                EmployeeDAO employeeDAO, FeedbackDAO feedbackDAO, LabReportService labReportService,
-                               PrescriptionDAO prescriptionDAO, MedFileService medFileService) {
+                               PrescriptionDAO prescriptionDAO, MedFileService medFileService, EmergencyDAO emergencyDAO) {
         this.apptDAO = apptDAO;
         this.doctorDAO = doctorDAO;
         this.patientDAO = patientDAO;
@@ -53,6 +49,7 @@ public class DashboardController {
         this.prescriptionDAO = prescriptionDAO;
         this.medFileService = medFileService;
         this.labReportService = labReportService;
+        this.emergencyDAO = emergencyDAO;
     }
 
     /*
@@ -146,11 +143,13 @@ public class DashboardController {
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
+        int activeEmergenciesCount = emergencyDAO.getActiveEmergencies().size();
         List<AppointmentDTO> allAppointments = apptDAO.getAllAppointments();
         populateUserAttributes(model, currentUser);
         model.addAttribute("employee", employee);
         model.addAttribute("adminApps", allAppointments);
         model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
+        model.addAttribute("activeEmergenciesCount", activeEmergenciesCount);
 
         // Bind total count for the Employee Registry card on admin_dashboard.jsp
         model.addAttribute("employeeCount", employeeDAO.getEmployeeCount());

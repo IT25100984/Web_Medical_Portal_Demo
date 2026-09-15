@@ -5,6 +5,8 @@
 <c:url var="loginUrl" value="/login" />
 <c:url var="registerUrl" value="/register" />
 <c:url var="logoutUrl" value="/logout" />
+<c:url var="emergencyRequestUrl" value="/emergency/request" />
+<c:url var="emergencyDashboardUrl" value="/emergency/dashboard" />
 
 <c:if test="${not empty sessionScope.user}">
     <c:choose>
@@ -45,6 +47,12 @@
 
         <div class="collapse navbar-collapse" id="mainNavigation">
             <div class="navbar-nav ms-auto align-items-lg-center gap-2 py-2 py-lg-0">
+
+                <!-- Fast-Track Emergency Button (Visible to Everyone) -->
+                <a href="${emergencyRequestUrl}" class="btn btn-sm btn-danger text-white fw-bold shadow-sm">
+                    🚑 Report Emergency
+                </a>
+
                 <button type="button" class="btn btn-sm btn-outline-warning text-white" data-bs-toggle="modal" data-bs-target="#publicReviewsModal">
                     <span class="text-warning me-1" aria-hidden="true">★</span>
                     Patient Reviews
@@ -58,6 +66,13 @@
                                 <c:out value="${sessionScope.user.fullName}" />
                             </strong>
                         </span>
+
+                        <!-- Emergency Command Center (Admins Only) -->
+                        <c:if test="${sessionScope.user.role eq 'HOSPITAL_ADMIN' or sessionScope.user.role eq 'SYSTEM_ADMIN'}">
+                            <a href="${emergencyDashboardUrl}" class="btn btn-sm btn-danger fw-bold shadow-sm">
+                                🚨 Emergency Center
+                            </a>
+                        </c:if>
 
                         <a href="${dashboardUrl}" class="btn btn-sm btn-outline-light">
                             Dashboard
