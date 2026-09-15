@@ -431,5 +431,7 @@
         }
     }
 </script>
+   <!-- Include AI Assistant Partial -->
+<jsp:include page="/WEB-INF/jsp/ai/ai_assistant_chat.jsp" />
 </body>
 </html>

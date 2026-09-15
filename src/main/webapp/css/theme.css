@@ -1,0 +1,101 @@
+/* ============================================
+   WMP Theme — Sky Blue Glass
+   Design tokens shared across the whole app
+   ============================================ */
+:root {
+    /* Core palette */
+    --wmp-sky-1: #7fc9f0;
+    --wmp-sky-2: #4a9fd8;
+    --wmp-sky-deep: #2b6ca3;
+    --wmp-sky-pale: #eaf6fd;
+
+    /* Status accents — reused from existing action buttons */
+    --wmp-amber: #f0ad4e;
+    --wmp-amber-deep: #d9922e;
+    --wmp-green: #3fae6a;
+    --wmp-green-deep: #2f8c53;
+    --wmp-red: #e6534f;
+    --wmp-red-deep: #c8413d;
+
+    /* Neutrals */
+    --wmp-ink: #223142;
+    --wmp-ink-soft: #5a7a8f;
+    --wmp-surface: #ffffff;
+    --wmp-surface-glass: rgba(255, 255, 255, 0.6);
+    --wmp-border-glass: rgba(255, 255, 255, 0.35);
+    --wmp-bg-page: #f4f8fb;
+
+    /* Elevation */
+    --wmp-shadow-sm: 0 2px 8px rgba(43, 108, 163, 0.10);
+    --wmp-shadow-md: 0 8px 24px rgba(43, 108, 163, 0.18);
+    --wmp-shadow-lg: 0 20px 50px rgba(43, 108, 163, 0.25);
+
+    /* Shape */
+    --wmp-radius-sm: 10px;
+    --wmp-radius-md: 16px;
+    --wmp-radius-lg: 20px;
+}
+
+body {
+    background: var(--wmp-bg-page);
+    color: var(--wmp-ink);
+}
+
+/* ---------- Gradient surfaces ---------- */
+.wmp-hero,
+.wmp-panel-gradient {
+    background: linear-gradient(135deg, var(--wmp-sky-1), var(--wmp-sky-deep));
+    color: #ffffff;
+    border-radius: var(--wmp-radius-lg);
+    box-shadow: var(--wmp-shadow-md);
+}
+
+.wmp-navbar {
+    background: linear-gradient(90deg, var(--wmp-sky-deep), var(--wmp-sky-2));
+    box-shadow: var(--wmp-shadow-sm);
+}
+
+/* ---------- Glass card ---------- */
+.wmp-card-glass {
+    background: var(--wmp-surface-glass);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid var(--wmp-border-glass);
+    border-radius: var(--wmp-radius-md);
+    box-shadow: var(--wmp-shadow-sm);
+}
+
+/* ---------- Buttons ---------- */
+.wmp-btn {
+    border: none;
+    border-radius: var(--wmp-radius-sm);
+    padding: 10px 18px;
+    font-weight: 600;
+    color: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.wmp-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--wmp-shadow-sm);
+}
+
+.wmp-btn-primary   { background: linear-gradient(135deg, var(--wmp-sky-1), var(--wmp-sky-2)); }
+.wmp-btn-amber     { background: linear-gradient(135deg, var(--wmp-amber), var(--wmp-amber-deep)); }
+.wmp-btn-green     { background: linear-gradient(135deg, var(--wmp-green), var(--wmp-green-deep)); }
+.wmp-btn-red        { background: linear-gradient(135deg, var(--wmp-red), var(--wmp-red-deep)); }
+
+/* ---------- Table header bars (used on dashboard) ---------- */
+.wmp-table-header {
+    background: var(--wmp-ink);
+    color: #ffffff;
+}
+.wmp-section-header {
+    background: linear-gradient(90deg, var(--wmp-sky-2), var(--wmp-sky-deep));
+    color: #ffffff;
+    border-radius: var(--wmp-radius-sm) var(--wmp-radius-sm) 0 0;
+}
+
+/* ---------- Status badges ---------- */
+.wmp-badge-pending   { background: var(--wmp-amber); color: #fff; }
+.wmp-badge-completed { background: var(--wmp-green); color: #fff; }
+.wmp-badge-cancelled { background: var(--wmp-red); color: #fff; }

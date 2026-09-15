@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/theme.css">
+
 <c:url var="homeUrl" value="/" />
 <c:url var="loginUrl" value="/login" />
 <c:url var="registerUrl" value="/register" />
@@ -34,7 +36,7 @@
     </c:choose>
 </c:if>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4" aria-label="Main navigation">
+<nav class="navbar navbar-expand-lg navbar-dark wmp-navbar shadow-sm mb-4" aria-label="Main navigation">
     <div class="container">
         <!-- Brand Link -->
         <a class="navbar-brand text-white fw-bold" href="${homeUrl}">
