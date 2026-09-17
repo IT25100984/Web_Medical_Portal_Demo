@@ -21,13 +21,13 @@ public class LabReportService {
     /**
      * Creates a new lab test order submitted by a doctor.
      */
-    public boolean createDiagnosticRequest(int patientId, int doctorId, int appointmentId,
+    public boolean createDiagnosticRequest(int patientId, int doctorId, int appointmentID,
                                            String testType, String priority, String clinicalNotes) {
         try {
             LabReport report = new LabReport();
             report.setPatientId(patientId);     // Changed from setPatientID
             report.setDoctorId(doctorId);       // Changed from setDoctorID
-            report.setAppointmentId(appointmentId); // Changed from setAppointmentID
+            report.setAppointmentId(appointmentID); // Changed from setAppointmentID
             report.setTestType(testType);
             report.setPriority(priority != null ? priority : "ROUTINE");
             report.setClinicalNotes(clinicalNotes);

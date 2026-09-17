@@ -81,6 +81,9 @@ public class DashboardController {
     /*
      * Doctor dashboard
      */
+    /*
+     * Doctor dashboard
+     */
     @GetMapping("/doctorDashboard")
     public String showDoctorDashboard(HttpSession session, Model model, HttpServletResponse response) {
         preventDashboardCaching(response);
@@ -93,12 +96,44 @@ public class DashboardController {
         if (doctor == null || employee == null) {
             return "redirect:/login?error=doctorProfileNotFound";
         }
+
+        // FIX: Fetch active emergency assignment for this doctor if present
+        Object activeEmergency = emergencyDAO.getActiveAssignmentByDoctorId(currentUser.getuserID());
+        if (activeEmergency != null) {
+            model.addAttribute("activeEmergency", activeEmergency);
+        }
+
         List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByDoctor(currentUser.getuserID());
         populateUserAttributes(model, currentUser);
         model.addAttribute("doctor", doctor);
         model.addAttribute("employee", employee);
         model.addAttribute("myAppts", myAppointments);
         return "clinical/doctor_dashboard";
+    }
+
+    /*
+     * Complete emergency assignment and free up doctor
+     */
+    @PostMapping("/emergency/complete")
+    public String completeEmergencyAssignment(@RequestParam("requestId") int requestId,
+                                              @RequestParam("notes") String notes,
+                                              HttpSession session,
+                                              RedirectAttributes redirectAttributes) {
+        User currentUser = getCurrentUser(session);
+        if (!hasRole(currentUser, "DOCTOR")) {
+            return "redirect:/login";
+        }
+
+        // Resolve emergency request and mark doctor as available in DAO
+        boolean completed = emergencyDAO.completeEmergency(requestId, currentUser.getuserID(), notes);
+
+        if (completed) {
+            redirectAttributes.addFlashAttribute("msg", "Emergency assignment completed successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to complete emergency assignment.");
+        }
+
+        return "redirect:/doctorDashboard";
     }
 
     /*
@@ -226,7 +261,7 @@ public class DashboardController {
 
     @PostMapping("/doctor/lab-requests/create")
     public String createLabRequest(@RequestParam("patientId") int patientId,
-                                   @RequestParam("appointmentId") int appointmentId,
+                                   @RequestParam("appointmentID") int appointmentID,
                                    @RequestParam("testType") String testType,
                                    @RequestParam("priority") String priority,
                                    @RequestParam("clinicalNotes") String clinicalNotes,
@@ -241,7 +276,7 @@ public class DashboardController {
         boolean created = labReportService.createDiagnosticRequest(
                 patientId,
                 doctor.getuserID(),
-                appointmentId,
+                appointmentID,
                 testType,
                 priority,
                 clinicalNotes

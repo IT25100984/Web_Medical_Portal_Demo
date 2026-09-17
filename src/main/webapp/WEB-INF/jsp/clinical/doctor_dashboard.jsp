@@ -136,6 +136,53 @@
             </div>
         </div>
     </section>
+    <c:if test="${not empty activeEmergency}">
+        <div class="alert alert-danger shadow-sm border-0 d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge bg-danger fs-6 me-2"><i class="bi bi-exclamation-triangle-fill"></i> ACTIVE EMERGENCY ASSIGNMENT</span>
+                <strong>Patient:</strong> ${activeEmergency.patientName} |
+                <strong>Location:</strong> ${activeEmergency.location} |
+                <strong>Contact:</strong> ${activeEmergency.contactNumber}
+            </div>
+            <button type="button" class="btn btn-dark btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#completeEmergencyModal">
+                <i class="bi bi-check-circle me-1"></i> Mark as Completed
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="completeEmergencyModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="bi bi-shield-check me-2"></i>Complete Emergency Assignment</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/emergency/complete" method="POST">
+                        <div class="modal-body">
+                            <input type="hidden" name="requestId" value="${activeEmergency.requestId}" />
+
+                            <p>Are you sure you have resolved this emergency assignment?</p>
+                            <ul class="text-muted small">
+                                <li>Patient: <strong>${activeEmergency.patientName}</strong></li>
+                                <li>Req #: <strong>#${activeEmergency.requestId}</strong></li>
+                            </ul>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Clinical Notes</label>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Enter brief outcome notes..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                <i class="bi bi-check-lg me-1"></i> Complete & Release Duty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </c:if>
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
@@ -265,6 +312,39 @@
                                             <button type="button" class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">About</button>
                                         </div>
 
+                                        <!-- Reschedule Modal -->
+                                        <div class="modal fade" id="rescheduleModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow">
+                                                    <form action="${pageContext.request.contextPath}/updateAppointment" method="POST">
+                                                        <div class="modal-header bg-warning text-dark">
+                                                            <h5 class="modal-title fw-bold">
+                                                                <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Reschedule Appointment
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body p-4 text-start">
+                                                            <input type="hidden" name="id" value="${appt.appointmentID}" />
+                                                            <input type="hidden" name="action" value="rescheduled" />
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold text-secondary">New Date</label>
+                                                                <input type="date" class="form-control" name="newDate" required />
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold text-secondary">New Time</label>
+                                                                <input type="time" class="form-control" name="newTime" required />
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer bg-light border-0">
+                                                            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-warning btn-sm px-3 fw-bold">Confirm Reschedule</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- About Modal -->
                                         <div class="modal fade" id="aboutModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
@@ -284,21 +364,21 @@
                                                             <div class="col-6 text-end">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Total Cost</small>
                                                                 <span class="fw-bold text-success">
-                                                            LKR
-                                                            <c:choose>
-                                                                <c:when test="${not empty appt.totalFee}"><c:out value="${appt.totalFee}" /></c:when>
-                                                                <c:otherwise>0.00</c:otherwise>
-                                                            </c:choose>
-                                                        </span>
+                                        LKR
+                                        <c:choose>
+                                            <c:when test="${not empty appt.totalFee}"><c:out value="${appt.totalFee}" /></c:when>
+                                            <c:otherwise>0.00</c:otherwise>
+                                        </c:choose>
+                                    </span>
                                                             </div>
                                                             <div class="col-6">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Additional Requirement</small>
                                                                 <span>
-                                                            <c:choose>
-                                                                <c:when test="${not empty appt.additionalCharge}"><c:out value="${appt.additionalCharge}" /></c:when>
-                                                                <c:otherwise>None</c:otherwise>
-                                                            </c:choose>
-                                                        </span>
+                                        <c:choose>
+                                            <c:when test="${not empty appt.additionalCharge}"><c:out value="${appt.additionalCharge}" /></c:when>
+                                            <c:otherwise>None</c:otherwise>
+                                        </c:choose>
+                                    </span>
                                                             </div>
                                                             <div class="col-6 text-end">
                                                                 <small class="text-muted fw-bold text-uppercase d-block">Schedule</small>
@@ -340,7 +420,7 @@
                     <form action="${pageContext.request.contextPath}/doctor/lab-requests/create" method="post">
                         <div class="modal-body">
                             <input type="hidden" id="modalPatientId" name="patientId" />
-                            <input type="hidden" id="modalAppointmentId" name="appointmentId" />
+                            <input type="hidden" id="modalAppointmentId" name="appointmentID" />
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Patient Reference</label>
@@ -385,10 +465,10 @@
         </div>
 
         <script>
-            function populateLabModal(patientId, patientName, appointmentId) {
+            function populateLabModal(patientId, patientName, appointmentID) {
                 document.getElementById('modalPatientId').value = patientId;
                 document.getElementById('modalPatientName').value = patientName + ' (ID: #' + patientId + ')';
-                document.getElementById('modalAppointmentId').value = appointmentId;
+                document.getElementById('modalAppointmentId').value = appointmentID;
             }
         </script>
     </section>

@@ -7,7 +7,7 @@ public class LabReport {
     private int requestId;
     private int patientId;
     private int doctorId;
-    private int appointmentId;
+    private int appointmentID;
     private String testName;
     private String category;
     private String priority;
@@ -26,14 +26,14 @@ public class LabReport {
     public LabReport() {
     }
 
-    public LabReport(int requestId, int patientId, int doctorId, int appointmentId, String testName,
+    public LabReport(int requestId, int patientId, int doctorId, int appointmentID, String testName,
                      String category, String priority, String clinicalNotes, String status,
                      String sampleStatus, String resultsSummary, String filePath,
                      Timestamp requestedDate, Timestamp completedDate) {
         this.requestId = requestId;
         this.patientId = patientId;
         this.doctorId = doctorId;
-        this.appointmentId = appointmentId;
+        this.appointmentID = appointmentID;
         this.testName = testName;
         this.category = category;
         this.priority = priority;
@@ -73,11 +73,11 @@ public class LabReport {
     }
 
     public int getAppointmentId() {
-        return appointmentId;
+        return appointmentID;
     }
 
-    public void setAppointmentId(int appointmentId) {
-        this.appointmentId = appointmentId;
+    public void setAppointmentId(int appointmentID) {
+        this.appointmentID = appointmentID;
     }
 
     public String getTestName() {

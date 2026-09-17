@@ -2,6 +2,7 @@ package com.webmedicalportaldemo.controller;
 
 import com.webmedicalportaldemo.dao.DoctorDAO;
 import com.webmedicalportaldemo.dao.FeedbackDAO;
+import com.webmedicalportaldemo.dao.PatientDAO;
 import com.webmedicalportaldemo.model.Feedback;
 import com.webmedicalportaldemo.model.User;
 import com.webmedicalportaldemo.service.FeedbackFileService;
@@ -21,14 +22,17 @@ public class FeedbackController {
 
     private final FeedbackDAO feedbackDAO;
     private final DoctorDAO doctorDAO;
+    private final PatientDAO patientDAO;
     private final FeedbackFileService feedbackFileService;
 
     public FeedbackController(FeedbackDAO feedbackDAO,
                               DoctorDAO doctorDAO,
+                              PatientDAO patientDAO,
                               FeedbackFileService feedbackFileService) {
 
         this.feedbackDAO = feedbackDAO;
         this.doctorDAO = doctorDAO;
+        this.patientDAO = patientDAO;
         this.feedbackFileService = feedbackFileService;
     }
 
@@ -45,6 +49,7 @@ public class FeedbackController {
         if (currentUser == null) {
             return "redirect:/login";
         }
+
         /*
          * Patient feedback form
          */
@@ -55,29 +60,19 @@ public class FeedbackController {
             model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
             return "shared/feedback_form";
         }
+
         /*
          * Doctor feedback view
          */
         if (hasRole(currentUser, "DOCTOR")) {
-            /*
-             * This assumes FeedbackDAO resolves the user's ID
-             * to the corresponding doctors.doctor_id.
-             *
-             * See the database ID note below.
-             */
             List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(currentUser.getuserID());
-
             double averageRating = feedbackDAO.getAverageRating(currentUser.getuserID());
 
             model.addAttribute("reviews", reviews);
             model.addAttribute("avgRating", averageRating);
-            /*
-             * Use this path if the JSP is stored at:
-             *
-             * WEB-INF/jsp/clinical/doctor_feedback.jsp
-             */
             return "clinical/doctor_feedback";
         }
+
         /*
          * Hospital administrator feedback view
          */
@@ -85,6 +80,7 @@ public class FeedbackController {
             model.addAttribute("allFeedback", feedbackDAO.getAllFeedback());
             return "admin/admin_feedback_modal";
         }
+
         return redirectToDashboard(currentUser);
     }
 
@@ -103,55 +99,44 @@ public class FeedbackController {
         if (currentUser == null) {
             return "redirect:/login";
         }
-        /*
-         * Only patients should submit feedback.
-         */
+
         if (!hasRole(currentUser, "PATIENT")) {
             return redirectToDashboard(currentUser);
         }
-        /*
-         * Validate all required identifiers.
-         *
-         * If every feedback record must relate to an appointment,
-         * appointmentID must also be required.
-         */
-        if (doctorID == null || doctorID <= 0 ||
-                appointmentID == null || appointmentID <= 0) {
+
+        /* 1. Resolve patient_id strictly */
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
+        if (patientID == null || patientID <= 0) {
             return showPatientFeedbackError(currentUser, doctorID, appointmentID,
-                    "A valid doctor and appointment are required.", model
+                    "Patient profile not found. Please contact support.", model
             );
         }
 
-        /*
-         * The database constraint requires a value from 1 to 5.
-         */
+        /* 2. Validate rating */
         if (rating == null || rating < 1 || rating > 5) {
-            return showPatientFeedbackError(currentUser, doctorID,
-                    appointmentID, "Rating must be between 1 and 5.", model
+            return showPatientFeedbackError(currentUser, doctorID, appointmentID,
+                    "Rating must be between 1 and 5.", model
             );
         }
 
         String cleanedComment = comment == null ? "" : comment.trim();
-        /*
-         * Prevent unnecessarily large feedback comments.
-         * This value may be changed to match the JSP and database.
-         */
         if (cleanedComment.length() > 2000) {
             return showPatientFeedbackError(currentUser, doctorID, appointmentID,
                     "The feedback comment must not exceed 2000 characters.", model
             );
         }
-        /*
-         * Important:
-         *
-         * currentUser.getuserID() is users.user_id.
-         *
-         * If feedback.patient_id references patients.patient_id,
-         * FeedbackDAO must convert users.user_id into patient_id
-         * before inserting the feedback record.
-         */
-        Integer newFeedbackId = feedbackDAO.submitFeedback(currentUser.getuserID(),
-                doctorID, appointmentID, rating, cleanedComment);
+
+        /* 3. Pass NULL (not 0) for optional foreign keys */
+        Integer safeDoctorID = (doctorID != null && doctorID > 0) ? doctorID : null;
+        Integer safeAppointmentID = (appointmentID != null && appointmentID > 0) ? appointmentID : null;
+
+        Integer newFeedbackId = feedbackDAO.submitFeedback(
+                patientID,
+                safeDoctorID,
+                safeAppointmentID,
+                rating,
+                cleanedComment
+        );
 
         if (newFeedbackId == null || newFeedbackId <= 0) {
             return showPatientFeedbackError(currentUser, doctorID, appointmentID,
@@ -159,32 +144,20 @@ public class FeedbackController {
             );
         }
 
-        /*
-         * Temporary file synchronization.
-         *
-         * The database insert remains successful even if writing
-         * to the secondary text file fails.
-         */
+        /* 4. Secondary file synchronization */
         try {
             String patientName = currentUser.getFullName();
-            String doctorName = feedbackDAO.getUserFullName(doctorID);
-            feedbackFileService.writeFeedbackToFile(newFeedbackId, patientName,
-                    doctorName, rating, cleanedComment
-            );
-            System.out.println("Feedback saved to MySQL and feedback.txt. "
-                            + "Feedback ID: " + newFeedbackId
-            );
-
+            String doctorName = (safeDoctorID != null) ? feedbackDAO.getUserFullName(safeDoctorID) : "General Platform";
+            feedbackFileService.writeFeedbackToFile(newFeedbackId, patientName, doctorName, rating, cleanedComment);
         } catch (Exception e) {
-
-            System.err.println("Feedback ID " + newFeedbackId + " was saved to MySQL, but file "
-                    + "synchronization failed: " + e.getMessage()
-            );
+            System.err.println("Feedback ID " + newFeedbackId + " saved to DB, but file sync failed: " + e.getMessage());
         }
-        return "redirect:/patientDashboard" + "?msg=review_success";
+
+        return "redirect:/patientDashboard?msg=review_success";
     }
+
     /**
-     * Allows only the hospital administrator to delete feedback.
+     * Allows hospital administrator to delete feedback.
      */
     @PostMapping("/deleteFeedback")
     public String deleteFeedback(
@@ -198,36 +171,29 @@ public class FeedbackController {
             return redirectToDashboard(currentUser);
         }
         if (feedbackId == null || feedbackId <= 0) {
-            return "redirect:/adminDashboard" + "?msg=invalid_feedback_id";
+            return "redirect:/adminDashboard?msg=invalid_feedback_id";
         }
+
         try {
             boolean deletedFromDatabase = feedbackDAO.deleteFeedbackById(feedbackId);
-            if (!deletedFromDatabase) {return "redirect:/adminDashboard" + "?msg=delete_failed";}
-            /*
-             * Delete the corresponding file record only after
-             * successfully deleting the database record.
-             */
+            if (!deletedFromDatabase) {
+                return "redirect:/adminDashboard?msg=delete_failed";
+            }
+
             try {
                 feedbackFileService.deleteFeedbackFromFile(feedbackId);
             } catch (Exception fileException) {
-                System.err.println("Feedback ID " + feedbackId
-                                + " was deleted from MySQL, " + "but could not be removed from "
-                                + "feedback.txt: " + fileException.getMessage()
-                );
-                return "redirect:/adminDashboard" + "?msg=db_deleted_file_failed";
+                System.err.println("Feedback ID " + feedbackId + " deleted from DB but file removal failed: " + fileException.getMessage());
             }
-            return "redirect:/adminDashboard" + "?msg=delete_success";
+
+            return "redirect:/adminDashboard?msg=delete_success";
         } catch (Exception e) {
-            System.err.println("Feedback deletion failed for ID " + feedbackId
-                            + ": " + e.getMessage());
-            return "redirect:/adminDashboard" + "?msg=delete_failed";
+            return "redirect:/adminDashboard?msg=delete_failed";
         }
     }
-    /**
-     * Rebuilds the patient feedback form after validation fails.
-     */
+
     private String showPatientFeedbackError(User currentUser, Integer doctorID,
-            Integer appointmentID, String errorMessage, Model model) {
+                                            Integer appointmentID, String errorMessage, Model model) {
 
         model.addAttribute("error", errorMessage);
         model.addAttribute("selectedDoctorID", doctorID);
@@ -236,41 +202,21 @@ public class FeedbackController {
         model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
         return "shared/feedback_form";
     }
-    /**
-     * Safely retrieves the logged-in user.
-     */
+
     private User getCurrentUser(HttpSession session) {
         Object sessionUser = session.getAttribute("user");
+        return (sessionUser instanceof User) ? (User) sessionUser : null;
+    }
 
-        if (sessionUser instanceof User) {
-            return (User) sessionUser;
-        }
-        return null;
-    }
-    /**
-     * Performs a null-safe role comparison.
-     */
     private boolean hasRole(User user, String requiredRole) {
-        return user != null && user.getRole() != null
-                && requiredRole.equalsIgnoreCase(user.getRole()
-        );
+        return user != null && user.getRole() != null && requiredRole.equalsIgnoreCase(user.getRole());
     }
-    /**
-     * Redirects each role to the correct dashboard.
-     */
+
     private String redirectToDashboard(User user) {
-        if (hasRole(user, "PATIENT")) {
-            return "redirect:/patientDashboard";
-        }
-        if (hasRole(user, "DOCTOR")) {
-            return "redirect:/doctorDashboard";
-        }
-        if (hasRole(user, "PHARMACIST")) {
-            return "redirect:/pharmacistDashboard";
-        }
-        if (hasRole(user, "HOSPITAL_ADMIN")) {
-            return "redirect:/adminDashboard";
-        }
+        if (hasRole(user, "PATIENT")) return "redirect:/patientDashboard";
+        if (hasRole(user, "DOCTOR")) return "redirect:/doctorDashboard";
+        if (hasRole(user, "PHARMACIST")) return "redirect:/pharmacistDashboard";
+        if (hasRole(user, "HOSPITAL_ADMIN")) return "redirect:/adminDashboard";
         return "redirect:/login";
     }
 }

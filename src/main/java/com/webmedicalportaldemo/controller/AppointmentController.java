@@ -150,17 +150,25 @@ public class AppointmentController {
      * Accepts or cancels an appointment.
      */
     @GetMapping("/updateAppointment")
-    public String updateAppointmentStatus(@RequestParam("id") int appointmentID, @RequestParam("action") String action, HttpSession session) {
+    public String updateAppointmentStatus(
+            @RequestParam(name = "id", required = false) String idStr,
+            @RequestParam(name = "action", required = false) String action,
+            HttpSession session) {
+
         User currentUser = getCurrentUser(session);
         if (currentUser == null) {
             return "redirect:/login";
         }
+
+        int appointmentID = parseAppointmentId(idStr);
         if (appointmentID <= 0 || action == null || action.isBlank()) {
             return redirectByRoleWithMessage(currentUser, "error");
         }
+
         boolean success;
         if ("accept".equalsIgnoreCase(action)) {
-            if (!hasRole(currentUser, "DOCTOR")) {
+            // FIX: Allow BOTH Doctors and Patients to accept appointments / rescheduled proposals
+            if (!hasRole(currentUser, "DOCTOR") && !hasRole(currentUser, "PATIENT")) {
                 return redirectByRoleWithMessage(currentUser, "unauthorized");
             }
             success = apptDAO.updateAppointmentStatus(appointmentID, "CONFIRMED", null, null, currentUser.getuserID());
@@ -177,25 +185,49 @@ public class AppointmentController {
         } else {
             return redirectByRoleWithMessage(currentUser, "invalidAction");
         }
+
         return redirectByRoleWithMessage(currentUser, success ? action.toLowerCase(Locale.ROOT) + "Success" : "error");
     }
+
     /**
      * Reschedules an appointment.
      */
     @PostMapping("/updateAppointment")
-    public String rescheduleAppointment(@RequestParam("id") int appointmentID, @RequestParam("action") String action, @RequestParam("newDate") String newDate, @RequestParam("newTime") String newTime, HttpSession session) {
+    public String rescheduleAppointment(
+            @RequestParam(name = "id", required = false) String idStr,
+            @RequestParam(name = "action", required = false) String action,
+            @RequestParam(name = "newDate", required = false) String newDate,
+            @RequestParam(name = "newTime", required = false) String newTime,
+            HttpSession session) {
+
         User currentUser = getCurrentUser(session);
         if (currentUser == null) {
             return "redirect:/login";
         }
+
         if (!hasRole(currentUser, "DOCTOR") && !hasRole(currentUser, "PATIENT")) {
             return redirectByRoleWithMessage(currentUser, "unauthorized");
         }
+
+        int appointmentID = parseAppointmentId(idStr);
         if (appointmentID <= 0 || !"rescheduled".equalsIgnoreCase(action) || !isValidFutureAppointment(newDate, newTime)) {
             return redirectByRoleWithMessage(currentUser, "invalidReschedule");
         }
+
         boolean success = apptDAO.updateAppointmentStatus(appointmentID, "RESCHEDULED", newDate, newTime, currentUser.getuserID());
         return redirectByRoleWithMessage(currentUser, success ? "rescheduled" : "error");
+    }
+
+    // Helper method to safely parse ID strings without throwing 400 Bad Request
+    private int parseAppointmentId(String idStr) {
+        if (idStr == null || idStr.isBlank() || "undefined".equalsIgnoreCase(idStr.trim())) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(idStr.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
     /**
      * Updates a doctor's recurring weekly availability.

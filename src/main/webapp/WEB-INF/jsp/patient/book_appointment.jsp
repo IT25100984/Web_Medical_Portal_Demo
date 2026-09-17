@@ -47,8 +47,7 @@
                 </div>
             </c:if>
             <c:url var="bookAppointmentUrl" value="/bookAppointment" />
-            <form action="${bookAppointmentUrl}" method="POST">
-            <c:if test="${not empty _csrf}">
+            <form id="bookingForm" action="${bookAppointmentUrl}" method="POST">            <c:if test="${not empty _csrf}">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             </c:if>
             <div class="mb-3">

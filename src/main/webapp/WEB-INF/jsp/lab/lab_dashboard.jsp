@@ -35,21 +35,25 @@
         <p class="fs-5 mb-0">Manage diagnostic sample pipelines and enter test results.</p>
     </div>
 
-    <%-- Filter Section --%>
-    <div class="alert alert-warning fw-bold">
-        DEBUG: List Status = ${labRequests != null ? labRequests.size() : 'NULL'}
-    </div>
+    <%-- Filter & Sort Section --%>
     <div class="card shadow border-0 mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                         <input type="text" id="searchInput" class="form-control" placeholder="Search by patient, doctor, or test name...">
                     </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <select id="statusFilter" class="form-select d-inline-block w-auto">
+                <div class="col-md-3">
+                    <select id="prioritySort" class="form-select">
+                        <option value="DEFAULT">Sort by Priority (Default)</option>
+                        <option value="PRIORITY_DESC">Priority: High to Low (Critical first)</option>
+                        <option value="PRIORITY_ASC">Priority: Low to High</option>
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <select id="statusFilter" class="form-select">
                         <option value="ALL">All Statuses</option>
                         <option value="REQUESTED">Requested / Pending</option>
                         <option value="IN_TESTING">In Testing</option>
@@ -83,11 +87,14 @@
                 <c:choose>
                     <c:when test="${not empty labRequests}">
                         <c:forEach var="req" items="${labRequests}">
-                            <tr class="lab-row" data-status="${req.status}">
+                            <%-- Added data-search and data-priority attributes to isolate search terms and enable sorting --%>
+                            <tr class="lab-row"
+                                data-status="${req.status}"
+                                data-priority="${req.priority != null ? req.priority : 'STANDARD'}"
+                                data-search="${req.requestId} ${req.patientName} ${req.doctorName} ${req.testName} ${req.category}">
                                 <td><strong>#${req.requestId}</strong></td>
                                 <td><i class="bi bi-person me-1"></i>${req.patientName}</td>
                                 <td>${req.doctorName}</td>
-                                    <%-- FIXED: Removed the premature </td> tag here so the clinical notes icon renders in the correct column --%>
                                 <td>
                                     <span class="badge bg-secondary">${req.category}</span> ${req.testName}
                                     <c:if test="${not empty req.clinicalNotes && req.clinicalNotes != 'NA'}">
@@ -96,11 +103,14 @@
                                 </td>
                                 <td>
                                     <c:choose>
-                                        <c:when test="${req.priority == 'URGENT' || req.priority == 'STAT'}">
+                                        <c:when test="${req.priority == 'CRITICAL' || req.priority == 'STAT' || req.priority == 'STAT_EMERGENCY'}">
                                             <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>${req.priority}</span>
                                         </c:when>
+                                        <c:when test="${req.priority == 'URGENT'}">
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle-fill me-1"></i>URGENT</span>
+                                        </c:when>
                                         <c:otherwise>
-                                            <span class="badge bg-info text-dark">${req.priority != null ? req.priority : 'ROUTINE'}</span>
+                                            <span class="badge bg-info text-dark">${req.priority != null ? req.priority : 'STANDARD'}</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
@@ -127,12 +137,9 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                            <%-- Update Pipeline Modal Trigger --%>
                                         <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pipelineModal${req.requestId}">
                                             <i class="bi bi-arrow-repeat me-1"></i>Pipeline
                                         </button>
-
-                                            <%-- Upload Results Modal Trigger --%>
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resultsModal${req.requestId}">
                                             <i class="bi bi-file-earmark-medical me-1"></i>Results
                                         </button>
@@ -195,7 +202,7 @@
 
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold">Results Summary / Observations</label>
-                                                            <textarea name="resultsSummary" class="form-control" rows="5" required placeholder="Enter key parameters (e.g., Hemoglobin: 14.2 g/dL, WBC: 6,500 /uL)...">${req.resultsSummary}</textarea>
+                                                            <textarea name="resultsSummary" class="form-control" rows="5" required placeholder="Enter key parameters...">${req.resultsSummary}</textarea>
                                                         </div>
 
                                                         <div class="mb-3">
@@ -228,7 +235,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -236,27 +242,59 @@
 
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
-        const rows = document.querySelectorAll('.lab-row');
+        const prioritySort = document.getElementById('prioritySort');
+        const tbody = document.querySelector('.table tbody');
 
-        function filterTable() {
-            const query = searchInput.value.toLowerCase();
+        // Map priority strings to numeric weights
+        const priorityWeights = {
+            'CRITICAL': 3,
+            'STAT': 3,
+            'STAT_EMERGENCY': 3,
+            'URGENT': 2,
+            'STANDARD': 1,
+            'ROUTINE': 1
+        };
+
+        function filterAndSortTable() {
+            const query = searchInput.value.toLowerCase().trim();
             const filter = statusFilter.value;
+            const sortMode = prioritySort.value;
 
+            let rows = Array.from(document.querySelectorAll('.lab-row'));
+
+            // Filter logic
             rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
+                const searchData = row.getAttribute('data-search').toLowerCase();
                 const rowStatus = row.getAttribute('data-status');
 
-                let matchesSearch = text.includes(query);
+                let matchesSearch = !query || searchData.includes(query);
                 let matchesStatus = (filter === 'ALL') ||
                     (filter === 'REQUESTED' && (rowStatus === 'REQUESTED' || rowStatus === 'PENDING')) ||
                     (rowStatus === filter);
 
                 row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
             });
+
+            // Priority sorting logic
+            if (sortMode !== 'DEFAULT') {
+                rows.sort((a, b) => {
+                    const prioA = (a.getAttribute('data-priority') || '').toUpperCase();
+                    const prioB = (b.getAttribute('data-priority') || '').toUpperCase();
+
+                    const weightA = priorityWeights[prioA] || 1;
+                    const weightB = priorityWeights[prioB] || 1;
+
+                    return sortMode === 'PRIORITY_DESC' ? (weightB - weightA) : (weightA - weightB);
+                });
+
+                // Re-append sorted rows to tbody
+                rows.forEach(row => tbody.appendChild(row));
+            }
         }
 
-        searchInput.addEventListener('input', filterTable);
-        statusFilter.addEventListener('change', filterTable);
+        searchInput.addEventListener('input', filterAndSortTable);
+        statusFilter.addEventListener('change', filterAndSortTable);
+        prioritySort.addEventListener('change', filterAndSortTable);
     });
 </script>
 </body>

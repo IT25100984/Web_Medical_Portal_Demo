@@ -143,8 +143,8 @@
                                                 <button onclick="confirmCancel('${appt.appointmentID}')" class="btn btn-sm btn-outline-danger">Cancel</button>
                                             </c:when>
 
-                                            <c:when test="${appt.status == 'PENDING' || appt.status == 'RESCHEDULED'}">
-                                                <c:if test="${sessionScope.user.userID != appt.lastModifiedBy}">
+                                            <c:when test="${appt.status == 'PENDING' || appt.status == 'RESCHEDULED' || appt.status == 'NEW SUGGESTION'}">
+                                                <c:if test="${patient.userID ne appt.lastModifiedBy}">
                                                     <a href="${pageContext.request.contextPath}/updateAppointment?id=${appt.appointmentID}&action=accept"
                                                        class="btn btn-sm btn-success">Accept</a>
                                                 </c:if>
@@ -206,42 +206,31 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                        <%-- Reschedule Modal --%>
-                                    <div class="modal fade" id="rescheduleModal${appt.appointmentID}" tabindex="-1">
-                                        <div class="modal-dialog">
+                                    <!-- Reschedule Modal -->
+                                    <div class="modal fade" id="rescheduleModal${appt.appointmentID}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">Reschedule Appointment</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <form action="${pageContext.request.contextPath}/updateAppointment" method="post">
                                                     <div class="modal-body">
-                                                        <input type="hidden" name="id" value="${appt.appointmentID}">
-                                                        <input type="hidden" name="action" value="rescheduled">
+                                                        <input type="hidden" name="id" value="${appt.appointmentID}" />
+                                                        <input type="hidden" name="action" value="rescheduled" />
 
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">New Preferred Date</label>
-                                                            <input type="date" name="newDate" class="form-control" required min="2026-04-22">
+                                                            <label class="form-label fw-bold">New Date</label>
+                                                            <input type="date" name="newDate" class="form-control" required />
                                                         </div>
-
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">New Preferred Time (Hourly)</label>
-                                                            <c:set var="startH" value="${not empty currentStart ? currentStart.substring(0,2) : 8}" />
-                                                            <c:set var="endH" value="${not empty currentEnd ? currentEnd.substring(0,2) : 18}" />
-
-                                                            <select name="newTime" class="form-select" required>
-                                                                <option value="" disabled selected>Choose a time...</option>
-                                                                <c:forEach var="hour" begin="${startH}" end="${endH}">
-                                                                    <c:set var="displayTime" value="${hour < 10 ? '0' : ''}${hour}:00" />
-                                                                    <option value="${displayTime}">${displayTime}</option>
-                                                                </c:forEach>
-                                                            </select>
+                                                            <label class="form-label fw-bold">New Time</label>
+                                                            <input type="time" name="newTime" class="form-control" required />
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        <button type="submit" class="btn btn-primary">Request Change</button>
+                                                        <button type="submit" class="btn btn-warning">Submit Proposal</button>
                                                     </div>
                                                 </form>
                                             </div>
