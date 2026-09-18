@@ -79,7 +79,7 @@ public class SystemAdminController {
 
         boolean success = userService.updateUserStatus(userID, active);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
                     "TOGGLE_USER_STATUS", "Updated user ID " + userID + " active status to " + active);
             redirectAttributes.addAttribute("msg", "success");
         } else {
@@ -100,7 +100,7 @@ public class SystemAdminController {
 
         boolean success = userService.adminResetPassword(userID, newPassword);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
                     "ADMIN_PASSWORD_RESET", "Reset password for user ID: " + userID);
             redirectAttributes.addAttribute("msg", "success");
         } else {
@@ -155,7 +155,7 @@ public class SystemAdminController {
 
         boolean success = roleService.assignUserRole(userID, newRole);
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
                     "UPDATE_ROLE", "Assigned role " + newRole + " to user ID " + userID);
             redirectAttributes.addAttribute("msg", "success");
         } else {
@@ -210,7 +210,7 @@ public class SystemAdminController {
 
         boolean success = backupService.executeBackup(backupType); // "FULL" or "DIFFERENTIAL"
         if (success) {
-            auditLogService.logAction(((User) session.getAttribute("currentUser")).getuserID(),
+            auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
                     "MANUAL_BACKUP", "Executed manual " + backupType + " database backup.");
             redirectAttributes.addAttribute("msg", "success");
         } else {

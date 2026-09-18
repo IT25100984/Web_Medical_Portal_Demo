@@ -23,10 +23,20 @@ public class UserDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    // UPDATED: Now uses GeneratedKeyHolder to fetch auto-increment IDs for file synchronization
+    // 1. Fetch all users for user_management.jsp
+    public List<User> getAllUsers() {
+        String sql = "SELECT user_id, first_name, last_name, email, role, is_active FROM users ORDER BY user_id ASC";
+        return jdbcTemplate.query(sql, userRowMapper());
+    }
+
+    // 2. Enable or Disable User Account (Toggle Status)
+    public boolean toggleUserStatus(int userID, boolean active) {
+        String sql = "UPDATE users SET is_active = ? WHERE user_id = ?";
+        return jdbcTemplate.update(sql, active, userID) > 0;
+    }
+
     public int saveUser(User user) {
-        String sql = "INSERT INTO users (first_name, last_name, email, password, role, is_active) "
-        + " VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (first_name, last_name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         int rowsAffected = jdbcTemplate.update(connection -> {
@@ -42,45 +52,38 @@ public class UserDAO {
 
         if (rowsAffected > 0 && keyHolder.getKey() != null) {
             int userID = keyHolder.getKey().intValue();
-            user.setuserID(userID);
+            user.setUserID(userID); // FIXED: Capital U in setUserID
             return userID;
         }
         return -1;
     }
 
     public User login(String email, String password) {
-
-        String sql = " SELECT user_id, first_name, last_name, email, role, is_active "+
-            " FROM users WHERE email = ? AND password = ? AND is_active = TRUE ";
-
+        String sql = "SELECT user_id, first_name, last_name, email, role, is_active FROM users WHERE email = ? AND password = ? AND is_active = TRUE";
         List<User> users = jdbcTemplate.query(sql, userRowMapper(), email, password);
-
         return users.isEmpty() ? null : users.get(0);
     }
 
-    // NEW: Deletion method required to complete individual CRUD requirements (Delete)
     public boolean deleteUserById(int userID) {
-        String sql = "DELETE FROM users WHERE user_id = ? ";
+        String sql = "DELETE FROM users WHERE user_id = ?";
         return jdbcTemplate.update(sql, userID) > 0;
     }
 
     public User findByEmail(String email) {
-        String sql = " SELECT user_id, first_name, last_name, email, role, is_active "+
-            " FROM users WHERE email = ? " ;
-
+        String sql = "SELECT user_id, first_name, last_name, email, role, is_active FROM users WHERE email = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper(), email);
         return users.isEmpty() ? null : users.get(0);
     }
 
     public boolean changePassword(int userID, String newPassword) {
-        String sql = "UPDATE users SET password=? WHERE user_id=? ";
+        String sql = "UPDATE users SET password = ? WHERE user_id = ?";
         return jdbcTemplate.update(sql, newPassword, userID) > 0;
     }
 
     private RowMapper<User> userRowMapper() {
         return (rs, rowNum) -> {
             User user = new User();
-            user.setuserID(rs.getInt("user_id"));
+            user.setUserID(rs.getInt("user_id")); // FIXED: Capital U in setUserID
             user.setFirstName(rs.getString("first_name"));
             user.setLastName(rs.getString("last_name"));
             user.setEmail(rs.getString("email"));

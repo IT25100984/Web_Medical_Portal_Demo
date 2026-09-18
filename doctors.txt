@@ -1,8 +1,0 @@
-=== DOCTOR CLINICAL ROSTER AUDIT LOG ===
-Generated on: 2026-05-19T07:57:06.830918100
-------------------------------------------------
-3|Tom Watson|DOCTOR
-4|Jane Bernard|DOCTOR
-6|Alan Watts|DOCTOR
-7|anni aa|DOCTOR
-1|Tom Watson|DOCTOR

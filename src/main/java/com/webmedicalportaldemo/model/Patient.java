@@ -43,7 +43,7 @@ public class Patient extends User {
                    String bloodGroup) {
 
         this.patientID = patientID;
-        this.setuserID(userID);
+        this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
         this.bloodGroup = bloodGroup;
@@ -54,7 +54,7 @@ public class Patient extends User {
                               String password, String bloodGroup, String medicalHistory) {
 
         this.patientID = patientID;
-        this.setuserID(userID);
+        this.setUserID(userID);
         this.setFirstName(firstName);
         this.setLastName(lastName);
         this.setEmail(email);
@@ -101,7 +101,7 @@ public class Patient extends User {
     public String toFileString() {
         return "Patient{" +
                 "patientID=" + patientID +
-                ", userID=" + getuserID() +
+                ", userID=" + getUserID() +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +
                 ", email='" + getEmail() + '\'' +

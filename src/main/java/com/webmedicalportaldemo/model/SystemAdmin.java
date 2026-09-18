@@ -24,7 +24,7 @@ public class SystemAdmin extends Employee {
 
     public SystemAdmin(int userID, String firstName, String lastName, String email, String password, String employeeId, String department) {
         super();
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
@@ -37,7 +37,7 @@ public class SystemAdmin extends Employee {
 
     public SystemAdmin(int userID, String firstName, String lastName, String employeeId) {
         super();
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmployeeId(employeeId);
@@ -46,7 +46,7 @@ public class SystemAdmin extends Employee {
     }
 
     public void updateSystemAdmin(int userID, String firstName, String lastName, String email, String password, String department) {
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
@@ -63,7 +63,7 @@ public class SystemAdmin extends Employee {
     }
 
     public String getDisplaySummary() {
-        return "System Administrator: " + getFullName() + " (User ID: #" + getuserID() + ", Employee ID: " + getEmployeeId() + ") initialized the system administration console.";
+        return "System Administrator: " + getFullName() + " (User ID: #" + getUserID() + ", Employee ID: " + getEmployeeId() + ") initialized the system administration console.";
     }
 
     public void displayDashboard() {
@@ -93,7 +93,7 @@ public class SystemAdmin extends Employee {
     @Override
     public String toString() {
         return "SystemAdmin{" +
-                "userID=" + getuserID() +
+                "userID=" + getUserID() +
                 ", employeeId='" + getEmployeeId() + '\'' +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +

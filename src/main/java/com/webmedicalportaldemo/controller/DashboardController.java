@@ -64,10 +64,10 @@ public class DashboardController {
         }
 
         // Existing appointments query
-        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByPatient(currentUser.getuserID());
+        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByPatient(currentUser.getUserID());
 
         // Fetch prescription orders for the logged-in patient
-        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getUserID());
         if (patientID != null) {
             List<Prescription> myPrescriptions = prescriptionDAO.getPrescriptionsByPatientId(patientID);
             model.addAttribute("myPrescriptions", myPrescriptions);
@@ -91,19 +91,19 @@ public class DashboardController {
         if (!hasRole(currentUser, "DOCTOR")) {
             return "redirect:/login";
         }
-        Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getuserID());
-        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+        Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getUserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
         if (doctor == null || employee == null) {
             return "redirect:/login?error=doctorProfileNotFound";
         }
 
         // FIX: Fetch active emergency assignment for this doctor if present
-        Object activeEmergency = emergencyDAO.getActiveAssignmentByDoctorId(currentUser.getuserID());
+        Object activeEmergency = emergencyDAO.getActiveAssignmentByDoctorId(currentUser.getUserID());
         if (activeEmergency != null) {
             model.addAttribute("activeEmergency", activeEmergency);
         }
 
-        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByDoctor(currentUser.getuserID());
+        List<AppointmentDTO> myAppointments = apptDAO.getAppointmentsByDoctor(currentUser.getUserID());
         populateUserAttributes(model, currentUser);
         model.addAttribute("doctor", doctor);
         model.addAttribute("employee", employee);
@@ -125,7 +125,7 @@ public class DashboardController {
         }
 
         // Resolve emergency request and mark doctor as available in DAO
-        boolean completed = emergencyDAO.completeEmergency(requestId, currentUser.getuserID(), notes);
+        boolean completed = emergencyDAO.completeEmergency(requestId, currentUser.getUserID(), notes);
 
         if (completed) {
             redirectAttributes.addFlashAttribute("msg", "Emergency assignment completed successfully.");
@@ -146,7 +146,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "PHARMACIST")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -174,7 +174,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "HOSPITAL_ADMIN")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -202,7 +202,7 @@ public class DashboardController {
         if (!hasRole(currentUser, "SYSTEM_ADMIN")) {
             return "redirect:/login";
         }
-        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+        Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
         if (employee == null) {
             return "redirect:/login?error=employeeProfileNotFound";
         }
@@ -223,12 +223,12 @@ public class DashboardController {
         }
         populateUserAttributes(model, currentUser);
         if (hasRole(currentUser, "DOCTOR")) {
-            Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getuserID());
-            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+            Doctor doctor = doctorDAO.getDoctorProfile(currentUser.getUserID());
+            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
             model.addAttribute("doctor", doctor);
             model.addAttribute("employee", employee);
         } else if (isEmployeeRole(currentUser.getRole())) {
-            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getuserID());
+            Employee employee = employeeDAO.getEmployeeByuserID(currentUser.getUserID());
             model.addAttribute("employee", employee);
         }
         return "updateProfilePage";
@@ -275,7 +275,7 @@ public class DashboardController {
 
         boolean created = labReportService.createDiagnosticRequest(
                 patientId,
-                doctor.getuserID(),
+                doctor.getUserID(),
                 appointmentID,
                 testType,
                 priority,
@@ -303,7 +303,7 @@ public class DashboardController {
         String cleanedMedicalHistory = medicalHistory == null ? "" : medicalHistory.trim();
 
         // Fixed: Passing exactly 3 arguments (userID, bloodGroup, medicalHistory)
-        boolean success = patientDAO.updateProfile(currentUser.getuserID(), cleanedBloodGroup, cleanedMedicalHistory);
+        boolean success = patientDAO.updateProfile(currentUser.getUserID(), cleanedBloodGroup, cleanedMedicalHistory);
 
         if (!success) {
             return "redirect:/patientDashboard?error=profileUpdateFailed";
@@ -327,7 +327,7 @@ public class DashboardController {
             return "redirect:/doctorDashboard?error=invalidLicense";
         }
         String cleanedSpecialization = specialization.trim();
-        boolean success = doctorDAO.updateProfile(currentUser.getuserID(), cleanedSpecialization, licenseID);
+        boolean success = doctorDAO.updateProfile(currentUser.getUserID(), cleanedSpecialization, licenseID);
         if (!success) {
             return "redirect:/doctorDashboard?error=profileUpdateFailed";
         }

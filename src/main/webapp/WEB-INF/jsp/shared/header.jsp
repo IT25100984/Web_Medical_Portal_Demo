@@ -70,7 +70,7 @@
                         </span>
 
                         <!-- Emergency Command Center (Admins Only) -->
-                        <c:if test="${sessionScope.user.role eq 'HOSPITAL_ADMIN' or sessionScope.user.role eq 'SYSTEM_ADMIN'}">
+                        <c:if test="${sessionScope.user.role eq 'SYSTEM_ADMIN'}">
                             <a href="${emergencyDashboardUrl}" class="btn btn-sm btn-danger fw-bold shadow-sm">
                                 🚨 Emergency Center
                             </a>

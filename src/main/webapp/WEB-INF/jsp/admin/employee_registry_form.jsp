@@ -54,6 +54,8 @@
                             <option value="PHARMACIST" ${employee.role == 'PHARMACIST' ? 'selected' : ''}>PHARMACIST</option>
                             <option value="LAB_TECHNICIAN" ${employee.role == 'LAB_TECHNICIAN' ? 'selected' : ''}>LAB_TECHNICIAN</option>
                             <option value="HOSPITAL_ADMIN" ${employee.role == 'HOSPITAL_ADMIN' ? 'selected' : ''}>HOSPITAL_ADMIN</option>
+                            <option value="SYSTEM_ADMIN" ${employee.role == 'SYSTEM_ADMIN' ? 'selected' : ''}>SYSTEM_ADMIN</option>
+
                         </select>
                     </div>
                     <div class="col-md-6">

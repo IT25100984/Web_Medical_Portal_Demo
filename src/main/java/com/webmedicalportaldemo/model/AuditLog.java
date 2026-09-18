@@ -27,11 +27,11 @@ public class AuditLog {
         this.logId = logId;
     }
 
-    public int getuserID() {
+    public int getUserID() {
         return userID;
     }
 
-    public void setuserID(int userID) {
+    public void setUserID(int userID) {
         this.userID = userID;
     }
 

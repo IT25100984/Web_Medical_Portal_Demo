@@ -39,7 +39,7 @@ public class PatientDAO {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Patient patient = new Patient();
             patient.setPatientID(rs.getInt("patient_id"));
-            patient.setuserID(rs.getInt("user_id"));
+            patient.setUserID(rs.getInt("user_id"));
             patient.setFirstName(rs.getString("first_name"));
             patient.setLastName(rs.getString("last_name"));
             patient.setEmail(rs.getString("email"));
@@ -80,7 +80,7 @@ public class PatientDAO {
         }
 
         int userID = keyHolder.getKey().intValue();
-        patient.setuserID(userID);
+        patient.setUserID(userID);
 
         String patientSql = "INSERT INTO patients (user_id, blood_group, medical_history) VALUES (?, ?, ?)";
         int patientRows = jdbcTemplate.update(patientSql, userID, patient.getBloodGroup(), patient.getMedicalHistory());
@@ -118,7 +118,7 @@ public class PatientDAO {
             return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
                 Patient patient = new Patient();
                 patient.setPatientID(rs.getInt("patient_id"));
-                patient.setuserID(rs.getInt("user_id"));
+                patient.setUserID(rs.getInt("user_id"));
                 patient.setFirstName(rs.getString("first_name"));
                 patient.setLastName(rs.getString("last_name"));
                 patient.setEmail(rs.getString("email"));

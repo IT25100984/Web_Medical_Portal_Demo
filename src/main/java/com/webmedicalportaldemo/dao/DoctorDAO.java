@@ -94,9 +94,9 @@ public class DoctorDAO {
         return doctorIDs.isEmpty() ? null : doctorIDs.get(0);
     }
 
-    public boolean createDoctorProfile(int employeePk, String department) {
-        String sql = "INSERT INTO doctors (employee_pk, specialization, license_id) VALUES (?, ?, 0)";
-        return jdbcTemplate.update(sql, employeePk, department) > 0;
+    public boolean createDoctorProfile(int userID, String specialization, Integer licenseId) {
+        String sql = "INSERT INTO doctors (employee_pk, specialization, license_id) VALUES (?, ?, ?)";
+        return jdbcTemplate.update(sql, userID, specialization, licenseId) > 0;
     }
 
     /**
@@ -105,13 +105,17 @@ public class DoctorDAO {
     private RowMapper<Doctor> doctorRowMapper() {
         return (rs, rowNum) -> {
             Doctor doctor = new Doctor();
-            doctor.setuserID(rs.getInt("user_id"));
+            doctor.setUserID(rs.getInt("user_id"));
             doctor.setFirstName(rs.getString("first_name"));
             doctor.setLastName(rs.getString("last_name"));
             doctor.setEmail(rs.getString("email"));
             doctor.setRole("DOCTOR");
             doctor.setSpecialization(rs.getString("specialization") != null ? rs.getString("specialization") : "General");
-            doctor.setLicenseID(rs.getInt("license_id"));
+
+            // Safely map NULL database values to 0 or null
+            Integer licenseId = rs.getObject("license_id", Integer.class);
+            doctor.setLicenseID(licenseId != null ? licenseId : 0);
+
             return doctor;
         };
     }

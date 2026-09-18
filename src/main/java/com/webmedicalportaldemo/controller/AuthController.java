@@ -89,7 +89,7 @@ public class AuthController {
         // Populate full Patient or User object into session attributes for JSP view resolution
         User sessionUser;
         if ("PATIENT".equalsIgnoreCase(user.getRole())) {
-            Patient patient = patientDAO.findByuserID(user.getuserID());
+            Patient patient = patientDAO.findByuserID(user.getUserID());
             sessionUser = (patient != null) ? patient : user;
         } else {
             sessionUser = user;
@@ -187,7 +187,7 @@ public class AuthController {
         try {
             patientFileService.logToFile(patient);
         } catch (Exception exception) {
-            System.err.println("Patient user ID " + patient.getuserID() + " was saved to MySQL, but patients.txt could not be updated: " + exception.getMessage());
+            System.err.println("Patient user ID " + patient.getUserID() + " was saved to MySQL, but patients.txt could not be updated: " + exception.getMessage());
         }
 
         return "redirect:/login?status=registered";
@@ -266,7 +266,7 @@ public class AuthController {
             return redirectByRole(currentUser.getRole());
         }
 
-        int userID = currentUser.getuserID();
+        int userID = currentUser.getUserID();
         boolean deleted = userDAO.deleteUserById(userID);
 
         if (!deleted) {

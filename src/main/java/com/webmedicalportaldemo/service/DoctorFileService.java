@@ -19,7 +19,7 @@ public class DoctorFileService extends FileService<User> {
     @Override
     protected String mapToString(User doctor) {
         // ID|Full Name|Medical Specialty Role
-        return doctor.getuserID() + "|" +
+        return doctor.getUserID() + "|" +
                 doctor.getFirstName() + " " + doctor.getLastName() + "|" +
                 doctor.getRole();
     }

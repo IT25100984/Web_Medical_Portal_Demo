@@ -34,7 +34,7 @@ public class EmployeeDAO {
 
             int userID = rs.getInt("user_id");
             if (!rs.wasNull()) {
-                emp.setuserID(userID);
+                emp.setUserID(userID);
             }
 
             return emp;
@@ -88,7 +88,7 @@ public class EmployeeDAO {
         );
 
         // 2. Retrieve linked user_id if not present on the object
-        Integer userID = emp.getuserID();
+        Integer userID = emp.getUserID();
         if (userID == null || userID == 0) {
             String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
             try {
@@ -122,18 +122,44 @@ public class EmployeeDAO {
 
     @Transactional
     public boolean deleteEmployee(String employeeId) {
+        // 1. Get user_id from the registry before deleting anything
         String findUserSql = "SELECT user_id FROM employee_registry WHERE employee_id = ?";
         Integer userID = null;
         try {
             userID = jdbcTemplate.queryForObject(findUserSql, Integer.class, employeeId);
         } catch (EmptyResultDataAccessException e) {
-            return false;
+            return false; // Cannot delete if not found in registry
         }
 
+        // 2. Cascade deletions for all data tied to this user_id
+        if (userID != null) {
+            // 1. Clear user-level emergency dependencies
+            jdbcTemplate.update("DELETE FROM emergency_requests WHERE assigned_doctor_id = ?", userID);
+
+            // 2. Clear records linked to the doctor's appointments (prescriptions, lab requests, health records)
+            String doctorSubquery = "SELECT doctor_id FROM doctors WHERE employee_pk = ?";
+            String appointmentSubquery = "SELECT appointment_id FROM appointments WHERE doctor_id IN (" + doctorSubquery + ")";
+
+            jdbcTemplate.update("DELETE FROM prescriptions WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
+            jdbcTemplate.update("DELETE FROM lab_requests WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
+            jdbcTemplate.update("DELETE FROM health_records WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
+
+            // 3. Clear direct doctor dependencies
+            jdbcTemplate.update("DELETE FROM feedback WHERE doctor_id IN (" + doctorSubquery + ")", userID);
+            jdbcTemplate.update("DELETE FROM doctor_availability WHERE doctor_id IN (" + doctorSubquery + ")", userID);
+            jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id IN (" + doctorSubquery + ")", userID);
+
+            // 4. Delete the primary doctor record
+            jdbcTemplate.update("DELETE FROM doctors WHERE employee_pk = ?", userID);
+        }
+
+        // 3. Delete operational employee record
         jdbcTemplate.update("DELETE FROM employees WHERE employee_id = ?", employeeId);
 
+        // 4. Delete from the employee registry
         int registryDeleted = jdbcTemplate.update("DELETE FROM employee_registry WHERE employee_id = ?", employeeId);
 
+        // 5. Finally, completely remove the user account
         if (userID != null) {
             jdbcTemplate.update("DELETE FROM users WHERE user_id = ?", userID);
         }

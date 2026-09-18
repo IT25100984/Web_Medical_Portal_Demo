@@ -57,7 +57,7 @@ public class FeedbackController {
             model.addAttribute("selectedDoctorID", doctorID);
             model.addAttribute("selectedAppointmentID", appointmentID);
             model.addAttribute("doctors", doctorDAO.getAllDoctors());
-            model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
+            model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
             return "shared/feedback_form";
         }
 
@@ -65,8 +65,8 @@ public class FeedbackController {
          * Doctor feedback view
          */
         if (hasRole(currentUser, "DOCTOR")) {
-            List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(currentUser.getuserID());
-            double averageRating = feedbackDAO.getAverageRating(currentUser.getuserID());
+            List<Feedback> reviews = feedbackDAO.getFeedbackForDoctor(currentUser.getUserID());
+            double averageRating = feedbackDAO.getAverageRating(currentUser.getUserID());
 
             model.addAttribute("reviews", reviews);
             model.addAttribute("avgRating", averageRating);
@@ -105,7 +105,7 @@ public class FeedbackController {
         }
 
         /* 1. Resolve patient_id strictly */
-        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getUserID());
         if (patientID == null || patientID <= 0) {
             return showPatientFeedbackError(currentUser, doctorID, appointmentID,
                     "Patient profile not found. Please contact support.", model
@@ -199,7 +199,7 @@ public class FeedbackController {
         model.addAttribute("selectedDoctorID", doctorID);
         model.addAttribute("selectedAppointmentID", appointmentID);
         model.addAttribute("doctors", doctorDAO.getAllDoctors());
-        model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getuserID()));
+        model.addAttribute("myFeedback", feedbackDAO.getFeedbackByPatient(currentUser.getUserID()));
         return "shared/feedback_form";
     }
 

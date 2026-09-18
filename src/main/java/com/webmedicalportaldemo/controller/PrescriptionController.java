@@ -50,7 +50,7 @@ public class PrescriptionController {
         if (user == null || !"PATIENT".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
-        List<Prescription> myOrders = prescriptionDAO.getPrescriptionsByPatientuserID(user.getuserID());
+        List<Prescription> myOrders = prescriptionDAO.getPrescriptionsByPatientuserID(user.getUserID());
         model.addAttribute("myOrders", myOrders);
         return "pharmacy/prescriptions";
     }
@@ -76,7 +76,7 @@ public class PrescriptionController {
             return "redirect:/orderPrescription?msg=empty";
         }
 
-        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getuserID());
+        Integer patientID = patientDAO.getPatientIDByuserID(currentUser.getUserID());
         if (patientID == null || patientID <= 0) {
             return "redirect:/orderPrescription?msg=patient_not_found";
         }

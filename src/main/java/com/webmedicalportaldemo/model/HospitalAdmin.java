@@ -50,7 +50,7 @@ public class HospitalAdmin extends Employee {
             boolean active) {
 
         super();
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
@@ -71,7 +71,7 @@ public class HospitalAdmin extends Employee {
             String employeeId) {
 
         super();
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmployeeId(employeeId);
@@ -90,7 +90,7 @@ public class HospitalAdmin extends Employee {
             String password,
             String department) {
 
-        setuserID(userID);
+        setUserID(userID);
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
@@ -110,7 +110,7 @@ public class HospitalAdmin extends Employee {
         return "Hospital Administrator: "
                 + getFullName()
                 + " (User ID: #"
-                + getuserID()
+                + getUserID()
                 + ", Employee ID: "
                 + getEmployeeId()
                 + ") has opened the hospital administration console.";
@@ -127,7 +127,7 @@ public class HospitalAdmin extends Employee {
     @Override
     public String toString() {
         return "HospitalAdmin{" +
-                "userID=" + getuserID() +
+                "userID=" + getUserID() +
                 ", employeeId='" + getEmployeeId() + '\'' +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +

@@ -61,7 +61,7 @@ public class EmergencyDAO {
                 ")";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             User doc = new User();
-            doc.setuserID(rs.getInt("user_id"));
+            doc.setUserID(rs.getInt("user_id"));
             doc.setFirstName(rs.getString("first_name"));
             doc.setLastName(rs.getString("last_name"));
             return doc;

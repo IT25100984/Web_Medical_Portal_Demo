@@ -25,8 +25,8 @@ public class Employee {
     }
 
     // User ID Getters and Setters (supporting both casing styles)
-    public int getuserID() { return userID; }
-    public void setuserID(int userID) { this.userID = userID; }
+    public int getUserID() { return userID; }
+    public void setUserID(int userID) { this.userID = userID; }
 
     // Employee ID Getters and Setters (supporting both casing styles)
     public String getEmployeeId() { return employeeId; }
