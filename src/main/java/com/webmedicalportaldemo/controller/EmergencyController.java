@@ -16,6 +16,9 @@ import java.util.List;
 @RequestMapping("/emergency")
 public class EmergencyController {
 
+    private static final String NAME_REGEX = "^[a-zA-Z\\s'-]+$";
+    private static final String SL_PHONE_REGEX = "^(?:\\+94|0)[0-9]{9}$";
+
     private final EmergencyService emergencyService;
 
     @Autowired
@@ -57,8 +60,6 @@ public class EmergencyController {
     @GetMapping("/api/alerts")
     @ResponseBody
     public List<EmergencyRequest> getLiveAlerts() {
-        // In a production app, you might map this to EmergencyAlertDTO to hide sensitive info.
-        // For now, returning the active requests provides the JS with the data it needs.
         return emergencyService.getActiveEmergencies();
     }
 
@@ -68,9 +69,31 @@ public class EmergencyController {
         return "emergency/emergency_request";
     }
 
-    // Process the Intake Form Submission
+    // Process the Intake Form Submission with Server-Side Validation
     @PostMapping("/submit")
     public String submitEmergencyRequest(@ModelAttribute EmergencyRequest req, RedirectAttributes redirectAttributes) {
+        String patientName = req.getPatientName() != null ? req.getPatientName().trim() : "";
+        String contactNumber = req.getContactNumber() != null ? req.getContactNumber().replaceAll("\\s+", "") : "";
+
+        // 1. Validate Patient Name (no numbers or prohibited special characters)
+        if (patientName.isEmpty() || !patientName.matches(NAME_REGEX)) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Invalid patient name. Names can only contain letters, spaces, hyphens, and apostrophes.");
+            return "redirect:/emergency/request";
+        }
+
+        // 2. Validate Sri Lankan Phone Format (e.g. 0771234567 or +94771234567)
+        if (contactNumber.isEmpty() || !contactNumber.matches(SL_PHONE_REGEX)) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Invalid Sri Lankan contact number. Please use 07XXXXXXXX or +947XXXXXXXX format.");
+            return "redirect:/emergency/request";
+        }
+
+        // Set sanitized inputs back into object
+        req.setPatientName(patientName);
+        req.setContactNumber(contactNumber);
+
+        // 3. Process Request
         boolean success = emergencyService.createEmergencyRequest(req);
         if (success) {
             redirectAttributes.addFlashAttribute("successMessage", "🚨 Emergency alert triggered! Ambulance and staff notified.");
@@ -78,7 +101,6 @@ public class EmergencyController {
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to trigger alert. Please try again.");
         }
 
-        // Redirects back to the request form so they see the success message
         return "redirect:/emergency/request";
     }
 }

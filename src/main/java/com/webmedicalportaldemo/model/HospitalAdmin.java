@@ -134,7 +134,7 @@ public class HospitalAdmin extends Employee {
                 ", email='" + getEmail() + '\'' +
                 ", role='" + getRole() + '\'' +
                 ", department='" + getDepartment() + '\'' +
-                ", active=" + isActive() +
+                ", isActive=" + isActive() +
                 '}';
     }
 }

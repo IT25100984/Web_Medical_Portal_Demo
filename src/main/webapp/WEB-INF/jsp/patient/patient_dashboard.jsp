@@ -214,23 +214,27 @@
                                                     <h5 class="modal-title">Reschedule Appointment</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                                <form action="${pageContext.request.contextPath}/updateAppointment" method="post">
+                                                <!-- Added reschedule-form class and data-doctor-id matching your model variable -->
+                                                <form action="${pageContext.request.contextPath}/updateAppointment" method="post" class="reschedule-form" data-doctor-id="${appt.doctorID}">
                                                     <div class="modal-body">
                                                         <input type="hidden" name="id" value="${appt.appointmentID}" />
                                                         <input type="hidden" name="action" value="rescheduled" />
 
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">New Date</label>
-                                                            <input type="date" name="newDate" class="form-control" required />
+                                                            <label class="form-label fw-semibold">New Date</label>
+                                                            <input type="date" name="newDate" class="form-control reschedule-date" required />
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">New Time</label>
-                                                            <input type="time" name="newTime" class="form-control" required />
+                                                            <label class="form-label fw-semibold">Available Time Slots</label>
+                                                            <!-- Changed from input type="time" to a select dropdown matching book_appointment style -->
+                                                            <select name="newTime" class="form-select reschedule-timeslot" required disabled>
+                                                                <option value="" selected disabled>Choose a date first...</option>
+                                                            </select>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        <button type="submit" class="btn btn-warning">Submit Proposal</button>
+                                                        <button type="submit" class="btn btn-warning fw-bold">Submit Proposal</button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -383,42 +387,76 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dateInput = document.getElementById('dateFilter');
-        const toggle = document.getElementById('toggleCancelled');
-        const rows = document.querySelectorAll('.appointment-row');
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Calculate 90-day boundary matching book_appointment.jsp logic
+        const todayObj = new Date();
+        const today = todayObj.toISOString().split("T")[0];
 
-        const savedToggleState = localStorage.getItem('showCancelledPreference');
-        if (savedToggleState !== null) {
-            toggle.checked = (savedToggleState === 'true');
-        }
+        const maxDateObj = new Date();
+        maxDateObj.setDate(todayObj.getDate() + 90);
+        const maxDate = maxDateObj.toISOString().split("T")[0];
 
-        function filterTable() {
-            const filterDate = dateInput.value;
-            const showCancelled = toggle.checked;
-            localStorage.setItem('showCancelledPreference', showCancelled);
+        // 2. Select all reschedule modal forms on the page
+        const rescheduleForms = document.querySelectorAll(".reschedule-form");
 
-            rows.forEach(row => {
-                const dateText = row.cells[0].innerText;
-                const statusBadge = row.cells[2].querySelector('.badge');
-                const statusText = statusBadge ? statusBadge.innerText.toUpperCase() : "";
-                let isVisible = true;
-                if (filterDate && !dateText.includes(filterDate)) isVisible = false;
-                if (!showCancelled && statusText.includes('CANCELLED')) isVisible = false;
-                row.style.display = isVisible ? "" : "none";
-            });
-        }
+        rescheduleForms.forEach(function (form) {
+            const datePicker = form.querySelector(".reschedule-date");
+            const timeSlotSelect = form.querySelector(".reschedule-timeslot");
+            const doctorID = form.getAttribute("data-doctor-id");
 
-        dateInput.addEventListener('input', filterTable);
-        toggle.addEventListener('change', filterTable);
-        filterTable();
+            if (datePicker && timeSlotSelect) {
+                // Apply bounds
+                datePicker.min = today;
+                datePicker.max = maxDate;
+
+                // Fetch available slots from the work schedule when date changes
+                datePicker.addEventListener("change", function () {
+                    const selectedDate = datePicker.value;
+                    if (!doctorID || !selectedDate) {
+                        timeSlotSelect.disabled = true;
+                        timeSlotSelect.innerHTML = '<option value="" selected disabled>Choose a date first...</option>';
+                        return;
+                    }
+
+                    timeSlotSelect.disabled = true;
+                    timeSlotSelect.innerHTML = '<option value="" selected disabled>Loading available hours...</option>';
+
+                    const parameters = new URLSearchParams();
+                    parameters.append("doctorID", doctorID);
+                    parameters.append("date", selectedDate);
+
+                    fetch("${pageContext.request.contextPath}/getAvailableSlots?" + parameters.toString())
+                        .then(function (response) {
+                            if (!response.ok) {
+                                throw new Error("Slot request failed with status " + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(function (slots) {
+                            timeSlotSelect.innerHTML = "";
+                            if (!slots || slots.length === 0) {
+                                timeSlotSelect.innerHTML = '<option value="" selected disabled>No available hours found</option>';
+                                timeSlotSelect.disabled = true;
+                                return;
+                            }
+                            timeSlotSelect.innerHTML = '<option value="" selected disabled>Choose a time...</option>';
+                            slots.forEach(function (slot) {
+                                const option = document.createElement("option");
+                                option.value = slot;
+                                option.textContent = slot;
+                                timeSlotSelect.appendChild(option);
+                            });
+                            timeSlotSelect.disabled = false;
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                            timeSlotSelect.innerHTML = '<option value="" selected disabled>Error loading slots</option>';
+                            timeSlotSelect.disabled = true;
+                        });
+                });
+            }
+        });
     });
-
-    function confirmCancel(id) {
-        if (confirm("Are you sure you want to cancel this appointment?")) {
-            window.location.href = "updateAppointment?id=" + id + "&action=cancel";
-        }
-    }
 </script>
    <!-- Include AI Assistant Partial -->
 <jsp:include page="/WEB-INF/jsp/ai/ai_assistant_chat.jsp" />

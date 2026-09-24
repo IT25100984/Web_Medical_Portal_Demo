@@ -7,7 +7,6 @@ public class SystemAdmin extends Employee {
     public SystemAdmin() {
         super();
         setRole(SYSTEM_ADMIN_ROLE);
-        setActive(true);
     }
 
     public SystemAdmin(String firstName, String lastName, String email, String password, String employeeId, String department) {
@@ -19,7 +18,6 @@ public class SystemAdmin extends Employee {
         setRole(SYSTEM_ADMIN_ROLE);
         setEmployeeId(employeeId);
         setDepartment(department);
-        setActive(true);
     }
 
     public SystemAdmin(int userID, String firstName, String lastName, String email, String password, String employeeId, String department) {
@@ -32,7 +30,6 @@ public class SystemAdmin extends Employee {
         setRole(SYSTEM_ADMIN_ROLE);
         setEmployeeId(employeeId);
         setDepartment(department);
-        setActive(true);
     }
 
     public SystemAdmin(int userID, String firstName, String lastName, String employeeId) {
@@ -42,7 +39,6 @@ public class SystemAdmin extends Employee {
         setLastName(lastName);
         setEmployeeId(employeeId);
         setRole(SYSTEM_ADMIN_ROLE);
-        setActive(true);
     }
 
     public void updateSystemAdmin(int userID, String firstName, String lastName, String email, String password, String department) {
@@ -100,7 +96,7 @@ public class SystemAdmin extends Employee {
                 ", email='" + getEmail() + '\'' +
                 ", role='" + getRole() + '\'' +
                 ", department='" + getDepartment() + '\'' +
-                ", active=" + isActive() +
+                ", isActive=" + isActive() +
                 '}';
     }
 }

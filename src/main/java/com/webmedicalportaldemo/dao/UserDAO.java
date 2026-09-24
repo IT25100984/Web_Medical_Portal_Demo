@@ -30,9 +30,14 @@ public class UserDAO {
     }
 
     // 2. Enable or Disable User Account (Toggle Status)
-    public boolean toggleUserStatus(int userID, boolean active) {
+    public boolean toggleUserStatus(int userID, boolean isActive) {
         String sql = "UPDATE users SET is_active = ? WHERE user_id = ?";
-        return jdbcTemplate.update(sql, active, userID) > 0;
+        return jdbcTemplate.update(sql, isActive, userID) > 0;
+    }
+
+    // Alias method for UserService compatibility
+    public boolean updateUserStatus(int userID, boolean isActive) {
+        return toggleUserStatus(userID, isActive);
     }
 
     public int saveUser(User user) {
@@ -52,7 +57,7 @@ public class UserDAO {
 
         if (rowsAffected > 0 && keyHolder.getKey() != null) {
             int userID = keyHolder.getKey().intValue();
-            user.setUserID(userID); // FIXED: Capital U in setUserID
+            user.setUserID(userID);
             return userID;
         }
         return -1;
@@ -83,7 +88,7 @@ public class UserDAO {
     private RowMapper<User> userRowMapper() {
         return (rs, rowNum) -> {
             User user = new User();
-            user.setUserID(rs.getInt("user_id")); // FIXED: Capital U in setUserID
+            user.setUserID(rs.getInt("user_id"));
             user.setFirstName(rs.getString("first_name"));
             user.setLastName(rs.getString("last_name"));
             user.setEmail(rs.getString("email"));

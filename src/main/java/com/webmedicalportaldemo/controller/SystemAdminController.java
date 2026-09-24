@@ -44,11 +44,9 @@ public class SystemAdminController {
             return "redirect:/login";
         }
 
-        // Pass session user metadata to header panel
         User currentUser = (User) session.getAttribute("currentUser");
         model.addAttribute("currentUser", currentUser);
 
-        // CORRECTED: Pointing to the admin folder
         return "admin/system_admin_dashboard";
     }
 
@@ -64,7 +62,6 @@ public class SystemAdminController {
         List<User> userList = userService.getAllUsers();
         model.addAttribute("users", userList);
 
-        // CORRECTED: Pointing to the nested views folder
         return "admin/system_admin_views/user_management";
     }
 
@@ -119,10 +116,12 @@ public class SystemAdminController {
             return "redirect:/login";
         }
 
+        // Add this line to fetch and pass the users list to the JSP
+        model.addAttribute("users", userService.getAllUsers());
+
         model.addAttribute("roles", roleService.getAllSystemRoles());
         model.addAttribute("userRoleMappings", roleService.getUserRoleMappings());
 
-        // CORRECTED: Pointing to the nested views folder
         return "admin/system_admin_views/role_management";
     }
 
@@ -134,7 +133,7 @@ public class SystemAdminController {
 
         model.addAttribute("selectedRole", role);
 
-        // Filter users directly using your existing userService
+        // Filter users directly using existing userService
         List<User> roleUsers = userService.getAllUsers().stream()
                 .filter(u -> role.equalsIgnoreCase(u.getRole()))
                 .toList();
@@ -153,16 +152,44 @@ public class SystemAdminController {
             return "redirect:/login";
         }
 
+        // 1. Locate the target user
+        User targetUser = userService.getAllUsers().stream()
+                .filter(u -> u.getUserID() == userID)
+                .findFirst()
+                .orElse(null);
+
+        if (targetUser == null) {
+            redirectAttributes.addAttribute("error", "userNotFound");
+            return "redirect:/system/roles";
+        }
+
+        String currentRole = targetUser.getRole();
+
+        // 2. Business Validation: Restrict PATIENT vs STAFF transitions
+        boolean isCurrentPatient = "PATIENT".equalsIgnoreCase(currentRole);
+        boolean isNewPatient = "PATIENT".equalsIgnoreCase(newRole);
+
+        if (isCurrentPatient && !isNewPatient) {
+            redirectAttributes.addAttribute("error", "patientToStaffForbidden");
+            return "redirect:/system/roles/edit?role=" + currentRole;
+        }
+
+        if (!isCurrentPatient && isNewPatient) {
+            redirectAttributes.addAttribute("error", "staffToPatientForbidden");
+            return "redirect:/system/roles/edit?role=" + currentRole;
+        }
+
+        // 3. Execute update for valid staff-to-staff transitions
         boolean success = roleService.assignUserRole(userID, newRole);
         if (success) {
             auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
-                    "UPDATE_ROLE", "Assigned role " + newRole + " to user ID " + userID);
+                    "UPDATE_ROLE", "Reassigned user ID " + userID + " from " + currentRole + " to " + newRole);
             redirectAttributes.addAttribute("msg", "success");
+            return "redirect:/system/roles/edit?role=" + newRole;
         } else {
             redirectAttributes.addAttribute("error", "operationFailed");
+            return "redirect:/system/roles/edit?role=" + currentRole;
         }
-
-        return "redirect:/system/roles";
     }
 
     /**
@@ -177,7 +204,6 @@ public class SystemAdminController {
         List<AuditLog> logs = auditLogService.getRecentAuditLogs();
         model.addAttribute("auditLogs", logs);
 
-        // CORRECTED: Pointing to the nested views folder
         return "admin/system_admin_views/audit_logs";
     }
 
@@ -193,13 +219,11 @@ public class SystemAdminController {
         model.addAttribute("backupHistory", backupService.getBackupLogs());
         model.addAttribute("backupSchedule", backupService.getCurrentScheduleConfig());
 
-        // CORRECTED: Pointing to the nested views folder
         return "admin/system_admin_views/database_backups";
     }
 
     @PostMapping("/backups/trigger")
     public String triggerManualBackup(
-            // CORRECTED: Added defaultValue to prevent 400 Bad Request if the JSP form doesn't send it
             @RequestParam(value = "backupType", defaultValue = "FULL") String backupType,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -208,7 +232,7 @@ public class SystemAdminController {
             return "redirect:/login";
         }
 
-        boolean success = backupService.executeBackup(backupType); // "FULL" or "DIFFERENTIAL"
+        boolean success = backupService.executeBackup(backupType);
         if (success) {
             auditLogService.logAction(((User) session.getAttribute("currentUser")).getUserID(),
                     "MANUAL_BACKUP", "Executed manual " + backupType + " database backup.");
@@ -219,7 +243,7 @@ public class SystemAdminController {
 
         return "redirect:/system/backups";
     }
-    
+
     /**
      * Private Security Helper Check
      */

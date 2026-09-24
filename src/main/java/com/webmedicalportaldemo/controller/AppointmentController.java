@@ -42,9 +42,9 @@ public class AppointmentController {
      */
     @GetMapping("/getAvailableSlots")
     @ResponseBody
-    public List<String> getAvailableSlots(@RequestParam("doctorID") int doctoruserID, @RequestParam("date") String date, HttpSession session) {
+    public List<String> getAvailableSlots(@RequestParam("doctorID") int doctorID, @RequestParam("date") String date, HttpSession session) {
         User currentUser = getCurrentUser(session);
-        if (currentUser == null || doctoruserID <= 0 || date == null || date.isBlank()) {
+        if (currentUser == null || doctorID <= 0 || date == null || date.isBlank()) {
             return Collections.emptyList();
         }
         try {
@@ -55,7 +55,7 @@ public class AppointmentController {
         } catch (Exception exception) {
             return Collections.emptyList();
         }
-        return apptDAO.getAvailableSlots(doctoruserID, date);
+        return apptDAO.getAvailableSlots(doctorID, date);
     }
     /**
      * Returns doctors by specialization as JSON.

@@ -133,23 +133,25 @@ public class EmployeeDAO {
 
         // 2. Cascade deletions for all data tied to this user_id
         if (userID != null) {
-            // 1. Clear user-level emergency dependencies
-            jdbcTemplate.update("DELETE FROM emergency_requests WHERE assigned_doctor_id = ?", userID);
-
-            // 2. Clear records linked to the doctor's appointments (prescriptions, lab requests, health records)
             String doctorSubquery = "SELECT doctor_id FROM doctors WHERE employee_pk = ?";
             String appointmentSubquery = "SELECT appointment_id FROM appointments WHERE doctor_id IN (" + doctorSubquery + ")";
 
-            jdbcTemplate.update("DELETE FROM prescriptions WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
+            // 1. Clear emergency requests assigned to this doctor
+            jdbcTemplate.update("DELETE FROM emergency_requests WHERE assigned_doctor_id = ?", userID);
+
+            // 2. Clear prescriptions using doctor_id (prescriptions has doctor_id, NOT appointment_id)
+            jdbcTemplate.update("DELETE FROM prescriptions WHERE doctor_id IN (" + doctorSubquery + ")", userID);
+
+            // 3. Clear appointment-linked records
             jdbcTemplate.update("DELETE FROM lab_requests WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
             jdbcTemplate.update("DELETE FROM health_records WHERE appointment_id IN (" + appointmentSubquery + ")", userID);
 
-            // 3. Clear direct doctor dependencies
+            // 4. Clear direct doctor dependencies
             jdbcTemplate.update("DELETE FROM feedback WHERE doctor_id IN (" + doctorSubquery + ")", userID);
             jdbcTemplate.update("DELETE FROM doctor_availability WHERE doctor_id IN (" + doctorSubquery + ")", userID);
             jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id IN (" + doctorSubquery + ")", userID);
 
-            // 4. Delete the primary doctor record
+            // 5. Delete primary doctor record
             jdbcTemplate.update("DELETE FROM doctors WHERE employee_pk = ?", userID);
         }
 

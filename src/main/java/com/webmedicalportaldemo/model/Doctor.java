@@ -1,108 +1,127 @@
 package com.webmedicalportaldemo.model;
-
 public class Doctor extends User {
-
+    private static final String DOCTOR_ROLE = "DOCTOR";
+    private int doctorID;
     private String specialization;
-    private int licenseID;
-
-    // Default Constructor
+    private String licenseID;
     public Doctor() {
         super();
-        this.setRole("DOCTOR");
+        setRole(DOCTOR_ROLE);
+        setActive(true);
     }
-
-    // Constructor for new Doctor registration
-    public Doctor(String firstName, String lastName, String email, String password,
-                  String specialization, int licenseID) {
-
-        super(firstName, lastName, email, password, "DOCTOR");
-
+    public Doctor(String firstName, String lastName, String email, String password, String specialization, String licenseID) {
+        super(firstName, lastName, email, password, DOCTOR_ROLE);
+        this.specialization = specialization;
+        this.licenseID = licenseID;
+        setActive(true);
+    }
+    public Doctor(int userID, String firstName, String lastName, String email, String password, String specialization, String licenseID) {
+        super(userID, firstName, lastName, email, password, DOCTOR_ROLE);
         this.specialization = specialization;
         this.licenseID = licenseID;
     }
-
-    // Constructor for existing Doctors loaded from DB
-    public Doctor(int userID, String firstName, String lastName, String email,
-                  String password, String specialization, int licenseID) {
-
-        super(userID, firstName, lastName, email, password, "DOCTOR");
-
+    public Doctor(int doctorID, int userID, String firstName, String lastName, String email, String password, String specialization, String licenseID) {
+        super(userID, firstName, lastName, email, password, DOCTOR_ROLE);
+        this.doctorID = doctorID;
         this.specialization = specialization;
         this.licenseID = licenseID;
     }
-
-    // Constructor for Patient Search Results
-    public Doctor(int userID, String firstName, String lastName, String specialization, int licenseID) {
-
-        this.setUserID(userID);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-
+    public Doctor(int userID, String firstName, String lastName, String specialization, String licenseID) {
+        super();
+        setUserID(userID);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setRole(DOCTOR_ROLE);
+        setActive(true);
         this.specialization = specialization;
         this.licenseID = licenseID;
-
-        this.setRole("DOCTOR");
     }
-
-    // Constructor for Admin Search Results
+    public Doctor(int doctorID, int userID, String firstName, String lastName, String specialization, String licenseID) {
+        super();
+        this.doctorID = doctorID;
+        setUserID(userID);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setRole(DOCTOR_ROLE);
+        setActive(true);
+        this.specialization = specialization;
+        this.licenseID = licenseID;
+    }
     public Doctor(int userID, String firstName, String lastName, String specialization) {
-
-        this.setUserID(userID);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-
+        super();
+        setUserID(userID);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setRole(DOCTOR_ROLE);
+        setActive(true);
         this.specialization = specialization;
-
-        this.setRole("DOCTOR");
     }
-
-    // Update current doctor object
-    public void updateDoctor(int userID, String firstName, String lastName, String email,
-                             String password, String specialization, int licenseID) {
-
-        this.setUserID(userID);
-        this.setFirstName(firstName);
-        this.setLastName(lastName);
-        this.setEmail(email);
-        this.setPassword(password);
-
+    public void updateDoctor(int userID, String firstName, String lastName, String email, String password, String specialization, String licenseID) {
+        setUserID(userID);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        setPassword(password);
+        setRole(DOCTOR_ROLE);
         this.specialization = specialization;
         this.licenseID = licenseID;
-
-        this.setRole("DOCTOR");
     }
-
-    // Getters & Setters
-
+    public void updateDoctor(int doctorID, int userID, String firstName, String lastName, String email, String password, String specialization, String licenseID) {
+        this.doctorID = doctorID;
+        setUserID(userID);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        setPassword(password);
+        setRole(DOCTOR_ROLE);
+        this.specialization = specialization;
+        this.licenseID = licenseID;
+    }
+    public int getDoctorID() {
+        return doctorID;
+    }
+    public void setDoctorID(int doctorID) {
+        this.doctorID = doctorID;
+    }
     public String getSpecialization() {
         return specialization;
     }
-
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
     }
-
-    public int getLicenseID() {
+    public String getLicenseID() {
         return licenseID;
     }
-
-    public void setLicenseID(int licenseID) {
+    public void setLicenseID(String licenseID) {
         this.licenseID = licenseID;
     }
-
     @Override
     public void displayDashboard() {
         System.out.println("Displaying Doctor Portal for: " + getFirstName() + " " + getLastName());
     }
-
     @Override
     public String toFileString() {
         return "Doctor{" +
-                "userID=" + getUserID() +
+                "doctorID=" + doctorID +
+                ", userID=" + getUserID() +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +
                 ", specialization='" + specialization + '\'' +
-                ", licenseID=" + licenseID +
+                ", licenseID='" + licenseID + '\'' +
+                '}';
+    }
+    @Override
+    public String toString() {
+        return "Doctor{" +
+                "doctorID=" + doctorID +
+                ", userID=" + getUserID() +
+                ", firstName='" + getFirstName() + '\'' +
+                ", lastName='" + getLastName() + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", specialization='" + specialization + '\'' +
+                ", licenseID='" + licenseID + '\'' +
+                ", role='" + getRole() + '\'' +
+                ", active=" + isActive() +
                 '}';
     }
 }

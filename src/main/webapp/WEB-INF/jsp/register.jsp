@@ -37,7 +37,6 @@
                     </c:if>
 
                     <c:url var="registerUrl" value="/register" />
-                    <!-- OPENING FORM TAG FIX -->
                     <form:form action="${registerUrl}" method="post" modelAttribute="user" id="registrationForm">
 
                         <c:if test="${not empty _csrf}">
@@ -82,12 +81,23 @@
                             </div>
                         </div>
 
+                        <!-- EMAIL FIELD WITH UNUSUAL DOMAIN WARNING & SPRING BINDING -->
                         <div class="mb-3">
                             <label for="email" class="form-label">Email Address</label>
-                            <form:input path="email" type="email" id="email" cssClass="form-control" placeholder="name@example.com" maxlength="100" autocomplete="email" required="required" />
+                            <form:input path="email"
+                                        type="email"
+                                        id="email"
+                                        cssClass="form-control"
+                                        required="required"
+                                        placeholder="Enter email address (e.g. name@example.com)"
+                                        autocomplete="email" />
                             <form:errors path="email" cssClass="text-danger small d-block mt-1" />
+
                             <div id="staffEmailHelp" class="form-text d-none">
-                                Staff must use the email address recorded in the hospital employee registry.
+                                Must match the email address registered with hospital administration.
+                            </div>
+                            <div id="emailWarning" class="text-warning small mt-1 d-none">
+                                ⚠️ This domain contains numbers or unusual formatting. Please verify there are no typos (e.g., "21gmail" instead of "gmail").
                             </div>
                         </div>
 
@@ -145,7 +155,6 @@
                     <c:url var="loginUrl" value="/login" />
                     <small>
                         Already have an account?
-                        <!-- FOOTER LINK FIX -->
                         <a href="${loginUrl}" class="text-primary text-decoration-none">Login here</a>
                     </small>
                 </div>
@@ -162,7 +171,9 @@
         const patientFields = document.getElementById("patientFields");
         const bloodGroup = document.getElementById("bloodGroup");
         const medicalHistory = document.getElementById("medicalHistory");
+        const emailInput = document.getElementById("email");
         const staffEmailHelp = document.getElementById("staffEmailHelp");
+        const emailWarning = document.getElementById("emailWarning");
         const registrationHelp = document.getElementById("registrationHelp");
         const password = document.getElementById("password");
         const confirmPassword = document.getElementById("confirmPassword");
@@ -175,12 +186,17 @@
             const isStaff = selectedType === "STAFF";
             patientFields.classList.toggle("d-none", !isPatient);
             employeeFields.classList.toggle("d-none", !isStaff);
-            staffEmailHelp.classList.toggle("d-none", !isStaff);
+
+            if (staffEmailHelp) {
+                staffEmailHelp.classList.toggle("d-none", !isStaff);
+            }
+
             employeeID.required = isStaff;
             bloodGroup.required = isPatient;
             employeeID.disabled = !isStaff;
             bloodGroup.disabled = !isPatient;
             medicalHistory.disabled = !isPatient;
+
             if (clearHiddenValues && !isStaff) {
                 employeeID.value = "";
             }
@@ -200,6 +216,28 @@
             }
         }
 
+        function validateEmailDomain() {
+            if (!emailInput || !emailWarning) return;
+            const email = emailInput.value.trim();
+
+            // Legal email format (allows numbers in domain)
+            const baseRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            // Strict email format (domain section has no numbers)
+            const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}$/;
+
+            if (email.length > 0 && baseRegex.test(email) && !strictRegex.test(email)) {
+                // Highlight input box in orange and show warning note
+                emailInput.style.borderColor = "#ff9800";
+                emailInput.style.boxShadow = "0 0 5px rgba(255, 152, 0, 0.4)";
+                emailWarning.classList.remove("d-none");
+            } else {
+                // Reset styles
+                emailInput.style.borderColor = "";
+                emailInput.style.boxShadow = "";
+                emailWarning.classList.add("d-none");
+            }
+        }
+
         function validatePasswords() {
             const passwordsMatch = password.value === confirmPassword.value;
             const shouldShowError = confirmPassword.value.length > 0 && !passwordsMatch;
@@ -211,12 +249,18 @@
         registrationType.addEventListener("change", function () {
             updateRegistrationFields(true);
         });
+
+        if (emailInput) {
+            emailInput.addEventListener("input", validateEmailDomain);
+        }
+
         confirmPassword.addEventListener("input", validatePasswords);
         password.addEventListener("input", function () {
             if (confirmPassword.value.length > 0) {
                 validatePasswords();
             }
         });
+
         togglePassword.addEventListener("click", function () {
             const showPassword = password.type === "password";
             password.type = showPassword ? "text" : "password";
@@ -247,7 +291,9 @@
                 registerButton.textContent = "Creating Account...";
             });
         }
+
         updateRegistrationFields(false);
+        validateEmailDomain();
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

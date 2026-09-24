@@ -17,15 +17,15 @@
 <main class="container pb-5 mt-4">
 
     <!-- Flash Message Notifications -->
-    <c:if test="${not empty message}">
+    <c:if test="${param.msg eq 'success'}">
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>${message}
+            <i class="bi bi-check-circle-fill me-2"></i>User status updated successfully.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
-    <c:if test="${not empty error}">
+    <c:if test="${not empty param.error}">
         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>${error}
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Operation failed. Could not update user status.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
@@ -60,13 +60,13 @@
                         <tr>
                             <!-- Column 1: ID -->
                             <td class="ps-4 fw-bold text-secondary">
-                                #${u.userID}
+                                #<c:out value="${u.userId}" />
                             </td>
 
                             <!-- Column 2: Full Name & Email -->
                             <td>
-                                <div class="fw-bold text-dark">${u.firstName} ${u.lastName}</div>
-                                <small class="text-muted"><i class="bi bi-envelope me-1"></i>${u.email}</small>
+                                <div class="fw-bold text-dark"><c:out value="${u.firstName}" /> <c:out value="${u.lastName}" /></div>
+                                <small class="text-muted"><i class="bi bi-envelope me-1"></i><c:out value="${u.email}" /></small>
                             </td>
 
                             <!-- Column 3: Role Badge -->
@@ -113,7 +113,7 @@
                             <td class="text-end pe-4">
                                 <c:url var="toggleUrl" value="/system/users/toggle-status"/>
                                 <form action="${toggleUrl}" method="post" class="d-inline">
-                                    <input type="hidden" name="userID" value="${not empty u.userID ? u.userID : u.userID}" />
+                                    <input type="hidden" name="userID" value="${u.userId}" />
                                     <input type="hidden" name="active" value="${!u.active}" />
                                     <button type="submit"
                                             class="btn btn-sm ${u.active ? 'btn-outline-danger' : 'btn-outline-success'}"

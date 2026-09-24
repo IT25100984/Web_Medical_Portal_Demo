@@ -81,9 +81,6 @@ public class DashboardController {
     /*
      * Doctor dashboard
      */
-    /*
-     * Doctor dashboard
-     */
     @GetMapping("/doctorDashboard")
     public String showDoctorDashboard(HttpSession session, Model model, HttpServletResponse response) {
         preventDashboardCaching(response);
@@ -241,7 +238,7 @@ public class DashboardController {
     public String updateProfile(@RequestParam(required = false) String bloodGroup,
                                 @RequestParam(required = false) String medicalHistory,
                                 @RequestParam(required = false) String specialization,
-                                @RequestParam(required = false, defaultValue = "0") int licenseID,
+                                @RequestParam(required = false, defaultValue = "0") String licenseID,
                                 HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) {
@@ -273,9 +270,18 @@ public class DashboardController {
             return "redirect:/login";
         }
 
+        // 1. Fetch the actual doctor_id using user.getUserID()
+        Integer doctorId = doctorDAO.getDoctorIDByuserID(doctor.getUserID());
+
+        if (doctorId == null) {
+            redirectAttributes.addFlashAttribute("error", "Doctor profile not found.");
+            return "redirect:/doctorDashboard";
+        }
+
+        // 2. Pass doctorId instead of doctor.getUserID()
         boolean created = labReportService.createDiagnosticRequest(
                 patientId,
-                doctor.getUserID(),
+                doctorId,
                 appointmentID,
                 testType,
                 priority,
@@ -290,7 +296,6 @@ public class DashboardController {
 
         return "redirect:/doctorDashboard";
     }
-
 
     /*
      * Patient profile update helper
@@ -319,11 +324,11 @@ public class DashboardController {
     /*
      * Doctor profile update helper
      */
-    private String updateDoctorProfile(User currentUser, String specialization, int licenseID, HttpSession session) {
+    private String updateDoctorProfile(User currentUser, String specialization, String licenseID, HttpSession session) {
         if (specialization == null || specialization.isBlank()) {
             return "redirect:/doctorDashboard?error=invalidSpecialization";
         }
-        if (licenseID <= 0) {
+        if (licenseID == null) {
             return "redirect:/doctorDashboard?error=invalidLicense";
         }
         String cleanedSpecialization = specialization.trim();

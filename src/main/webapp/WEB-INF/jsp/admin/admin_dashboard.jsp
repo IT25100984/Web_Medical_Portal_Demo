@@ -100,6 +100,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+    <c:if test="${param.msg eq 'admin_cancel_success'}">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+            <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
+            Appointment successfully cancelled by administration.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
 
     <section class="p-4 p-lg-5 mb-4 bg-admin-gold text-white rounded-3 shadow">
         <div class="row align-items-center g-4">
@@ -245,7 +252,7 @@
                 <div class="col-lg-6">
                     <div class="form-check form-switch mt-lg-4">
                         <input class="form-check-input" type="checkbox" id="toggleCompleted" checked>
-                        <label class="form-check-label fw-semibold" for="toggleCompleted">Show completed appointments</label>
+                        <label class="form-check-label fw-semibold" for="toggleCompleted">Show completed & cancelled appointments</label>
                     </div>
                 </div>
             </div>
@@ -282,7 +289,8 @@
                                         <small class="text-muted d-block">Patient ID: #<c:out value="${app.patientID}" /></small>
                                     </td>
                                     <td>
-                                        <span class="fw-semibold">Dr. <c:out value="${app.doctorName}" /></span>
+                                        <!-- Removed the hardcoded 'Dr.' as the DTO already prefixes it -->
+                                        <span class="fw-semibold"><c:out value="${app.doctorName}" /></span>
                                         <small class="text-muted d-block">Doctor ID: #<c:out value="${app.doctorID}" /></small>
                                     </td>
                                     <td>
@@ -302,9 +310,28 @@
                                         </c:choose>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
-                                            <i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Managed
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${app.status eq 'COMPLETED' or app.status eq 'CANCELLED'}">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                                                    <i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Locked
+                                                </button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="d-flex gap-2">
+                                                    <!-- Placeholder link for an admin rescheduling view -->
+                                                    <a href="${pageContext.request.contextPath}/admin/appointments/reschedule?id=${app.appointmentID}" class="btn btn-sm btn-outline-primary" title="Override & Reschedule">
+                                                        <i class="bi bi-calendar2-plus-fill me-1"></i>Edit
+                                                    </a>
+                                                    <!-- Form submission for admin cancellation -->
+                                                    <form action="${pageContext.request.contextPath}/admin/appointments/cancel" method="POST" onsubmit="return confirm('Are you sure you want to forcibly cancel this appointment?');" class="m-0">
+                                                        <input type="hidden" name="appointmentID" value="${app.appointmentID}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Force Cancel">
+                                                            <i class="bi bi-x-circle-fill me-1"></i>Cancel
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -336,25 +363,32 @@
         const completedToggle = document.getElementById("toggleCompleted");
         const appointmentRows = document.querySelectorAll(".app-row");
         const emptySearchResults = document.getElementById("emptySearchResults");
+
         function applyAppointmentFilters() {
             const searchQuery = searchInput.value.trim().toLowerCase();
             const showCompleted = completedToggle.checked;
             let visibleRowCount = 0;
+
             appointmentRows.forEach(function (row) {
                 const rowText = row.textContent.toLowerCase();
                 const appointmentStatus = (row.dataset.status || "").toUpperCase();
                 const matchesSearch = rowText.includes(searchQuery);
-                const matchesStatus = showCompleted || appointmentStatus !== "COMPLETED";
+                // Modified so the toggle applies to both COMPLETED and CANCELLED appointments
+                const isHistorical = appointmentStatus === "COMPLETED" || appointmentStatus === "CANCELLED";
+                const matchesStatus = showCompleted || !isHistorical;
+
                 const shouldDisplay = matchesSearch && matchesStatus;
                 row.style.display = shouldDisplay ? "" : "none";
                 if (shouldDisplay) {
                     visibleRowCount++;
                 }
             });
+
             if (emptySearchResults) {
                 emptySearchResults.style.display = visibleRowCount === 0 ? "table-row" : "none";
             }
         }
+
         searchInput.addEventListener("input", applyAppointmentFilters);
         completedToggle.addEventListener("change", applyAppointmentFilters);
     });

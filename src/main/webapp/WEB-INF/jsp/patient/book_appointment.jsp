@@ -87,7 +87,7 @@
                     <select name="doctorID" id="doctorSelect" class="form-select" required>
                         <option value="" selected disabled>Choose a doctor...</option>
                         <c:forEach var="doc" items="${doctorList}">
-                            <option value="${doc.userID}">
+                            <option value="${doc.userID}" data-doctor-id="${doc.doctorID}">
                                 Dr. <c:out value="${doc.firstName}" /> <c:out value="${doc.lastName}" />
                             </option>
                         </c:forEach>
@@ -198,6 +198,7 @@
                     doctors.forEach(function (doctor) {
                         const option = document.createElement("option");
                         option.value = doctor.userID;
+                        option.dataset.doctorId = doctor.doctorID;
                         option.textContent = "Dr. " + (doctor.firstName || "") + " " + (doctor.lastName || "");
                         doctorSelect.appendChild(option);
                     });
@@ -208,7 +209,8 @@
                 });
         }
         function fetchSlots() {
-            const doctorID = doctorSelect.value;
+            const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+            const doctorID = selectedOption && selectedOption.dataset ? selectedOption.dataset.doctorId : "";
             const selectedDate = datePicker.value;
             if (!doctorID || !selectedDate) {
                 timeSlotSelect.disabled = true;
@@ -244,19 +246,19 @@
                     timeSlotSelect.disabled = false;
                 })
                 .catch(function (error) {
-                    console.error(error);
+                    console.error("Unable to load work schedule:", error);
                     timeSlotSelect.innerHTML = '<option value="" selected disabled>Error loading slots</option>';
                     timeSlotSelect.disabled = true;
                 });
         }
         function fetchAppointmentHistory() {
-            const doctorID = doctorSelect.value;
-            if (!doctorID) {
+            const doctorUserID = doctorSelect.value;
+            if (!doctorUserID) {
                 return;
             }
             historyDisplay.classList.remove("d-none");
             historyList.innerHTML = '<li class="list-group-item text-muted">Loading appointment history...</li>';
-            fetch("${pageContext.request.contextPath}/history?doctorID=" + encodeURIComponent(doctorID))
+            fetch("${pageContext.request.contextPath}/history?doctorID=" + encodeURIComponent(doctorUserID))
                 .then(function (response) {
                     if (!response.ok) {
                         throw new Error("History request failed with status " + response.status);
@@ -276,22 +278,22 @@
                         }
                         const listItem = document.createElement("li");
                         listItem.className = "list-group-item px-0";
-                        const appointmentType = document.createElement("span");
-                        appointmentType.className = "badge bg-secondary me-1";
-                        appointmentType.textContent = parts[3];
-                        const appointmentDate = document.createElement("small");
-                        appointmentDate.className = "text-muted";
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "d-flex justify-content-between align-items-center";
+                        const details = document.createElement("div");
+                        const typeBadge = document.createElement("span");
+                        typeBadge.className = "badge bg-secondary me-1";
+                        typeBadge.textContent = parts[3];
+                        const dateText = document.createElement("small");
+                        dateText.className = "text-muted";
                         const parsedDate = new Date(parts[5]);
-                        appointmentDate.textContent = Number.isNaN(parsedDate.getTime()) ? parts[5] : parsedDate.toLocaleDateString();
+                        dateText.textContent = Number.isNaN(parsedDate.getTime()) ? parts[5] : parsedDate.toLocaleDateString();
                         const amount = document.createElement("span");
                         amount.className = "fw-bold text-success";
                         const parsedAmount = Number.parseFloat(parts[4]);
                         amount.textContent = "LKR " + (Number.isNaN(parsedAmount) ? "0.00" : parsedAmount.toFixed(2));
-                        const details = document.createElement("div");
-                        details.appendChild(appointmentType);
-                        details.appendChild(appointmentDate);
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "d-flex justify-content-between align-items-center";
+                        details.appendChild(typeBadge);
+                        details.appendChild(dateText);
                         wrapper.appendChild(details);
                         wrapper.appendChild(amount);
                         listItem.appendChild(wrapper);
@@ -303,9 +305,13 @@
                     historyList.innerHTML = '<li class="list-group-item text-danger">Error loading appointment history.</li>';
                 });
         }
-        const today = new Date().toISOString().split("T")[0];
+        const todayObj = new Date();
+        const today = todayObj.toISOString().split("T")[0];
         datePicker.min = today;
         datePicker.value = today;
+        const maxDateObj = new Date();
+        maxDateObj.setDate(todayObj.getDate() + 90);
+        datePicker.max = maxDateObj.toISOString().split("T")[0];
         typeSelect.addEventListener("change", updatePricePreview);
         extraCharge.addEventListener("change", updatePricePreview);
         specializationSelect.addEventListener("change", updateDoctorList);

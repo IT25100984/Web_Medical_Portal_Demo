@@ -15,12 +15,16 @@ import java.math.BigDecimal;
 
 @Repository
 public class AppointmentDAO implements AppointmentDAOInterface {
+
     private final JdbcTemplate jdbcTemplate;
     private final ApptFileService apptFileService;
+
     public AppointmentDAO(DataSource dataSource, ApptFileService apptFileService) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.apptFileService = apptFileService;
     }
+
+    // Standard mapper for patient and doctor specific views
     private RowMapper<AppointmentDTO> appointmentRowMapper() {
         return (resultSet, rowNumber) -> {
             String rawTime = resultSet.getString("appt_time");
@@ -29,6 +33,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             }
             String appointmentDate = resultSet.getString("appt_date");
             String fullDateTime = appointmentDate + " at " + (rawTime == null ? "" : rawTime);
+
             AppointmentDTO appointment = new AppointmentDTO(
                     resultSet.getInt("appointment_id"),
                     fullDateTime,
@@ -45,6 +50,39 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             return appointment;
         };
     }
+
+    // New dedicated mapper for the Admin Dashboard to separate patient and doctor names
+    private RowMapper<AppointmentDTO> adminAppointmentRowMapper() {
+        return (resultSet, rowNumber) -> {
+            String rawTime = resultSet.getString("appt_time");
+            if (rawTime != null && rawTime.length() >= 5) {
+                rawTime = rawTime.substring(0, 5);
+            }
+            String appointmentDate = resultSet.getString("appt_date");
+            String fullDateTime = appointmentDate + " at " + (rawTime == null ? "" : rawTime);
+
+            AppointmentDTO appointment = new AppointmentDTO(
+                    resultSet.getInt("appointment_id"),
+                    fullDateTime,
+                    "Admin View", // Placeholder as admins don't have an "opposite" name
+                    resultSet.getString("status"),
+                    resultSet.getBoolean("is_rescheduled"),
+                    resultSet.getInt("last_modified_by"),
+                    resultSet.getString("appointment_type"),
+                    resultSet.getString("additional_charge"),
+                    resultSet.getInt("doctor_id"),
+                    resultSet.getInt("patient_id")
+            );
+            appointment.setTotalFee(resultSet.getBigDecimal("total_fee"));
+
+            // Set explicit names for the admin dashboard columns
+            appointment.setPatientName(resultSet.getString("patient_name"));
+            appointment.setDoctorName("Dr. " + resultSet.getString("doctor_name"));
+
+            return appointment;
+        };
+    }
+
     @Override
     public List<AppointmentDTO> getAppointmentsByPatient(int patientuserID) {
         String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, " +
@@ -62,6 +100,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                 "a.appt_date ASC, a.appt_time ASC";
         return jdbcTemplate.query(sql, appointmentRowMapper(), patientuserID);
     }
+
     @Override
     public List<AppointmentDTO> getAppointmentsByDoctor(int doctoruserID) {
         String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, " +
@@ -80,13 +119,15 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                 "a.appt_date ASC, a.appt_time ASC";
         return jdbcTemplate.query(sql, appointmentRowMapper(), doctoruserID);
     }
+
     @Override
     public List<AppointmentDTO> getAllAppointments() {
+        // Updated to explicitly select patient_name and doctor_name for the admin UI
         String sql = "SELECT a.appointment_id, a.appt_date, a.appt_time, a.status, " +
                 "a.is_rescheduled, a.last_modified_by, a.appointment_type, " +
                 "a.additional_charge, a.total_fee, a.doctor_id, a.patient_id, " +
-                "CONCAT('Doctor: ', du.first_name, ' ', du.last_name, " +
-                "' | Patient: ', pu.first_name, ' ', pu.last_name) AS opposite_name " +
+                "CONCAT(pu.first_name, ' ', pu.last_name) AS patient_name, " +
+                "CONCAT(du.first_name, ' ', du.last_name) AS doctor_name " +
                 "FROM appointments a " +
                 "JOIN doctors d ON a.doctor_id = d.doctor_id " +
                 "JOIN employees e ON d.employee_pk = e.employee_pk " +
@@ -94,8 +135,9 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                 "JOIN patients p ON a.patient_id = p.patient_id " +
                 "JOIN users pu ON p.user_id = pu.user_id " +
                 "ORDER BY a.appt_date DESC, a.appt_time DESC";
-        return jdbcTemplate.query(sql, appointmentRowMapper());
+        return jdbcTemplate.query(sql, adminAppointmentRowMapper());
     }
+
     @Override
     public boolean doctorHasAccessToPatient(int doctorID, int patientID) {
         if (doctorID <= 0 || patientID <= 0) {
@@ -105,6 +147,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, doctorID, patientID);
         return count != null && count > 0;
     }
+
     @Override
     public boolean bookAppointment(int doctoruserID, int patientuserID, String date, String time, String type, String additionalCharge, BigDecimal totalFee) {
         Integer doctorID = getDoctorIDByuserID(doctoruserID);
@@ -155,6 +198,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         }
         return rowsAffected > 0;
     }
+
     @Override
     public boolean cancelAppointment(int appointmentID) {
         if (appointmentID <= 0) {
@@ -163,6 +207,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         String sql = "UPDATE appointments SET status = 'CANCELLED' WHERE appointment_id = ?";
         return jdbcTemplate.update(sql, appointmentID) > 0;
     }
+
     @Override
     public boolean setDoctorAvailability(int doctoruserID, Integer dayOfWeek, String startTime, String endTime) {
         Integer doctorID = getDoctorIDByuserID(doctoruserID);
@@ -173,6 +218,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         String sql = "INSERT INTO doctor_availability (doctor_id, available_date, day_of_week, start_time, end_time) VALUES (?, NULL, ?, ?, ?)";
         return jdbcTemplate.update(sql, doctorID, dayOfWeek, startTime, endTime) > 0;
     }
+
     @Override
     public boolean setDoctorAvailability(int doctoruserID, String availableDate, String startTime, String endTime) {
         Integer doctorID = getDoctorIDByuserID(doctoruserID);
@@ -188,11 +234,11 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         String sql = "INSERT INTO doctor_availability (doctor_id, available_date, day_of_week, start_time, end_time) VALUES (?, ?, NULL, ?, ?)";
         return jdbcTemplate.update(sql, doctorID, availableDate, startTime, endTime) > 0;
     }
+
     @Override
-    public List<String> getAvailableSlots(int doctoruserID, String date) {
+    public List<String> getAvailableSlots(int doctorID, String date) {
         List<String> availableSlots = new ArrayList<>();
-        Integer doctorID = getDoctorIDByuserID(doctoruserID);
-        if (doctorID == null || doctorID <= 0 || date == null || date.isBlank()) {
+        if (doctorID <= 0 || date == null || date.isBlank()) {
             return availableSlots;
         }
         LocalDate localDate;
@@ -203,24 +249,31 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         }
         String databaseDate = localDate.toString();
         int dayOfWeek = localDate.getDayOfWeek().getValue();
-        String availabilitySql = "SELECT start_time, end_time FROM doctor_availability WHERE doctor_id = ? AND (available_date = ? OR (available_date IS NULL AND day_of_week = ?)) ORDER BY CASE WHEN available_date = ? THEN 0 ELSE 1 END LIMIT 1";
+
+        // Simplified query using only day_of_week
+        String availabilitySql = "SELECT start_time, end_time FROM doctor_availability WHERE doctor_id = ? AND day_of_week = ?";
+
         jdbcTemplate.query(availabilitySql, resultSet -> {
             int startHour = resultSet.getTime("start_time").toLocalTime().getHour();
             int endHour = resultSet.getTime("end_time").toLocalTime().getHour();
+
             String bookedSql = "SELECT appt_time FROM appointments WHERE doctor_id = ? AND appt_date = ? AND status <> 'CANCELLED'";
             List<String> bookedHours = jdbcTemplate.query(bookedSql, (bookedResultSet, rowNumber) -> {
                 Time bookedTime = bookedResultSet.getTime("appt_time");
                 return String.format("%02d:00", bookedTime.toLocalTime().getHour());
             }, doctorID, databaseDate);
+
             for (int hour = startHour; hour < endHour; hour++) {
                 String hourValue = String.format("%02d:00", hour);
                 if (!bookedHours.contains(hourValue)) {
                     availableSlots.add(hourValue);
                 }
             }
-        }, doctorID, databaseDate, dayOfWeek, databaseDate);
+        }, doctorID, dayOfWeek);
+
         return availableSlots;
     }
+
     private Integer getDoctorIDByuserID(int userID) {
         if (userID <= 0) {
             return null;
@@ -229,6 +282,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         List<Integer> doctorIDs = jdbcTemplate.query(sql, (resultSet, rowNumber) -> resultSet.getInt("doctor_id"), userID);
         return doctorIDs.isEmpty() ? null : doctorIDs.get(0);
     }
+
     private Integer getPatientIDByuserID(int userID) {
         if (userID <= 0) {
             return null;
@@ -244,10 +298,8 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                     "total_fee, appt_date, appt_time FROM appointments " +
                     "WHERE appointment_id = ?";
             Map<String, Object> data = jdbcTemplate.queryForMap(fetchSql, appointmentID);
-
             int patientID = ((Number) data.get("patient_id")).intValue();
             int doctorID = ((Number) data.get("doctor_id")).intValue();
-
             String appointmentType = data.get("appointment_type") == null ?
                     "CONSULTATION" : data.get("appointment_type").toString().trim().toUpperCase();
             BigDecimal totalFee = data.get("total_fee") == null ?
@@ -264,6 +316,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
                     "file could not be synchronized: " + exception.getMessage());
         }
     }
+
     private boolean isValidTimeRange(String startTime, String endTime) {
         if (startTime == null || startTime.isBlank() || endTime == null || endTime.isBlank()) {
             return false;
@@ -274,6 +327,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             return false;
         }
     }
+
     private String normalizeAppointmentType(String appointmentType) {
         if (appointmentType == null || appointmentType.isBlank()) {
             return "CONSULTATION";
@@ -284,6 +338,7 @@ public class AppointmentDAO implements AppointmentDAOInterface {
             default -> "CONSULTATION";
         };
     }
+
     private String normalizeStatus(String status) {
         String normalizedStatus = status.trim().toUpperCase();
         return switch (normalizedStatus) {

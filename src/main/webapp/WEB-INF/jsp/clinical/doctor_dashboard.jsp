@@ -108,8 +108,15 @@
                             <small class="text-muted d-block">License ID</small>
                             <strong>
                                 <c:choose>
-                                    <c:when test="${doctor.licenseID gt 0}"><c:out value="${doctor.licenseID}" /></c:when>
-                                    <c:otherwise>Not available</c:otherwise>
+                                    <%-- FIX 1: Check if the string exists and is not equal to 'Pending License' --%>
+                                    <c:when test="${not empty doctor.licenseID and doctor.licenseID ne 'Pending License'}">
+                                        <span>License ID: ${doctor.licenseID}</span>
+                                    </c:when>
+
+                                    <%-- FIX 2: Check explicitly for the string status --%>
+                                    <c:when test="${doctor.licenseID eq 'Pending License'}">
+                                        <span class="badge bg-warning">Status: Pending License</span>
+                                    </c:when>
                                 </c:choose>
                             </strong>
                         </div>

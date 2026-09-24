@@ -13,6 +13,35 @@
 <%@ include file="../../shared/header.jsp" %>
 
 <main class="container pb-5 mt-4">
+
+    <!-- Flash Message Notifications -->
+    <c:choose>
+        <c:when test="${param.msg eq 'success'}">
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>User role reassigned successfully.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:when>
+        <c:when test="${param.error eq 'patientToStaffForbidden'}">
+            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-shield-exclamation me-2"></i><strong>Action Blocked:</strong> Patient accounts cannot be directly reassigned as hospital employees due to medical record integrity constraints.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:when>
+        <c:when test="${param.error eq 'staffToPatientForbidden'}">
+            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-shield-exclamation me-2"></i><strong>Action Blocked:</strong> Hospital staff members cannot be demoted to patient accounts.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:when>
+        <c:when test="${not empty param.error}">
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to update user role.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:when>
+    </c:choose>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 fw-bold mb-1">
@@ -26,6 +55,14 @@
             </a>
         </div>
     </div>
+
+    <!-- Info Banner for Patient Role Page -->
+    <c:if test="${selectedRole == 'PATIENT'}">
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Patient accounts are restricted to the Patient Portal. To grant staff privileges to a user, create a dedicated staff credential.
+        </div>
+    </c:if>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
@@ -46,26 +83,36 @@
                     <tbody>
                     <c:forEach var="u" items="${roleUsers}">
                         <tr>
-                            <td>#${u.userID}</td>
-                            <td class="fw-bold">${u.firstName} ${u.lastName}</td>
-                            <td>${u.email}</td>
+                            <td class="fw-bold text-secondary">#<c:out value="${u.userId}" /></td>
+                            <td class="fw-bold"><c:out value="${u.firstName}" /> <c:out value="${u.lastName}" /></td>
+                            <td><c:out value="${u.email}" /></td>
                             <td>
-                                    <span class="badge ${u.active ? 'bg-success' : 'bg-danger'}">
-                                            ${u.active ? 'Active' : 'Disabled'}
-                                    </span>
+                                <span class="badge ${u.active ? 'bg-success' : 'bg-danger'}">
+                                        ${u.active ? 'Active' : 'Disabled'}
+                                </span>
                             </td>
                             <td class="text-end">
                                 <form action="${pageContext.request.contextPath}/system/roles/update" method="post" class="d-inline">
-                                    <input type="hidden" name="userID" value="${u.userID}" />
-                                    <select name="role" class="form-select form-select-sm d-inline-block w-auto me-1">
-                                        <option value="PATIENT">PATIENT</option>
-                                        <option value="DOCTOR">DOCTOR</option>
-                                        <option value="PHARMACIST">PHARMACIST</option>
-                                        <option value="LAB_TECHNICIAN">LAB_TECHNICIAN</option>
-                                        <option value="HOSPITAL_ADMIN">HOSPITAL_ADMIN</option>
-                                        <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-primary">Reassign</button>
+                                    <input type="hidden" name="userID" value="${u.userId}" />
+
+                                    <c:choose>
+                                        <c:when test="${selectedRole == 'PATIENT'}">
+                                            <select name="role" class="form-select form-select-sm d-inline-block w-auto me-1" disabled>
+                                                <option value="PATIENT" selected>PATIENT</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-secondary" disabled>Restricted</button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <select name="role" class="form-select form-select-sm d-inline-block w-auto me-1">
+                                                <option value="DOCTOR" ${u.role == 'DOCTOR' ? 'selected' : ''}>DOCTOR</option>
+                                                <option value="PHARMACIST" ${u.role == 'PHARMACIST' ? 'selected' : ''}>PHARMACIST</option>
+                                                <option value="LAB_TECHNICIAN" ${u.role == 'LAB_TECHNICIAN' ? 'selected' : ''}>LAB_TECHNICIAN</option>
+                                                <option value="HOSPITAL_ADMIN" ${u.role == 'HOSPITAL_ADMIN' ? 'selected' : ''}>HOSPITAL_ADMIN</option>
+                                                <option value="SYSTEM_ADMIN" ${u.role == 'SYSTEM_ADMIN' ? 'selected' : ''}>SYSTEM_ADMIN</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary">Reassign</button>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </form>
                             </td>
                         </tr>

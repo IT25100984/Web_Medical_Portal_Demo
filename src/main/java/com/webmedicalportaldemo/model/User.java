@@ -23,6 +23,25 @@ public class User implements UserInteraction {
         this.createdAt = LocalDateTime.now();
     }
 
+    // For existing users loaded from DB with explicit active status
+    public User(int userID,
+                String firstName,
+                String lastName,
+                String email,
+                String password,
+                String role,
+                boolean active) {
+
+        this.userID = userID;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.active = active;
+        this.createdAt = LocalDateTime.now();
+    }
+
     // For existing users loaded from DB
     public User(int userID,
                 String firstName,
@@ -31,15 +50,7 @@ public class User implements UserInteraction {
                 String password,
                 String role) {
 
-        this.userID = userID;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-
-        this.active = true;
-        this.createdAt = LocalDateTime.now();
+        this(userID, firstName, lastName, email, password, role, true);
     }
 
     // For newly registering users
@@ -82,6 +93,15 @@ public class User implements UserInteraction {
     @Override
     public LocalDateTime getTimestamp() {
         return this.createdAt;
+    }
+
+    // Standard JavaBeans getters/setters for JSP EL matching (${u.userId} and ${u.active})
+    public int getUserId() {
+        return userID;
+    }
+
+    public void setUserId(int userId) {
+        this.userID = userId;
     }
 
     public int getUserID() {
@@ -134,6 +154,11 @@ public class User implements UserInteraction {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    // Standard EL getters for boolean 'active'
+    public boolean getActive() {
+        return active;
     }
 
     public boolean isActive() {

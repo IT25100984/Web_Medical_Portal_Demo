@@ -16,16 +16,32 @@
 
 <main class="container pb-5 mt-4">
 
-    <!-- Alert Notifications -->
-    <c:if test="${not empty message}">
+    <!-- Flash Message Notifications -->
+    <c:if test="${param.msg eq 'success'}">
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>${message}
+            <i class="bi bi-check-circle-fill me-2"></i>Role action completed successfully.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
-    <c:if test="${not empty error}">
+
+    <!-- Detailed Error Handling from SystemAdminController -->
+    <c:if test="${not empty param.error}">
         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>${error}
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <c:choose>
+                <c:when test="${param.error eq 'patientToStaffForbidden'}">
+                    <strong>Access Denied:</strong> Patient accounts cannot be directly reassigned to Staff roles.
+                </c:when>
+                <c:when test="${param.error eq 'staffToPatientForbidden'}">
+                    <strong>Access Denied:</strong> Staff accounts cannot be directly reassigned to Patient roles.
+                </c:when>
+                <c:when test="${param.error eq 'userNotFound'}">
+                    Target user account was not found in the database.
+                </c:when>
+                <c:otherwise>
+                    Operation failed. Unable to update role configurations.
+                </c:otherwise>
+            </c:choose>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
@@ -34,13 +50,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 fw-bold mb-1">
-                <i class="bi bi-key-fill text-success me-2" aria-hidden="true"></i>Role Access Control
+                <i class="bi bi-shield-lock-fill text-primary me-2" aria-hidden="true"></i>Role Access Control
             </h1>
-            <p class="text-muted mb-0">Configure role-based access control (RBAC) permissions across the portal.</p>
+            <p class="text-muted mb-0">Configure role-based access control (RBAC) permissions across the portal (PBI-21).</p>
         </div>
         <div>
             <a href="<c:url value='/system/dashboard'/>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
             </a>
         </div>
     </div>
@@ -112,7 +128,7 @@
                                     <c:param name="role" value="${role}"/>
                                 </c:url>
                                 <a href="${editUrl}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                    <i class="bi bi-pencil-square me-1"></i> Edit Users
                                 </a>
                             </td>
                         </tr>

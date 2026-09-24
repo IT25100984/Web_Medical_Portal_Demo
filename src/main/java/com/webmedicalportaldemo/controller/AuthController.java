@@ -142,6 +142,19 @@ public class AuthController {
             return "register";
         }
 
+        // --- Strict Email Validation & Normalization ---
+        String email = request.getEmail();
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+
+        if (email == null || email.trim().isEmpty() || !email.trim().matches(emailRegex)) {
+            model.addAttribute("errorMessage", "Please enter a valid email address (e.g., name@example.com).");
+            return "register";
+        }
+
+        // Normalize email globally so downstream methods receive clean data
+        request.setEmail(email.trim().toLowerCase(Locale.ROOT));
+        // -----------------------------------------------
+
         String registrationType = request.getRegistrationType();
 
         if ("PATIENT".equalsIgnoreCase(registrationType)) {
@@ -160,7 +173,8 @@ public class AuthController {
      * Registers a patient without requiring an employee ID.
      */
     private String registerPatient(RegistrationRequestDTO request, Model model) {
-        String cleanedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        // Email is already validated, trimmed, and lowercased by registerUser()
+        String cleanedEmail = request.getEmail();
 
         if (userDAO.findByEmail(cleanedEmail) != null) {
             model.addAttribute("errorMessage", "An account already exists with that email address.");
@@ -171,7 +185,7 @@ public class AuthController {
         patient.setFirstName(request.getFirstName().trim());
         patient.setLastName(request.getLastName().trim());
         patient.setEmail(cleanedEmail);
-        patient.setPassword(request.getPassword());
+        patient.setPassword(request.getPassword()); // Consider hashing this before setting if not done in DAO
         patient.setRole("PATIENT");
         patient.setActive(true);
         patient.setBloodGroup(normalizeBloodGroup(request.getBloodGroup()));
@@ -198,7 +212,8 @@ public class AuthController {
      */
     private String registerStaff(RegistrationRequestDTO request, Model model) {
         String employeeId = request.getEmployeeID();
-        String cleanedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        // Email is already validated, trimmed, and lowercased by registerUser()
+        String cleanedEmail = request.getEmail();
 
         // 1. Verify employee exists in registry
         Employee registryEmployee = employeeDAO.getEmployeeById(employeeId);
@@ -224,7 +239,7 @@ public class AuthController {
         newUser.setFirstName(registryEmployee.getFirstName());
         newUser.setLastName(registryEmployee.getLastName());
         newUser.setEmail(cleanedEmail);
-        newUser.setPassword(request.getPassword()); // Apply password hashing if active (e.g., passwordEncoder.encode(...))
+        newUser.setPassword(request.getPassword()); // Apply password hashing here (e.g., passwordEncoder.encode(...))
         newUser.setRole(registryEmployee.getRole()); // Inherit role from registry (DOCTOR, PHARMACIST, LAB_TECHNICIAN)
         newUser.setActive(true);
 
@@ -244,7 +259,7 @@ public class AuthController {
             return "register";
         }
 
-// 7. Insert operational record into employees table
+        // 7. Insert operational record into employees table
         employeeDAO.createActiveEmployee(registryEmployee.getEmployeeId(), generateduserID, registryEmployee.getDepartment());
 
         return "redirect:/login?msg=registration_success";
