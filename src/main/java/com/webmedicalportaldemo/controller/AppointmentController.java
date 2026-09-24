@@ -107,16 +107,22 @@ public class AppointmentController {
      * Books a new appointment for the logged-in patient.
      */
     @PostMapping("/bookAppointment")
-    public String bookAppointment(@RequestParam("date") String date, @RequestParam("time") String time, @RequestParam("doctorID") int doctoruserID, @RequestParam("appointmentType") String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
+    public String bookAppointment(@RequestParam(value = "date", required = false) String date, @RequestParam(value = "time", required = false) String time, @RequestParam(value = "doctorID", required = false, defaultValue = "0") int doctorUserID, @RequestParam(value = "appointmentType", required = false) String appointmentType, @RequestParam(value = "additionalCharge", required = false) String additionalCharge, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (!hasRole(currentUser, "PATIENT")) {
             return currentUser == null ? "redirect:/login" : redirectByRole(currentUser);
         }
-        if (doctoruserID <= 0 || date == null || date.isBlank() || time == null || time.isBlank()) {
+        if (doctorUserID <= 0 || date == null || date.isBlank() || time == null || time.isBlank() || appointmentType == null || appointmentType.isBlank()) {
             return "redirect:/patient/book_appointment?error=invalidInput";
         }
         if (!isValidFutureAppointment(date, time)) {
             return "redirect:/patient/book_appointment?error=invalidDateTime";
+        }
+        if (doctorUserID <= 0 || date == null || date.isBlank() || appointmentType == null || appointmentType.isBlank()) {
+            return "redirect:/patient/book_appointment?error=invalidInput";
+        }
+        if (time == null || time.isBlank()) {
+            return "redirect:/patient/book_appointment?error=missingTime";
         }
         String normalizedType = normalizeAppointmentType(appointmentType);
         String normalizedCharge = normalizeAdditionalCharge(additionalCharge);
@@ -125,14 +131,14 @@ public class AppointmentController {
         }
         Appointment appointment;
         if ("SURGERY".equalsIgnoreCase(normalizedType)) {
-            Surgery surgery = new Surgery(doctoruserID, currentUser.getUserID(), date, time, "UNASSIGNED");
+            Surgery surgery = new Surgery(doctorUserID, currentUser.getUserID(), date, time, "UNASSIGNED");
             surgery.setAddCharge(normalizedCharge);
             appointment = surgery;
         } else {
-            appointment = new Consultation(doctoruserID, currentUser.getUserID(), date, time, "UNASSIGNED");
+            appointment = new Consultation(doctorUserID, currentUser.getUserID(), date, time, "UNASSIGNED");
         }
         BigDecimal totalFee = BigDecimal.valueOf(appointment.calculateFee()).setScale(2);
-        boolean success = apptDAO.bookAppointment(doctoruserID, currentUser.getUserID(), date, time, normalizedType, normalizedCharge, totalFee);
+        boolean success = apptDAO.bookAppointment(doctorUserID, currentUser.getUserID(), date, time, normalizedType, normalizedCharge, totalFee);
         return success ? "redirect:/patientDashboard?msg=bookingSuccess" : "redirect:/patient/book_appointment?error=slotUnavailable";
     }
 

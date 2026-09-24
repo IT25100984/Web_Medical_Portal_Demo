@@ -31,6 +31,11 @@
             </h1>
         </div>
         <div class="card-body p-4">
+            <c:if test="${param.error eq 'missingTime'}">
+                <div class="alert alert-warning shadow-sm border-0" role="alert">
+                    <i class="bi bi-clock-fill me-1" aria-hidden="true"></i>Please select an available appointment time.
+                </div>
+            </c:if>
             <c:if test="${param.error eq 'invalidInput'}">
                 <div class="alert alert-danger shadow-sm border-0" role="alert">
                     <i class="bi bi-exclamation-octagon-fill me-1" aria-hidden="true"></i>Please complete all required booking fields.
@@ -113,6 +118,7 @@
                 <select name="time" id="timeSlotSelect" class="form-select" required disabled>
                     <option value="" selected disabled>Choose a date and doctor first...</option>
                 </select>
+                <div class="invalid-feedback">Please select an available appointment time.</div>
             </div>
             <div class="alert alert-info py-2 shadow-sm d-flex justify-content-between align-items-center mb-2">
                     <span class="fw-bold text-uppercase small">
@@ -243,6 +249,7 @@
                         option.textContent = slot;
                         timeSlotSelect.appendChild(option);
                     });
+                    timeSlotSelect.classList.remove("is-invalid");
                     timeSlotSelect.disabled = false;
                 })
                 .catch(function (error) {
@@ -325,7 +332,31 @@
         closeHistoryButton.addEventListener("click", function () {
             historyDisplay.classList.add("d-none");
         });
+        timeSlotSelect.addEventListener("change", function () {
+            if (timeSlotSelect.value) {
+                timeSlotSelect.classList.remove("is-invalid");
+            }
+        });
         bookingForm.addEventListener("submit", function (event) {
+            if (!doctorSelect.value) {
+                event.preventDefault();
+                doctorSelect.classList.add("is-invalid");
+                doctorSelect.focus();
+                return;
+            }
+            if (!datePicker.value) {
+                event.preventDefault();
+                datePicker.classList.add("is-invalid");
+                datePicker.focus();
+                return;
+            }
+            if (timeSlotSelect.disabled || !timeSlotSelect.value) {
+                event.preventDefault();
+                timeSlotSelect.classList.add("is-invalid");
+                timeSlotSelect.focus();
+                window.alert("Please select an available appointment time before confirming the booking.");
+                return;
+            }
             if (!bookingForm.checkValidity()) {
                 event.preventDefault();
                 bookingForm.classList.add("was-validated");
