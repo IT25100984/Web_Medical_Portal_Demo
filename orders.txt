@@ -1,0 +1,2 @@
+Prescription{prescriptionID=8, patientID=3, doctorID=0, medicineName='Amoxicillin', quantity=1, medicinePrice=450.0, status='PENDING'}
+Prescription{prescriptionID=9, patientID=3, doctorID=0, medicineName='Panadol', quantity=3, medicinePrice=50.0, status='PENDING'}

@@ -61,11 +61,7 @@ public class ClinicalOpsController {
             }
             healthRecords = ehrService.getLoggedInPatientHealthRecords(currentUser.getUserID());
             model.addAttribute("selectedPatientID", currentPatientID);
-        } else if (hasRole(currentUser, "DOCTOR")) {
-            Integer doctorID = doctorDAO.getDoctorIDByuserID(currentUser.getUserID());
-            if (doctorID == null || doctorID <= 0) {
-                return "redirect:/doctorDashboard?error=doctorProfileNotFound";
-            }
+        } else if (hasRole(currentUser, "DOCTOR") || hasRole(currentUser, "PHARMACIST")) { // <-- ALLOW PHARMACIST HERE
             if (patientID == null || patientID <= 0) {
                 model.addAttribute("currentUser", currentUser);
                 model.addAttribute("healthRecords", Collections.emptyList());
@@ -321,9 +317,9 @@ public class ClinicalOpsController {
                     healthRecord.getPatientID()
             );
         }
-        return false;
+        // <-- ALLOW PHARMACIST HERE
+        return hasRole(currentUser, "PHARMACIST");
     }
-
     /**
      * Checks whether the logged-in doctor created and may edit the record.
      */

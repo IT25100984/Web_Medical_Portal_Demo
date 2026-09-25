@@ -1,3 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,10 +28,16 @@
                         <div class="input-group">
                             <select id="medSelect" class="form-select">
                                 <option value="" disabled selected>Choose medicine...</option>
-                                <option value="Panadol|50.00">Panadol (LKR 50.00)</option>
-                                <option value="Amoxicillin|450.00">Amoxicillin (LKR 450.00)</option>
-                                <option value="Metformin|120.00">Metformin (LKR 120.00)</option>
-                                <option value="Salbutamol|300.00">Salbutamol (LKR 300.00)</option>
+
+                                <%-- Dynamically load drugs from DB. Only show if stock > 0 --%>
+                                <c:forEach var="item" items="${inventoryList}">
+                                    <c:if test="${item.stockQuantity > 0}">
+                                        <option value="${item.drugName}\vert{}${item.unitPrice}">
+                                                ${item.drugName} (LKR${item.unitPrice})
+                                        </option>
+                                    </c:if>
+                                </c:forEach>
+
                             </select>
                             <input type="number" id="medQty" class="form-control" placeholder="Qty" min="1" value="1" style="max-width: 100px;">
                             <button type="button" class="btn btn-primary" onclick="addItem()">
@@ -182,7 +190,7 @@
         // 2. PRINT to console (Press F12 in your browser to see this)
         console.log("--- PRE-SUBMISSION DATA CHECK ---");
         console.log("Raw String: " + cartString);
-        console.table(cart); // This prints the cart in a nice table format in the console
+        console.table(cart);
 
         if (cart.length === 0) {
             alert("Cannot submit an empty cart.");

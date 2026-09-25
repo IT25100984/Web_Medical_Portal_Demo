@@ -1,8 +1,10 @@
 package com.webmedicalportaldemo.controller;
 
+import com.webmedicalportaldemo.dao.InventoryDAO;
 import com.webmedicalportaldemo.dao.PatientDAO;
 import com.webmedicalportaldemo.dao.PrescriptionDAO;
 import com.webmedicalportaldemo.dto.PrescriptionRequestDTO;
+import com.webmedicalportaldemo.model.PharmacyItem;
 import com.webmedicalportaldemo.model.Prescription;
 import com.webmedicalportaldemo.model.User;
 import com.webmedicalportaldemo.service.MedFileService;
@@ -28,30 +30,33 @@ public class PrescriptionController {
     private final PrescriptionDAO prescriptionDAO;
     private final PatientDAO patientDAO;
     private final MedFileService medService;
+    private final InventoryDAO inventoryDAO;
 
-    public PrescriptionController(
-            PrescriptionDAO prescriptionDAO,
-            PatientDAO patientDAO,
-            MedFileService medService) {
-
+    public PrescriptionController(PrescriptionDAO prescriptionDAO, PatientDAO patientDAO, MedFileService medService, InventoryDAO inventoryDAO) {
         this.prescriptionDAO = prescriptionDAO;
         this.patientDAO = patientDAO;
         this.medService = medService;
+        this.inventoryDAO = inventoryDAO;
     }
 
     /**
      * Patient view of prescriptions
      */
     @GetMapping("/orderPrescription")
-    public String showPrescriptionPage(
-            Model model,
-            HttpSession session) {
+    public String showPrescriptionPage(Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null || !"PATIENT".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
+
+        // 1. Fetch patient's order history
         List<Prescription> myOrders = prescriptionDAO.getPrescriptionsByPatientuserID(user.getUserID());
         model.addAttribute("myOrders", myOrders);
+
+        // 2. Fetch live inventory for the order dropdown
+        List<PharmacyItem> inventoryList = inventoryDAO.getAllItems();
+        model.addAttribute("inventoryList", inventoryList);
+
         return "pharmacy/prescriptions";
     }
 

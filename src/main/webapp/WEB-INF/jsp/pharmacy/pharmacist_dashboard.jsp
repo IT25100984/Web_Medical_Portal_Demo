@@ -46,11 +46,20 @@
                     </p>
                 </div>
             </div>
-            <div style="width: 200px;">
-                <button type="button" class="btn btn-warning w-100 fw-bold shadow-sm">
-                    <i class="bi bi-box-seam me-1"></i> Inventory Log
-                </button>
+            <div class="d-grid gap-2">
+                <div style="width: 200px;">
+                    <%-- AMENDMENT 1: Dynamic link to the Inventory Controller --%>
+                    <a href="${pageContext.request.contextPath}/pharmacist/inventory" class="btn btn-warning w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center">
+                        <i class="bi bi-box-seam me-2"></i> Inventory Log
+                    </a>
+                </div>
+                <c:url var="ehrViewerUrl" value="/clinical/ehr" />
+                <a href="${ehrViewerUrl}" class="btn btn-outline-dark">
+                    <i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Open EHR Viewer
+                </a>
             </div>
+
+
         </div>
     </div>
 
@@ -168,13 +177,32 @@
                                                                         <label class="text-muted small fw-bold text-uppercase">Status</label>
                                                                         <p class="mb-0"><span class="badge ${prescription.status == 'COMPLETED' ? 'bg-success' : 'bg-primary'}">${prescription.status}</span></p>
                                                                     </div>
+
                                                                     <div class="col-12 mt-3">
                                                                         <hr class="my-0 opacity-10">
                                                                     </div>
+
+                                                                        <%-- AMENDMENT 2: Patient Health Records & Allergy Check --%>
                                                                     <div class="col-12">
-                                                                        <div class="alert alert-warning border-0 small mb-0 d-flex align-items-center">
-                                                                            <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
-                                                                            <span>Verify Patient ID <strong>#${prescription.patientID}</strong> before dispensing medication.</span>
+                                                                        <div class="card border-danger shadow-sm">
+                                                                            <div class="card-header bg-danger text-white py-2 px-3 small fw-bold">
+                                                                                <i class="bi bi-heart-pulse-fill me-1"></i> Patient Health Alerts
+                                                                            </div>
+                                                                            <div class="card-body p-3 bg-light">
+                                                                                <ul class="mb-0 small" style="padding-left: 1.2rem;">
+                                                                                    <li class="text-muted fw-bold mb-1">
+                                                                                        <i class="bi bi-info-circle me-1"></i>
+                                                                                        Please check the patient's EHR profile for active allergies and conditions before dispensing.
+                                                                                    </li>
+                                                                                </ul>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-12">
+                                                                        <div class="alert alert-warning border-0 small mb-0 d-flex align-items-center mt-2">
+                                                                            <i class="bi bi-shield-exclamation fs-4 me-3"></i>
+                                                                            <span>Verify Patient ID <strong>#${prescription.patientID}</strong> against records before dispensing.</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -223,7 +251,6 @@
             document.querySelectorAll('.patient-card-group').forEach(patientGroup => {
                 const patientId = patientGroup.getAttribute('data-patient-id').toString().toLowerCase();
 
-                // Patient ID condition match
                 let matchesPatientFilter = (patientQuery === '' || patientId.includes(patientQuery));
                 let visibleCount = 0;
 
@@ -232,10 +259,7 @@
                     const medInfo = row.querySelector('.med-info').innerText.toLowerCase();
                     const status = row.querySelector('.status-badge').innerText.trim();
 
-                    // Prescription ID / Medicine condition match
                     let matchesRxFilter = (rxQuery === '' || rxId.includes(rxQuery) || medInfo.includes(rxQuery));
-
-                    // Status toggle condition
                     let isInactive = (status === 'READY' || status === 'COMPLETED' || status === 'CANCELLED');
                     let matchesStatus = showInactive || !isInactive;
 
@@ -247,7 +271,6 @@
                     }
                 });
 
-                // Display card only if patient filter matches AND at least one row is visible
                 patientGroup.style.display = (matchesPatientFilter && visibleCount > 0) ? "" : "none";
             });
         }

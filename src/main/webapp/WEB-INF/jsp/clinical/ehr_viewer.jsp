@@ -60,7 +60,7 @@
                 <p class="mb-0">
                     <c:choose>
                         <c:when test="${currentUser.role eq 'PATIENT'}">Review your clinical records, diagnoses, treatment plans, and follow-up instructions.</c:when>
-                        <c:when test="${currentUser.role eq 'DOCTOR' && not empty selectedPatientID}">Review clinical records for patient #<c:out value="${selectedPatientID}" />.</c:when>
+                        <c:when test="${(currentUser.role eq 'DOCTOR' || currentUser.role eq 'PHARMACIST') && not empty selectedPatientID}">Review clinical records for patient #<c:out value="${selectedPatientID}" />.</c:when>
                         <c:otherwise>Select a patient before viewing clinical records.</c:otherwise>
                     </c:choose>
                 </p>
@@ -104,7 +104,8 @@
         </div>
     </c:if>
 
-    <c:if test="${currentUser.role eq 'DOCTOR' && empty selectedPatientID}">
+    <%-- Allow both DOCTOR and PHARMACIST to search for a patient --%>
+    <c:if test="${(currentUser.role eq 'DOCTOR' || currentUser.role eq 'PHARMACIST') && empty selectedPatientID}">
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-dark text-white">
                 <h2 class="h5 mb-0">
@@ -246,10 +247,8 @@
                                             <c:otherwise>Date unavailable</c:otherwise>
                                         </c:choose>
                                     </div>
-                                    <c:url var="recordDetailsUrl" value="/clinical/ehr/${record.healthRecordID}" />
-                                        <%-- Check your property name: getter getRecordID() requires ${record.recordID} --%>
                                     <a href="${pageContext.request.contextPath}/clinical/ehr/detail?id=${record.healthRecordID}"
-                                       class="btn btn-outline-primary">
+                                       class="btn btn-outline-primary mt-auto">
                                         <i class="bi bi-eye"></i> View Details
                                     </a>
                                 </div>
@@ -272,7 +271,7 @@
                         <h2 class="h5">No Health Records Available</h2>
                         <p class="text-muted">
                             <c:choose>
-                                <c:when test="${currentUser.role eq 'DOCTOR'}">No clinical records have been created for this patient.</c:when>
+                                <c:when test="${currentUser.role eq 'DOCTOR' || currentUser.role eq 'PHARMACIST'}">No clinical records have been created for this patient.</c:when>
                                 <c:otherwise>No clinical records are currently available for your patient profile.</c:otherwise>
                             </c:choose>
                         </p>
@@ -294,6 +293,9 @@
         <c:choose>
             <c:when test="${currentUser.role eq 'DOCTOR'}">
                 <c:url var="dashboardUrl" value="/doctorDashboard" />
+            </c:when>
+            <c:when test="${currentUser.role eq 'PHARMACIST'}">
+                <c:url var="dashboardUrl" value="/pharmacistDashboard" />
             </c:when>
             <c:otherwise>
                 <c:url var="dashboardUrl" value="/patientDashboard" />
