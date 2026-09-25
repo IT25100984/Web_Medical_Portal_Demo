@@ -18,7 +18,7 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         .appointment-container { max-height: 450px; overflow-y: auto; }
-        .prescription-container { max-height: 350px; overflow-y: auto; }
+        .prescription-container { }
         .table thead th { position: sticky; top: 0; z-index: 10; background-color: #212529; }
     </style>
 </head>

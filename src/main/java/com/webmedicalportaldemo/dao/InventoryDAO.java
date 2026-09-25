@@ -30,6 +30,12 @@ public class InventoryDAO {
         }
     };
 
+    public boolean deductMedicineStock(int medicineId, int quantityToDeduct) {
+        String sql = "UPDATE inventory SET quantity = quantity - ? WHERE medicine_id = ? AND quantity >= ?";
+        int rowsAffected = jdbcTemplate.update(sql, quantityToDeduct, medicineId, quantityToDeduct);
+        return rowsAffected > 0; // returns false if stock was insufficient
+    }
+
     public List<PharmacyItem> getAllItems() {
         String sql = "SELECT * FROM pharmacy_inventory ORDER BY drug_name ASC";
         return jdbcTemplate.query(sql, rowMapper);
