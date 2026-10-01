@@ -1,5 +1,7 @@
 package com.webmedicalportaldemo.model;
 
+import com.webmedicalportaldemo.model.strategy.FeeCalculationStrategy;
+
 public abstract class Appointment {
     private int appointmentID;
     private int doctorID;
@@ -8,6 +10,7 @@ public abstract class Appointment {
     private String time;
     private String status;
     private int lastModifiedBy;
+    protected FeeCalculationStrategy feeStrategy;
 
     public Appointment(int doctorID, int patientID, String date, String time) {
         this.doctorID = doctorID;
@@ -18,9 +21,6 @@ public abstract class Appointment {
     }
 
     public Appointment() {}
-
-    // Abstract method: Every subclass MUST implement this (Polymorphism)
-    public abstract double calculateFee();
 
     // Standard Getters and Setters (Encapsulation)
     public int getAppointmentID() { return appointmentID; }
@@ -43,4 +43,13 @@ public abstract class Appointment {
 
     public int getLastModifiedBy() { return lastModifiedBy; }
     public void setLastModifiedBy(int lastModifiedBy) { this.lastModifiedBy = lastModifiedBy; }
+
+    public void setFeeStrategy(FeeCalculationStrategy feeStrategy) {
+        this.feeStrategy = feeStrategy;
+    }
+
+    public double calculateFee() {
+        return feeStrategy.calculateFee(this);
+    }
+
 }

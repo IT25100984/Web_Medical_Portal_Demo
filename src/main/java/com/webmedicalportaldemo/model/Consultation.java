@@ -1,22 +1,30 @@
 package com.webmedicalportaldemo.model;
+
+import com.webmedicalportaldemo.model.strategy.ConsultationFeeStrategy;
+
 public class Consultation extends Appointment {
-    private static final double CONSULTATION_FEE = 1500.00;
+
     private String roomNumber;
+
     public Consultation() {
         super();
         this.roomNumber = "UNASSIGNED";
+        setFeeStrategy(new ConsultationFeeStrategy());
     }
+
     public Consultation(int doctorID, int patientID, String date, String time, String roomNumber) {
         super(doctorID, patientID, date, time);
         setRoomNumber(roomNumber);
+        setFeeStrategy(new ConsultationFeeStrategy());
     }
-    @Override
-    public double calculateFee() {
-        return CONSULTATION_FEE;
-    }
+
+    // calculateFee() is no longer overridden here - it is inherited from
+    // Appointment, which delegates to the FeeCalculationStrategy set above.
+
     public String getRoomNumber() {
         return roomNumber;
     }
+
     public void setRoomNumber(String roomNumber) {
         if (roomNumber == null || roomNumber.isBlank()) {
             this.roomNumber = "UNASSIGNED";
@@ -24,6 +32,7 @@ public class Consultation extends Appointment {
             this.roomNumber = roomNumber.trim();
         }
     }
+
     @Override
     public String toString() {
         return "Consultation{" +
