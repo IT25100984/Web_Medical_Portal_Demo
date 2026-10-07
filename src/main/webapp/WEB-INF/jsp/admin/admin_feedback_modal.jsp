@@ -70,9 +70,18 @@
       </table>
     </div>
 
-    <div class="modal-footer bg-light py-2">
+    <!-- UPDATED FOOTER SECTION -->
+    <div class="modal-footer bg-light py-2 d-flex justify-content-between">
+      <!-- Database to File Sync Button -->
+      <a href="${pageContext.request.contextPath}/admin/syncFeedbackFile"
+         class="btn btn-outline-primary btn-sm"
+         onclick="return confirm('This will overwrite the local feedback.txt file with current database records. Proceed?');">
+        <i class="bi bi-arrow-repeat me-1"></i> Sync DB to File
+      </a>
+
       <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close Monitor</button>
     </div>
+
   </div>
   </div>
 </div>

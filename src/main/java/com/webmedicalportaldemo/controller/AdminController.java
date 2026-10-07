@@ -1,7 +1,9 @@
 package com.webmedicalportaldemo.controller;
 
+import com.webmedicalportaldemo.dao.AppointmentDAOInterface;
 import com.webmedicalportaldemo.dao.EmergencyDAO;
 import com.webmedicalportaldemo.dao.EmployeeDAO;
+import com.webmedicalportaldemo.dto.AppointmentDTO;
 import com.webmedicalportaldemo.model.Employee;
 import com.webmedicalportaldemo.model.User;
 import jakarta.servlet.http.HttpSession;
@@ -17,12 +19,14 @@ import java.util.List;
 public class AdminController {
 
     private final EmployeeDAO employeeDAO;
+    private final AppointmentDAOInterface apptDAO;
 
     @Autowired
     private EmergencyDAO emergencyDAO;
 
-    public AdminController(EmployeeDAO employeeDAO) {
+    public AdminController(EmployeeDAO employeeDAO, AppointmentDAOInterface apptDAO) {
         this.employeeDAO = employeeDAO;
+        this.apptDAO = apptDAO;
     }
 
     @GetMapping("/employees")
@@ -73,5 +77,52 @@ public class AdminController {
     public String deleteEmployee(@RequestParam("employeeId") String employeeId) {
         employeeDAO.deleteEmployee(employeeId);
         return "redirect:/admin/employees?msg=deleted";
+    }
+
+    /**
+     * Displays the administrative appointment reschedule form.
+     */
+    @GetMapping("/appointments/reschedule")
+    public String showRescheduleForm(@RequestParam("id") int appointmentId, HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"HOSPITAL_ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        AppointmentDTO appt = apptDAO.getAllAppointments().stream()
+                .filter(a -> a.getAppointmentID() == appointmentId)
+                .findFirst()
+                .orElse(null);
+
+        if (appt == null) {
+            return "redirect:/adminDashboard?msg=invalid_appointment";
+        }
+
+        model.addAttribute("appointment", appt);
+        return "admin/admin_reschedule_appointment";
+    }
+
+    /**
+     * Processes administrative appointment rescheduling.
+     */
+    @PostMapping("/appointments/reschedule")
+    public String processReschedule(
+            @RequestParam("appointmentID") int appointmentID,
+            @RequestParam("newDate") String newDate,
+            @RequestParam("newTime") String newTime,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"HOSPITAL_ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        boolean success = apptDAO.updateAppointmentStatus(appointmentID, "RESCHEDULED", newDate, newTime, user.getUserID());
+
+        if (success) {
+            return "redirect:/adminDashboard?msg=reschedule_success";
+        } else {
+            return "redirect:/admin/appointments/reschedule?id=" + appointmentID + "&error=reschedule_failed";
+        }
     }
 }

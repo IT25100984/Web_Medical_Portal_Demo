@@ -33,6 +33,32 @@ public class FeedbackFileService {
         }
     }
 
+    /**
+     * Completely overwrites the text file with the current database state.
+     * Use this to recover missing data or sync manual SQL inserts.
+     */
+    public void syncDatabaseToFile(List<Feedback> dbFeedbackList) {
+        // Passing 'false' to FileWriter overwrites the file instead of appending
+        try (FileWriter fw = new FileWriter(FILE_PATH, false);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+
+            for (Feedback f : dbFeedbackList) {
+                String cleanComment = (f.getComment() != null) ? f.getComment().replaceAll("\\r?\\n", " ") : "No comment left.";
+
+                // Fallbacks for names if joining queries didn't populate them
+                String patientName = (f.getPatientName() != null) ? f.getPatientName() : "Patient " + f.getPatientID();
+                String doctorName = (f.getDoctorName() != null) ? f.getDoctorName() : "Doctor " + f.getDoctorID();
+
+                out.println(f.getFeedbackId() + "|" + patientName + "|" + doctorName + "|" + f.getRating() + "|" + cleanComment);
+            }
+            System.out.println("Successfully synced " + dbFeedbackList.size() + " DB records to feedback.txt");
+
+        } catch (IOException e) {
+            System.err.println("Error syncing DB to feedback text file: " + e.getMessage());
+        }
+    }
+
     /** Deletes a specific line by matching the exact database ID integer */
     public void deleteFeedbackFromFile(Integer targetId) {
         try {

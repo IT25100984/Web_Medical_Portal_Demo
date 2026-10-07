@@ -73,6 +73,13 @@
 <body class="bg-light">
 <%@ include file="../shared/header.jsp" %>
 <main class="container pb-5">
+    <c:if test="${param.msg eq 'reschedule_success'}">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+            <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
+            <strong>Success.</strong> The appointment has been rescheduled successfully.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
     <c:if test="${param.msg eq 'delete_success'}">
         <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
             <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>

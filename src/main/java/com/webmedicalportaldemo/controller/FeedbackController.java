@@ -157,6 +157,31 @@ public class FeedbackController {
     }
 
     /**
+     * Administrative tool to force sync database feedback into the text file.
+     */
+    @GetMapping("/admin/syncFeedbackFile")
+    public String syncFeedbackFile(HttpSession session) {
+        User currentUser = getCurrentUser(session);
+
+        // Ensure only admins can trigger a full file rewrite
+        if (!hasRole(currentUser, "HOSPITAL_ADMIN")) {
+            return "redirect:/login";
+        }
+
+        try {
+            // 1. Get ALL feedback from the database (Master)
+            List<Feedback> allDbFeedback = feedbackDAO.getAllFeedback();
+
+            // 2. Overwrite the file (Cache)
+            feedbackFileService.syncDatabaseToFile(allDbFeedback);
+
+            return "redirect:/adminDashboard?msg=sync_success";
+        } catch (Exception e) {
+            return "redirect:/adminDashboard?msg=sync_failed";
+        }
+    }
+
+    /**
      * Allows hospital administrator to delete feedback.
      */
     @PostMapping("/deleteFeedback")
