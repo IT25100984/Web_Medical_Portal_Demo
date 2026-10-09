@@ -27,6 +27,7 @@
 <%@ include file="../shared/header.jsp" %>
 
 <div class="container mt-4 mb-5">
+    <%@ include file="../shared/reminder_banner.jsp" %>
     <c:if test="${param.msg == 'success' || param.msg == 'rescheduled'}">
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>

@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
+import com.webmedicalportaldemo.dto.AppointmentReminderRow;
+import java.time.LocalDateTime;
 
 @Repository
 public class AppointmentDAO implements AppointmentDAOInterface {
@@ -272,6 +274,64 @@ public class AppointmentDAO implements AppointmentDAOInterface {
         }, doctorID, dayOfWeek);
 
         return availableSlots;
+    }
+
+    // ---------------------------------------------------------------------
+    // Reminder queries
+    // ---------------------------------------------------------------------
+    private static final String REMINDER_SELECT =
+            "SELECT a.appointment_id, a.appt_date, a.appt_time, a.appointment_type, " +
+                    "e.user_id AS doctor_user_id, p.user_id AS patient_user_id, " +
+                    "CONCAT(du.first_name, ' ', du.last_name) AS doctor_name, " +
+                    "CONCAT(pu.first_name, ' ', pu.last_name) AS patient_name " +
+                    "FROM appointments a " +
+                    "JOIN doctors d ON a.doctor_id = d.doctor_id " +
+                    "JOIN employees e ON d.employee_pk = e.employee_pk " +
+                    "JOIN users du ON e.user_id = du.user_id " +
+                    "JOIN patients p ON a.patient_id = p.patient_id " +
+                    "JOIN users pu ON p.user_id = pu.user_id ";
+
+    private RowMapper<AppointmentReminderRow> reminderRowMapper() {
+        return (resultSet, rowNumber) -> new AppointmentReminderRow(
+                resultSet.getInt("appointment_id"),
+                resultSet.getInt("doctor_user_id"),
+                resultSet.getInt("patient_user_id"),
+                resultSet.getString("doctor_name"),
+                resultSet.getString("patient_name"),
+                resultSet.getString("appointment_type"),
+                LocalDateTime.of(resultSet.getDate("appt_date").toLocalDate(),
+                        resultSet.getTime("appt_time").toLocalTime()));
+    }
+
+    @Override
+    public List<AppointmentReminderRow> findConfirmedAppointmentsBetween(LocalDateTime from, LocalDateTime to) {
+        if (from == null || to == null || !to.isAfter(from)) {
+            return new ArrayList<>();
+        }
+        // The appt_date range lets MySQL narrow rows first; TIMESTAMP() gives the exact cut-off.
+        String sql = REMINDER_SELECT +
+                "WHERE a.status = 'CONFIRMED' " +
+                "AND a.appt_date BETWEEN ? AND ? " +
+                "AND TIMESTAMP(a.appt_date, a.appt_time) > ? " +
+                "AND TIMESTAMP(a.appt_date, a.appt_time) <= ? " +
+                "ORDER BY a.appt_date ASC, a.appt_time ASC";
+        return jdbcTemplate.query(sql, reminderRowMapper(),
+                java.sql.Date.valueOf(from.toLocalDate()), java.sql.Date.valueOf(to.toLocalDate()),
+                java.sql.Timestamp.valueOf(from), java.sql.Timestamp.valueOf(to));
+    }
+
+    @Override
+    public List<AppointmentReminderRow> findUpcomingConfirmedForUser(int userID, boolean isDoctor, LocalDateTime from) {
+        if (userID <= 0 || from == null) {
+            return new ArrayList<>();
+        }
+        // The column comes from a boolean, never from user input.
+        String ownerColumn = isDoctor ? "e.user_id" : "p.user_id";
+        String sql = REMINDER_SELECT +
+                "WHERE a.status = 'CONFIRMED' AND " + ownerColumn + " = ? " +
+                "AND TIMESTAMP(a.appt_date, a.appt_time) >= ? " +
+                "ORDER BY a.appt_date ASC, a.appt_time ASC";
+        return jdbcTemplate.query(sql, reminderRowMapper(), userID, java.sql.Timestamp.valueOf(from));
     }
 
     private Integer getDoctorIDByuserID(int userID) {

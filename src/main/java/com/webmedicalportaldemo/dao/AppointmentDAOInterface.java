@@ -1,7 +1,9 @@
 package com.webmedicalportaldemo.dao;
 import com.webmedicalportaldemo.dto.AppointmentDTO;
+import com.webmedicalportaldemo.dto.AppointmentReminderRow;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentDAOInterface {
@@ -19,4 +21,10 @@ public interface AppointmentDAOInterface {
     boolean setDoctorAvailability(int doctorID, Integer dayOfWeek, String startTime, String endTime);
     boolean setDoctorAvailability(int doctorID, String availableDate, String startTime, String endTime);
     List<String> getAvailableSlots(int doctorID, String date);
+
+    // Reminders
+    /** CONFIRMED appointments starting after {@code from} and up to and including {@code to}. */
+    List<AppointmentReminderRow> findConfirmedAppointmentsBetween(LocalDateTime from, LocalDateTime to);
+    /** CONFIRMED appointments starting at or after {@code from} for one user (users.user_id), soonest first. */
+    List<AppointmentReminderRow> findUpcomingConfirmedForUser(int userID, boolean isDoctor, LocalDateTime from);
 }

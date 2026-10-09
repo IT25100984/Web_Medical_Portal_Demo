@@ -40,6 +40,7 @@
 <body class="bg-light">
 <%@ include file="../shared/header.jsp" %>
 <main class="container pb-5">
+    <%@ include file="../shared/reminder_banner.jsp" %>
     <c:if test="${param.msg eq 'availabilityUpdated'}">
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
