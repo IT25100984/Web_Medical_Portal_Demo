@@ -14,9 +14,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Time;
-
 import java.time.LocalTime;
-
 import java.util.List;
 
 @Repository
@@ -30,7 +28,6 @@ public class PrescriptionDAO {
 
     /**
      * Saves a new prescription and returns its generated ID.
-     *
      * Returns -1 if the prescription could not be saved.
      */
     public int savePrescription(Prescription prescription) {
@@ -57,16 +54,18 @@ public class PrescriptionDAO {
                             connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
                     statement.setInt(1, prescription.getPatientID());
+
                     /*
-                     * A doctor ID of 0 means that no doctor
-                     * has been associated with the order.
+                     * Safely handle nullable doctor_id. If getDoctorID() returns null
+                     * or 0, we push a standard SQL NULL to the database.
                      */
-                    if (prescription.getDoctorID() > 0) {
-                        statement.setInt(2, prescription.getDoctorID()
-                        );
+                    Integer docId = prescription.getDoctorID();
+                    if (docId != null && docId > 0) {
+                        statement.setInt(2, docId);
                     } else {
                         statement.setNull(2, java.sql.Types.INTEGER);
                     }
+
                     statement.setString(3, prescription.getMedicineName());
                     statement.setInt(4, prescription.getQuantity());
                     statement.setDouble(5, prescription.getMedicinePrice());
@@ -108,6 +107,7 @@ public class PrescriptionDAO {
         List<Prescription> results = jdbcTemplate.query(sql, prescriptionRowMapper(), prescriptionID);
         return results.isEmpty() ? null : results.get(0);
     }
+
     /**
      * Returns all prescriptions for the pharmacist dashboard.
      */
@@ -130,9 +130,9 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.query(sql, prescriptionRowMapper());
     }
+
     /**
      * Returns all prescriptions belonging to a patient.
-     *
      * This method expects patients.patient_id.
      */
     public List<Prescription> getPrescriptionsByPatientID(int patientID) {
@@ -155,9 +155,9 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.query(sql, prescriptionRowMapper(), patientID);
     }
+
     /**
      * Returns patient prescriptions using users.user_id.
-     *
      * This is useful because the logged-in session stores userID,
      * while prescriptions stores patients.patient_id.
      */
@@ -183,9 +183,9 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.query(sql, prescriptionRowMapper(), userID);
     }
+
     /**
      * Returns prescriptions associated with a doctor.
-     *
      * This method expects doctors.doctor_id.
      */
     public List<Prescription> getPrescriptionsByDoctorID(int doctorID) {
@@ -209,19 +209,12 @@ public class PrescriptionDAO {
         return jdbcTemplate.query(sql, prescriptionRowMapper(), doctorID);
     }
 
+    /**
+     * Legacy lowercase wrapper delegated to the main patient ID method
+     * to ensure order_date and order_time are consistently mapped.
+     */
     public List<Prescription> getPrescriptionsByPatientId(int patientID) {
-        String sql = "SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY prescription_id DESC";
-
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Prescription prescription = new Prescription();
-            prescription.setPrescriptionID(rs.getInt("prescription_id"));
-            prescription.setPatientID(rs.getInt("patient_id"));
-            prescription.setMedicineName(rs.getString("medicine_name"));
-            prescription.setQuantity(rs.getInt("quantity"));
-            prescription.setMedicinePrice(rs.getDouble("medicine_price"));
-            prescription.setStatus(rs.getString("status"));
-            return prescription;
-        }, patientID);
+        return getPrescriptionsByPatientID(patientID);
     }
 
     /**
@@ -236,6 +229,7 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.update(sql, normalizedStatus, prescriptionID) > 0;
     }
+
     /**
      * Updates a prescription's medicine details.
      */
@@ -255,6 +249,7 @@ public class PrescriptionDAO {
         return jdbcTemplate.update(sql, medicineName.trim(),
                 quantity, medicinePrice, prescriptionID) > 0;
     }
+
     /**
      * Associates a doctor with an existing prescription.
      */
@@ -269,6 +264,7 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.update(sql, doctorID, prescriptionID) > 0;
     }
+
     /**
      * Deletes a prescription.
      */
@@ -279,6 +275,7 @@ public class PrescriptionDAO {
                 """;
         return jdbcTemplate.update(sql, prescriptionID) > 0;
     }
+
     /**
      * Converts a prescription database row into a
      * Prescription Java object.
@@ -288,29 +285,29 @@ public class PrescriptionDAO {
             Prescription prescription = new Prescription();
             prescription.setOrderID(resultSet.getInt("prescription_id"));
             prescription.setPatientID(resultSet.getInt("patient_id"));
-            int doctorID = resultSet.getInt("doctor_id");
 
-            if (resultSet.wasNull()) {
-                doctorID = 0;
-            }
+            int doctorID = resultSet.getInt("doctor_id");
+            // Check wasNull() immediately after retrieving doctor_id
             prescription.setDoctorID(resultSet.wasNull() ? null : doctorID);
+
             prescription.setMedicineName(resultSet.getString("medicine_name"));
             prescription.setQuantity(resultSet.getInt("quantity"));
             prescription.setMedicinePrice(resultSet.getDouble("medicine_price"));
             prescription.setStatus(resultSet.getString("status"));
-            Date orderDate = resultSet.getDate("order_date");
 
+            Date orderDate = resultSet.getDate("order_date");
             if (orderDate != null) {
                 prescription.setOrderDate(orderDate.toLocalDate().toString());
             }
-            Time orderTime = resultSet.getTime("order_time");
 
+            Time orderTime = resultSet.getTime("order_time");
             if (orderTime != null) {
                 prescription.setOrderTime(orderTime.toLocalTime().toString());
             }
             return prescription;
         };
     }
+
     /**
      * Ensures only supported status values reach MySQL.
      */
@@ -325,6 +322,7 @@ public class PrescriptionDAO {
             default -> "PENDING";
         };
     }
+
     /**
      * Converts values such as "14:30" into a format accepted
      * by Time.valueOf(), which requires "HH:mm:ss".

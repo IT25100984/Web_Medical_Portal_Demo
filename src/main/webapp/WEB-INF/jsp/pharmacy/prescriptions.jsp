@@ -13,7 +13,7 @@
 
 <%@ include file="../shared/header.jsp" %>
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow border-0">
@@ -24,22 +24,23 @@
 
                     <%-- Medicine Selection Area --%>
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Select Medicine</label>
+                        <label for="medSelect" class="form-label fw-bold">Select Medicine</label>
                         <div class="input-group">
                             <select id="medSelect" class="form-select">
                                 <option value="" disabled selected>Choose medicine...</option>
 
-                                <%-- Dynamically load drugs from DB. Only show if stock > 0 --%>
                                 <c:forEach var="item" items="${inventoryList}">
                                     <c:if test="${item.stockQuantity > 0}">
-                                        <option value="${item.drugName}\vert{}${item.unitPrice}">
-                                                ${item.drugName} (LKR${item.unitPrice})
+                                        <option value="<c:out value='${item.drugName}' />"
+                                                data-price="${item.unitPrice}"
+                                                data-stock="${item.stockQuantity}">
+                                            <c:out value="${item.drugName}" /> (LKR ${item.unitPrice})
                                         </option>
                                     </c:if>
                                 </c:forEach>
 
                             </select>
-                            <input type="number" id="medQty" class="form-control" placeholder="Qty" min="1" value="1" style="max-width: 100px;">
+                            <input type="number" id="medQty" class="form-control" placeholder="Qty" min="1" value="1" style="max-width: 100px;" aria-label="Quantity">
                             <button type="button" class="btn btn-primary" onclick="addItem()">
                                 <i class="bi bi-plus-lg"></i> Add
                             </button>
@@ -58,7 +59,6 @@
                             </tr>
                             </thead>
                             <tbody id="orderList">
-                            <%-- JS will inject items here --%>
                             <tr>
                                 <td colspan="4" class="text-center text-muted py-4">Your prescription list is empty.</td>
                             </tr>
@@ -67,14 +67,18 @@
                     </div>
 
                     <%-- Total Display --%>
-                    <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded border">
+                    <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded border mb-4">
                         <span class="fw-bold text-uppercase small text-muted">Estimated Total:</span>
                         <span id="grandTotal" class="fs-4 fw-bold text-success">LKR 0.00</span>
                     </div>
 
                     <%-- Main Form Submission --%>
                     <form id="prescriptionForm" action="submitPrescription" method="POST">
-                        <%-- The Hidden Input Trick --%>
+                        <c:if test="${not empty _csrf}">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                        </c:if>
+
+                        <%-- Hidden Cart Input --%>
                         <input type="hidden" name="cartData" id="cartData">
 
                         <div class="d-grid gap-2 mt-4">
@@ -116,26 +120,42 @@
 <script>
     let cart = [];
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     function addItem() {
         const medSelect = document.getElementById('medSelect');
-        const medData = medSelect.value.split('|');
-        const qty = parseInt(document.getElementById('medQty').value);
+        const selected = medSelect.options[medSelect.selectedIndex];
+        const qty = parseInt(document.getElementById('medQty').value, 10);
 
-        if (!medData[0] || qty < 1) {
+        const name = selected ? selected.value : "";
+        const price = selected ? parseFloat(selected.dataset.price) : NaN;
+        const stock = selected ? parseInt(selected.dataset.stock, 10) : 0;
+
+        if (!name || Number.isNaN(price) || !(qty >= 1)) {
             alert("Please select a medicine and valid quantity.");
             return;
         }
 
-        const item = {
-            name: medData[0],
-            price: parseFloat(medData[1]),
+        const alreadyInCart = cart
+            .filter(function (entry) { return entry.name === name; })
+            .reduce(function (sum, entry) { return sum + entry.qty; }, 0);
+
+        if (!Number.isNaN(stock) && alreadyInCart + qty > stock) {
+            alert("Only " + stock + " unit(s) of " + name + " are in stock.");
+            return;
+        }
+
+        cart.push({
+            name: name,
+            price: price,
             qty: qty,
-            total: parseFloat(medData[1]) * qty
-        };
+            total: price * qty
+        });
 
-        cart.push(item);
-
-        // UI Clean up after adding
         medSelect.selectedIndex = 0;
         document.getElementById('medQty').value = 1;
 
@@ -161,11 +181,11 @@
             total += item.total;
             tbody.innerHTML += `
             <tr>
-                <td class="fw-bold">\${item.name}</td>
+                <td class="fw-bold">\${escapeHtml(item.name)}</td>
                 <td class="text-center">\${item.qty}</td>
                 <td class="text-end">\${item.total.toFixed(2)}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger" onclick="removeItem(\${index})">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(\${index})" aria-label="Remove item">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -185,18 +205,12 @@
     }
 
     function finalSubmit() {
-        // 1. Generate the string
-        const cartString = cart.map(item => `\${item.name},\${item.qty},\${item.price}`).join(';');
-        // 2. PRINT to console (Press F12 in your browser to see this)
-        console.log("--- PRE-SUBMISSION DATA CHECK ---");
-        console.log("Raw String: " + cartString);
-        console.table(cart);
-
         if (cart.length === 0) {
             alert("Cannot submit an empty cart.");
             return;
         }
 
+        const cartString = cart.map(item => `\${item.name},\${item.qty},\${item.price}`).join(';');
         document.getElementById('cartData').value = cartString;
         document.getElementById('prescriptionForm').submit();
     }

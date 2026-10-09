@@ -329,13 +329,13 @@
                                                     <a href="${pageContext.request.contextPath}/admin/appointments/reschedule?id=${app.appointmentID}" class="btn btn-sm btn-outline-primary" title="Override & Reschedule">
                                                         <i class="bi bi-calendar2-plus-fill me-1"></i>Edit
                                                     </a>
-                                                    <!-- Form submission for admin cancellation -->
+                                                    <!-- Form submission for admin cancellation
                                                     <form action="${pageContext.request.contextPath}/admin/appointments/cancel" method="POST" onsubmit="return confirm('Are you sure you want to forcibly cancel this appointment?');" class="m-0">
                                                         <input type="hidden" name="appointmentID" value="${app.appointmentID}">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Force Cancel">
                                                             <i class="bi bi-x-circle-fill me-1"></i>Cancel
                                                         </button>
-                                                    </form>
+                                                    </form>-->
                                                 </div>
                                             </c:otherwise>
                                         </c:choose>

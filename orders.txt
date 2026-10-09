@@ -1,0 +1,1 @@
+Prescription{prescriptionID=8, patientID=1, doctorID=0, medicineName='Panadol 100mg', quantity=15, medicinePrice=50.0, status='PENDING'}
