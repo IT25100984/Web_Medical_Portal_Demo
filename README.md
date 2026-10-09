@@ -2,7 +2,7 @@
 
 A role-based hospital management web application built with **Spring Boot, Spring MVC and JSP**. It connects patients, doctors, pharmacists, lab technicians and administrators in one place: appointments, health records, prescriptions, lab work and emergency requests.
 
-> Group project for **SE2030 – Software Engineering** (Year 2, Semester 1, 2026), Sri Lanka Institute of Information Technology. Group ID: `2026-Y2-S1-MLB-B3G1-07`. The proposal report refers to the system as *LankaCare*.
+> Group project for **SE2030 – Software Engineering** (Year 2, Semester 1, 2026), Sri Lanka Institute of Information Technology. The proposal report refers to the system as *LankaCare*.
 
 ![Java](https://img.shields.io/badge/Java-17%2B-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F)
@@ -153,17 +153,6 @@ JSP views
 - [ ] Move business actions such as lab requests and emergency handling into dedicated REST controllers.
 - [ ] Push notifications over WebSocket instead of polling.
 - [ ] Waiting list and live queue positions for fully booked sessions.
-
-## 👥 Team
-
-| Member | Module |
-|---|---|
-| S. M. N. A. Karunarathne | AI Health Assistant & Patient Engagement |
-| L. A. S. Wijesinghe | Appointment & Scheduling Management |
-| P. Yaksika | Clinical Operations Management |
-| V. R. W. Pathiratne | E-Prescribing & Pharmacy Management |
-| H. C. N. Perera | Laboratory & Diagnostic Services |
-| B. A. R. Fernando | Emergency & Care Coordination |
 
 ## ⚠️ Scope and limitations
 
