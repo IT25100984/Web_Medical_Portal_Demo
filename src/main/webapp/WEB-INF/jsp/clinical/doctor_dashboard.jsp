@@ -314,8 +314,11 @@
                                                     <c:if test="${not appt.rescheduled}">
                                                         <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#rescheduleModal${appt.appointmentID}">Reschedule</button>
                                                     </c:if>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger cancel-appointment-button" data-appointment-id="${appt.appointmentID}">Cancel</button>
-                                                </c:otherwise>
+                                                    <c:url var="cancelUrl" value="/updateAppointment">
+                                                        <c:param name="id" value="${appt.appointmentID}" />
+                                                        <c:param name="action" value="cancel" />
+                                                    </c:url>
+                                                    <a href="${cancelUrl}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this appointment?');">Cancel</a>                                                </c:otherwise>
                                             </c:choose>
                                             <button type="button" class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">About</button>
                                         </div>

@@ -155,8 +155,11 @@
                                                     Reschedule
                                                 </button>
 
-                                                <button onclick="confirmCancel('${appt.appointmentID}')" class="btn btn-sm btn-outline-danger">Cancel</button>
-                                            </c:when>
+                                                <a href="${pageContext.request.contextPath}/updateAppointment?id=${appt.appointmentID}&action=cancel"
+                                                   class="btn btn-sm btn-outline-danger"
+                                                   onclick="return confirm('Are you sure you want to cancel this appointment?');">
+                                                    Cancel
+                                                </a>                                            </c:when>
                                         </c:choose>
                                         <button type="button" class="btn btn-info btn-sm text-white"
                                                 data-bs-toggle="modal" data-bs-target="#aboutModal${appt.appointmentID}">
