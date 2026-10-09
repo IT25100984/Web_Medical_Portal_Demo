@@ -2,6 +2,17 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/theme.css">
+<%-- Favicon: browsers only read <link rel="icon"> from <head>, but this file is included inside <body>.
+     So the link is added to <head> with a tiny script. --%>
+<script>
+    (function () {
+        var icon = document.createElement("link");
+        icon.rel = "icon";
+        icon.type = "image/svg+xml";
+        icon.href = "${pageContext.request.contextPath}/images/favicon.svg";
+        document.head.appendChild(icon);
+    })();
+</script>
 <%-- Shared font + icons so every page that includes this header gets them --%>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
