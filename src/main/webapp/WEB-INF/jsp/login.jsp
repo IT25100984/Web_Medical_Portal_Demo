@@ -8,11 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | Web Medical Portal - WMP</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth.css">
 </head>
-<body class="bg-light">
+<body class="auth-page">
 <%@ include file="shared/header.jsp" %>
 
-<main class="container py-5">
+<main class="container py-4 py-md-5">
     <div class="row justify-content-center">
         <div class="col-md-7 col-lg-5 col-xl-4">
 
@@ -69,10 +70,11 @@
                 </div>
             </c:if>
 
-            <div class="card border-0 shadow">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-1">Hospital Portal Login</h4>
-                    <p class="small mb-0">Sign in to access your Web Medical Portal account</p>
+            <div class="card auth-card border-0 shadow">
+                <div class="auth-card-header">
+                    <div class="auth-logo"><i class="bi bi-heart-pulse-fill" aria-hidden="true"></i></div>
+                    <h1 class="h4 fw-bold mb-1">Hospital Portal Login</h1>
+                    <p class="small mb-0 opacity-75">Sign in to access your Web Medical Portal account</p>
                 </div>
                 <div class="card-body p-4">
                     <c:url var="loginActionUrl" value="/login" />
@@ -82,20 +84,24 @@
                         </c:if>
 
                         <div class="mb-3">
-                            <label for="username" class="form-label">Email Address</label>
-                            <input type="email" id="username" name="username" class="form-control" placeholder="name@example.com"
-                                   maxlength="100" autocomplete="email" required autofocus>
+                            <label for="username" class="form-label fw-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope" aria-hidden="true"></i></span>
+                                <input type="email" id="username" name="username" class="form-control" placeholder="name@example.com"
+                                       maxlength="100" autocomplete="email" required autofocus>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold">Password</label>
                             <div class="input-group">
-                                <!-- CHANGED name to "password" for Spring Security / Controller compatibility -->
+                                <span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span>
+                                <!-- name="password" for Spring Security / Controller compatibility -->
                                 <input type="password" id="password" name="password" class="form-control"
                                        placeholder="Enter your password" autocomplete="current-password" required>
                                 <button type="button" id="togglePassword" class="btn btn-outline-secondary"
                                         aria-label="Show or hide password" aria-pressed="false">
-                                    Show
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -107,10 +113,11 @@
                     <c:url var="registerUrl" value="/register" />
                     <small>
                         Do not have an account?
-                        <a href="${registerUrl}">Register here</a>
+                        <a href="${registerUrl}" class="fw-semibold">Register here</a>
                     </small>
                     <div class="mt-2">
                         <small class="text-muted">
+                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
                             Hospital staff require a valid employee ID to register.
                         </small>
                     </div>
@@ -120,7 +127,8 @@
     </div>
 </main>
 
-<%@ include file="shared/feedback.jsp" %>
+<%-- Removed: <%@ include file="shared/feedback.jsp" %>
+     shared/header.jsp already includes feedback.jsp, so it was being included twice. --%>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -133,7 +141,7 @@
             togglePasswordButton.addEventListener("click", function () {
                 const passwordIsHidden = passwordInput.type === "password";
                 passwordInput.type = passwordIsHidden ? "text" : "password";
-                togglePasswordButton.textContent = passwordIsHidden ? "Hide" : "Show";
+                togglePasswordButton.querySelector("i").className = passwordIsHidden ? "bi bi-eye-slash" : "bi bi-eye";
                 togglePasswordButton.setAttribute("aria-pressed", String(passwordIsHidden));
             });
         }

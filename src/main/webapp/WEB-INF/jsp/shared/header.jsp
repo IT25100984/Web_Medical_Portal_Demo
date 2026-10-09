@@ -2,6 +2,15 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/theme.css">
+<%-- Shared font + icons so every page that includes this header gets them --%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    .wmp-navbar .navbar-brand i { color: #7dd3fc; }
+</style>
 
 <c:url var="homeUrl" value="/" />
 <c:url var="loginUrl" value="/login" />
@@ -40,6 +49,7 @@
     <div class="container">
         <!-- Brand Link -->
         <a class="navbar-brand text-white fw-bold" href="${homeUrl}">
+            <i class="bi bi-heart-pulse-fill me-1" aria-hidden="true"></i>
             Web Medical Portal - WMP
         </a>
 
@@ -52,17 +62,18 @@
 
                 <!-- Fast-Track Emergency Button (Visible to Everyone) -->
                 <a href="${emergencyRequestUrl}" class="btn btn-sm btn-danger text-white fw-bold shadow-sm">
-                    🚑 Report Emergency
+                    <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i> Report Emergency
                 </a>
 
                 <button type="button" class="btn btn-sm btn-outline-warning text-white" data-bs-toggle="modal" data-bs-target="#publicReviewsModal">
-                    <span class="text-warning me-1" aria-hidden="true">★</span>
+                    <i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i>
                     Patient Reviews
                 </button>
 
                 <c:choose>
                     <c:when test="${not empty sessionScope.user}">
                         <span class="navbar-text text-white me-lg-2">
+                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
                             Welcome,
                             <strong>
                                 <c:out value="${sessionScope.user.fullName}" />
@@ -72,16 +83,16 @@
                         <!-- Emergency Command Center (Admins Only) -->
                         <c:if test="${sessionScope.user.role eq 'SYSTEM_ADMIN'}">
                             <a href="${emergencyDashboardUrl}" class="btn btn-sm btn-danger fw-bold shadow-sm">
-                                🚨 Emergency Center
+                                <i class="bi bi-broadcast-pin me-1" aria-hidden="true"></i> Emergency Center
                             </a>
                         </c:if>
 
                         <a href="${dashboardUrl}" class="btn btn-sm btn-outline-light">
-                            Dashboard
+                            <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i> Dashboard
                         </a>
 
                         <a href="${logoutUrl}" class="btn btn-sm btn-light text-primary fw-semibold">
-                            Logout
+                            <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i> Logout
                         </a>
                     </c:when>
 

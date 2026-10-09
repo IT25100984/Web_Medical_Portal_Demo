@@ -1,0 +1,118 @@
+/* auth.css - shared card look for login, register, book_appointment and emergency_request.
+   Place next to theme.css (served at /css/). */
+
+.auth-page {
+    min-height: 100vh;
+    background:
+            radial-gradient(circle at 12% 8%, rgba(56, 182, 255, 0.20), transparent 42%),
+            radial-gradient(circle at 92% 88%, rgba(13, 110, 253, 0.12), transparent 42%),
+            #f4f8fc;
+}
+
+.auth-card {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.auth-card-header {
+    background: linear-gradient(135deg, #0b3c6f 0%, #1f6fb2 55%, #2aa5d8 100%);
+    color: #fff;
+    text-align: center;
+    padding: 1.75rem 1.5rem;
+}
+
+/* Red variant for the emergency page */
+.auth-card-header.is-danger {
+    background: linear-gradient(135deg, #8f1d24 0%, #c62832 55%, #e5484d 100%);
+}
+
+.auth-logo {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    border-radius: 50%;
+    font-size: 1.6rem;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.auth-logo.pulse {
+    animation: wmpPulse 1.8s infinite;
+}
+
+@keyframes wmpPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-logo.pulse { animation: none; }
+}
+
+.auth-card .input-group-text {
+    background: #f8fafc;
+    color: #6c757d;
+}
+
+.auth-card .form-control:focus,
+.auth-card .form-select:focus {
+    border-color: #2a8fd0;
+    box-shadow: 0 0 0 0.2rem rgba(42, 143, 208, 0.20);
+}
+
+.auth-card .btn-primary {
+    background: linear-gradient(135deg, #1f6fb2, #0b5ed7);
+    border: 0;
+    font-weight: 600;
+    padding: 0.7rem 1rem;
+}
+
+.auth-card .btn-danger {
+    background: linear-gradient(135deg, #c62832, #e5484d);
+    border: 0;
+    font-weight: 700;
+}
+
+.auth-card .btn-primary:hover,
+.auth-card .btn-danger:hover {
+    filter: brightness(1.08);
+}
+
+.auth-section {
+    background: #f6faff;
+    border: 1px solid #dbe7f3;
+    border-radius: 0.75rem;
+}
+
+/* Numbered step headings (booking form) */
+.step-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+    font-weight: 700;
+    color: #0b3c6f;
+}
+
+.step-badge {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+/* Estimated total box */
+.price-box {
+    background: #eef7ff;
+    border: 1px solid #cfe5fa;
+    border-radius: 0.75rem;
+}
